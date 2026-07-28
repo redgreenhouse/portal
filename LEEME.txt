@@ -1,0 +1,20 @@
+RED GREENHOUSE · PORTAL DE GESTIÓN v1.0
+
+ARCHIVOS
+- index.html
+- style.css
+- app.js
+- data.js
+- assets/logo-red-greenhouse.png
+
+PARA SUBIR A GITHUB
+1. Descomprime este ZIP.
+2. Abre el repositorio redgreenhouse/portal.
+3. Arrastra TODO el contenido de la carpeta RED_Greenhouse_Portal_v1.0.
+4. GitHub sustituirá los archivos que tengan el mismo nombre.
+5. Pulsa Commit changes.
+6. Espera uno o dos minutos y abre:
+   https://redgreenhouse.github.io/portal/
+
+No necesitas ejecutar ningún script.
+GitHub Pages abre index.html y el navegador carga automáticamente style.css, data.js y app.js.
