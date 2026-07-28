@@ -1,5 +1,5 @@
 const titles = {
-  inicio:"Centro de control", srrc:"Certificaciones · SRRC", modulo2:"SRRC · Módulo 2",
+  inicio:"Centro de control", srrc:"Certificaciones · SRRC", tareas:"SRRC · Plan Maestro", modulo2:"SRRC · Módulo 2",
   produccion:"Producción", inventarios:"Inventarios", calidad:"Calidad",
   "otras-certificaciones":"Otras certificaciones", mantenimiento:"Mantenimiento",
   personal:"Personal", configuracion:"Configuración"
@@ -79,3 +79,78 @@ document.querySelectorAll(".doc-filter").forEach(btn=>btn.addEventListener("clic
   document.querySelectorAll(".doc-filter").forEach(b=>b.classList.remove("active")); btn.classList.add("active"); renderModule2Documents(btn.dataset.docFilter);
 }));
 renderModule2Documents();
+
+
+function taskStatusLabel(status){
+  return {ready:"Lista para iniciar",blocked:"Bloqueada",done:"Completada"}[status] || status;
+}
+function dependencyText(task){
+  if(!task.depends.length) return "Sin dependencia previa";
+  return "Depende de: " + task.depends.join(", ");
+}
+function renderDashboardTasks(){
+  const host=document.getElementById("dashboardTasks");
+  if(!host) return;
+  host.innerHTML="";
+  RED_DATA.tasks.slice(0,5).forEach(task=>{
+    const row=document.createElement("button");
+    row.className=`next-action ${task.status}`;
+    row.dataset.view="tareas";
+    row.innerHTML=`<span class="task-order">${task.order}</span><span><strong>${task.title}</strong><small>${task.needed}</small></span><b>${task.status==="ready"?"Iniciar":"Dependencia"}</b>`;
+    row.addEventListener("click",()=>showView("tareas"));
+    host.appendChild(row);
+  });
+}
+function renderTasks(filter="all"){
+  const host=document.getElementById("masterTaskList");
+  if(!host) return;
+  const rows=RED_DATA.tasks.filter(t=>{
+    if(filter==="all") return true;
+    if(filter==="critical") return t.priority==="critical";
+    return t.status===filter;
+  });
+  host.innerHTML="";
+  rows.forEach(task=>{
+    const item=document.createElement("article");
+    item.className=`master-task ${task.status} ${task.priority}`;
+    item.innerHTML=`
+      <div class="task-sequence">${String(task.order).padStart(2,"0")}</div>
+      <div class="task-body">
+        <div class="task-title-row">
+          <div><span class="task-category">${task.category}</span><h4>${task.title}</h4></div>
+          <span class="task-status ${task.status}">${taskStatusLabel(task.status)}</span>
+        </div>
+        <p><strong>Información requerida:</strong> ${task.needed}</p>
+        <div class="task-facts">
+          <span><b>Responsable:</b> ${task.owner}</span>
+          <span><b>Impacto:</b> ${task.impact}</span>
+          <span><b>Dependencia:</b> ${dependencyText(task)}</span>
+        </div>
+      </div>`;
+    host.appendChild(item);
+  });
+}
+function updateTaskSummary(){
+  const tasks=RED_DATA.tasks;
+  const set=(id,value)=>{const el=document.getElementById(id); if(el) el.textContent=value;};
+  set("todoCount",tasks.filter(t=>t.status!=="done").length);
+  set("criticalCount",tasks.filter(t=>t.priority==="critical"&&t.status!=="done").length);
+  set("blockedCount",tasks.filter(t=>t.status==="blocked").length);
+  set("doneCount",tasks.filter(t=>t.status==="done").length);
+}
+function updateCountdown(){
+  const target=new Date("2026-08-11T23:59:59");
+  const today=new Date();
+  const days=Math.max(0,Math.ceil((target-today)/86400000));
+  const el=document.getElementById("daysRemaining");
+  if(el) el.textContent=days;
+}
+document.querySelectorAll(".task-filter").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".task-filter").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderTasks(btn.dataset.taskFilter);
+}));
+renderDashboardTasks();
+renderTasks();
+updateTaskSummary();
+updateCountdown();

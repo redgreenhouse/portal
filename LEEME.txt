@@ -1,20 +1,19 @@
-RED GREENHOUSE · PORTAL DE GESTIÓN v1.0
+RED GREENHOUSE · PORTAL DE GESTIÓN v1.2
 
-ARCHIVOS
-- index.html
-- style.css
-- app.js
-- data.js
-- assets/logo-red-greenhouse.png
+CAMBIOS PRINCIPALES
+- Nuevo centro de mando SRRC con avance real, nivel de riesgo y cuenta regresiva al 11 de agosto de 2026.
+- Nuevo Plan Maestro / Monitor de tareas.
+- 12 primeras tareas concretas, ordenadas por dependencia e impacto.
+- Identificación de información requerida, responsables y tareas bloqueadas.
+- Se conserva el detalle HTML completo del Módulo 2.
 
-PARA SUBIR A GITHUB
-1. Descomprime este ZIP.
-2. Abre el repositorio redgreenhouse/portal.
-3. Arrastra TODO el contenido de la carpeta RED_Greenhouse_Portal_v1.0.
-4. GitHub sustituirá los archivos que tengan el mismo nombre.
-5. Pulsa Commit changes.
-6. Espera uno o dos minutos y abre:
-   https://redgreenhouse.github.io/portal/
+ACTUALIZACIÓN EN GITHUB
+1. Descomprime el ZIP.
+2. Selecciona TODO el contenido.
+3. Arrástralo al repositorio redgreenhouse/portal.
+4. Haz un solo Commit changes.
+5. Espera uno o dos minutos.
+6. Abre https://redgreenhouse.github.io/portal/
 
-No necesitas ejecutar ningún script.
-GitHub Pages abre index.html y el navegador carga automáticamente style.css, data.js y app.js.
+IMPORTANTE
+El avance de 18% es una línea base preliminar y conservadora. No representa todavía un cálculo definitivo de toda la certificación, porque faltan por analizar los módulos 8 al 14.

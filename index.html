@@ -29,6 +29,7 @@
           </button>
           <div class="submenu open" id="cert-menu">
             <button class="sub-item active" data-view="srrc">SRRC · Inocuidad</button>
+            <button class="sub-item" data-view="tareas">Plan Maestro · Tareas</button>
             <button class="sub-item" data-view="otras-certificaciones">Otras certificaciones</button>
           </div>
         </div>
@@ -39,7 +40,7 @@
       </nav>
 
       <div class="sidebar-foot">
-        <span>Versión 1.0</span>
+        <span>Versión 1.2</span>
         <small>28 julio 2026</small>
       </div>
     </aside>
@@ -127,17 +128,62 @@
           <div>
             <p class="eyebrow">Certificaciones / SRRC</p>
             <h2>Dashboard ejecutivo de inocuidad</h2>
-            <p>Primero mostramos el tamaño del esfuerzo; después, el avance.</p>
+            <p>La pregunta principal: ¿llegaremos con la carpeta física completa al 11 de agosto?</p>
           </div>
           <button class="outline-button" id="printButton">Imprimir resumen</button>
         </div>
 
+        <section class="command-center">
+          <div class="command-main">
+            <div class="command-heading">
+              <div>
+                <p class="eyebrow light">Estado del proyecto</p>
+                <h3>Preparación de carpeta física SRRC</h3>
+              </div>
+              <span class="risk-badge high">Riesgo alto</span>
+            </div>
+
+            <div class="command-progress">
+              <div class="progress-copy">
+                <span>Avance confirmado</span>
+                <strong>18%</strong>
+              </div>
+              <div class="progress executive"><i style="width:18%"></i></div>
+              <p>El porcentaje mide trabajo confirmado, no solamente archivos recibidos. Se actualizará conforme completemos información, evidencias, firmas e impresión.</p>
+            </div>
+
+            <div class="executive-alert">
+              <strong>Atención inmediata</strong>
+              <span>Faltan módulos por recibir y todavía no están completos los datos maestros, responsables, mapas ni evidencias del Módulo 2.</span>
+            </div>
+          </div>
+
+          <div class="deadline-card">
+            <span>Fecha compromiso</span>
+            <strong>11 AGO 2026</strong>
+            <div class="countdown"><b id="daysRemaining">14</b><small>días restantes</small></div>
+            <p>Entrega al auditor interno</p>
+          </div>
+        </section>
+
         <div class="summary-grid srrc-kpis">
-          <article class="metric-card"><span>Módulos totales</span><strong>13</strong><small>Del 2 al 14</small></article>
-          <article class="metric-card"><span>Módulos recibidos</span><strong>6</strong><small>46% del universo</small></article>
-          <article class="metric-card"><span>Hojas útiles</span><strong>48</strong><small>En revisión</small></article>
-          <article class="metric-card warning"><span>Módulos pendientes</span><strong>7</strong><small>Requeridos para diagnóstico final</small></article>
+          <article class="metric-card"><span>Tareas identificadas</span><strong>12</strong><small>Primer bloque de implementación</small></article>
+          <article class="metric-card"><span>Tareas críticas abiertas</span><strong>7</strong><small>Desbloquean documentos y evidencias</small></article>
+          <article class="metric-card"><span>Módulos recibidos</span><strong>6/13</strong><small>7 módulos aún pendientes</small></article>
+          <article class="metric-card warning"><span>Ritmo necesario</span><strong>Diario</strong><small>Revisión y cierre todos los días</small></article>
         </div>
+
+        <article class="panel task-monitor-preview">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Plan Maestro</p>
+              <h3>Información y acciones que necesitamos ahora</h3>
+            </div>
+            <button class="primary-action" data-view="tareas">Abrir monitor de tareas</button>
+          </div>
+          <p>Estas acciones están ordenadas por dependencia e impacto. Completar primero las tareas superiores desbloquea varios documentos.</p>
+          <div class="next-actions" id="dashboardTasks"></div>
+        </article>
 
         <article class="panel effort-panel">
           <div class="panel-heading">
@@ -193,54 +239,47 @@
         </article>
       </section>
 
-      <section class="view" id="modulo2">
+      <section class="view" id="tareas">
         <div class="section-header">
           <div>
-            <p class="eyebrow">Certificaciones / SRRC / Módulo 2</p>
-            <h2>Mantenimiento de la infraestructura</h2>
-            <p>Expediente digital del módulo, organizado por riesgo, esfuerzo y acción requerida.</p>
+            <p class="eyebrow">Certificaciones / SRRC / Plan Maestro</p>
+            <h2>Monitor de tareas para la carpeta física</h2>
+            <p>Lista concreta de información, decisiones y evidencias requeridas para incrementar el avance.</p>
           </div>
-          <button class="outline-button" data-view="srrc">← Regresar al mapa</button>
+          <button class="outline-button" data-view="srrc">Volver al dashboard</button>
         </div>
 
-        <div class="summary-grid">
-          <article class="metric-card"><span>Documentos identificados</span><strong>12</strong><small>Más 1 hoja vacía por depurar</small></article>
-          <article class="metric-card warning"><span>Riesgo alto</span><strong>4</strong><small>Procedimiento, análisis y programa</small></article>
-          <article class="metric-card"><span>Evidencia propia</span><strong>4</strong><small>Mapas y croquis por sustituir</small></article>
-          <article class="metric-card"><span>Estado del módulo</span><strong>15%</strong><small>Diagnóstico inicial</small></article>
+        <div class="task-summary">
+          <article><span>Por hacer</span><strong id="todoCount">12</strong></article>
+          <article><span>Críticas</span><strong id="criticalCount">7</strong></article>
+          <article><span>Bloqueadas</span><strong id="blockedCount">4</strong></article>
+          <article><span>Completadas</span><strong id="doneCount">0</strong></article>
         </div>
 
-        <article class="panel module-summary-panel">
+        <article class="panel">
           <div class="panel-heading">
-            <div><p class="eyebrow">Lectura ejecutiva</p><h3>Qué exige este módulo</h3></div>
-            <span class="tag amber">Prioridad crítica</span>
+            <div>
+              <p class="eyebrow">Secuencia recomendada</p>
+              <h3>Primero desbloquear, después completar</h3>
+            </div>
+            <div class="filter-group">
+              <button class="task-filter active" data-task-filter="all">Todas</button>
+              <button class="task-filter" data-task-filter="ready">Listas</button>
+              <button class="task-filter" data-task-filter="blocked">Bloqueadas</button>
+              <button class="task-filter" data-task-filter="critical">Críticas</button>
+            </div>
           </div>
-          <p>El módulo combina documentos de diseño inicial con evidencia real del invernadero y registros que deberán mantenerse vivos. La prioridad se asigna por el riesgo de no poder demostrar control sobre la infraestructura, no solamente por la cantidad de hojas.</p>
-          <div class="risk-legend">
-            <span><i class="risk-dot high"></i> Alto: impide demostrar control</span>
-            <span><i class="risk-dot medium"></i> Medio: evidencia necesaria</span>
-            <span><i class="risk-dot low"></i> Bajo: identificación y presentación</span>
-          </div>
+          <div class="task-list" id="masterTaskList"></div>
         </article>
 
         <article class="panel">
           <div class="panel-heading">
-            <div><p class="eyebrow">Expediente documental</p><h3>Documentos del Módulo 2</h3></div>
-            <div class="filter-group">
-              <button class="doc-filter active" data-doc-filter="all">Todos</button>
-              <button class="doc-filter" data-doc-filter="high">Riesgo alto</button>
-              <button class="doc-filter" data-doc-filter="medium">Riesgo medio</button>
-              <button class="doc-filter" data-doc-filter="low">Riesgo bajo</button>
+            <div>
+              <p class="eyebrow">Criterio de avance</p>
+              <h3>¿Cuándo cuenta una tarea como terminada?</h3>
             </div>
           </div>
-          <div class="document-list" id="module2Documents"></div>
-        </article>
-
-        <article class="panel document-viewer-panel" id="documentViewerPanel">
-          <div id="documentViewer" class="document-viewer-empty">
-            <strong>Selecciona un documento</strong>
-            <span>Aquí se mostrará su representación HTML, la acción requerida y los datos pendientes.</span>
-          </div>
+          <p>Una tarea solamente se considerará completa cuando exista información validada, evidencia disponible y responsable confirmado. Tener una plantilla vacía no incrementa el avance real.</p>
         </article>
       </section>
 
