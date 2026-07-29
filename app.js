@@ -192,10 +192,36 @@ const module2CaptureSpecs={
 };
 let module2Values=JSON.parse(localStorage.getItem('redGreenhouseModule2')||'{}');
 const typeLabels={text:'Texto corto',textarea:'Texto amplio',date:'Fecha',datetime:'Fecha y hora',number:'Número',list:'Lista',table:'Tabla',signature:'Firma',image:'Imagen',evidence:'Evidencia',coordinates:'Coordenadas',person:'Persona',schedule:'Registro periódico','document-control':'Control documental'};
+
+// Campos del Módulo 2 que ya existen en Datos Maestros.
+// El valor se consulta directamente desde el catálogo para evitar doble captura.
+const module2MasterLinks={
+  'PORTADA|Nombre de la unidad de producción':'Nombre de la unidad de producción',
+  'PORTADA|Domicilio de la unidad':'Domicilio de la unidad',
+  'PORTADA|Folio SENASICA':'Folio SENASICA',
+  'POE MTTO INFRAESTR|Elaboró / Revisó / Autorizó':'Firmas de elaboración, revisión y autorización',
+  'MAPA 2.1|Nombre de la unidad':'Nombre de la unidad de producción',
+  'MAPA 2.1|Coordenadas':'Coordenadas geográficas',
+  'MAPA 2.1.1|Coordenadas':'Coordenadas geográficas',
+  'CROQUIS 2.2|Croquis de instalaciones':'Croquis de instalaciones',
+  'DOC-2.4|Responsable de inocuidad':'Responsable de inocuidad'
+};
+function module2MasterField(doc,field){return module2MasterLinks[`${doc.code}|${field[0]}`]||''}
+function module2MasterValue(field){
+  if(structuredDefinitions[field]){const st=structuredFieldStatus(field);return st.filled?`${st.filled} de ${st.total} celdas capturadas`:''}
+  return String(masterValues[masterKey(field)]||'').trim();
+}
+function clearDuplicateModule2Values(){
+  let changed=false;
+  RED_DATA.module2.forEach(doc=>(module2CaptureSpecs[doc.code]||[]).forEach((field,i)=>{
+    if(module2MasterField(doc,field)&&Object.prototype.hasOwnProperty.call(module2Values,`${doc.id}-${i}`)){delete module2Values[`${doc.id}-${i}`];changed=true}
+  }));
+  if(changed)localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));
+}
 function fieldHasValue(item){if(structuredDefinitions[item.field])return structuredFieldStatus(item.field).complete;return !!String(masterValues[masterKey(item.field)]||'').trim()}
 function fieldPreview(item){if(structuredDefinitions[item.field]){const st=structuredFieldStatus(item.field);return `${st.filled} de ${st.total} celdas capturadas`}return String(masterValues[masterKey(item.field)]||'').trim()}
 function moduleStatus(m){const fields=masterData.filter(x=>x.modules[m]==='c');const filled=fields.filter(fieldHasValue).length;return {fields,filled,total:fields.length,percent:fields.length?Math.round(filled/fields.length*100):0}}
-function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>String(module2Values[`${d.id}-${i}`]||'').trim()).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
+function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!String(module2Values[`${d.id}-${i}`]||'').trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
  const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
  const m2=module2Status(),mods=[2,3,4,5,6,7];
@@ -203,7 +229,7 @@ function renderModules(){
  grid.innerHTML=mods.map(m=>{const st=m===2?m2:moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${m===2?'Piloto completo':st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${m===2?`${RED_DATA.module2.length} hojas · ${st.total} campos`:`${st.filled} de ${st.total} datos aplicables`}</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">${m===2?'Ver contenido completo del Excel →':'Abrir tabla estructurada →'}</span></article>`}).join('');
  grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
 }
-function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,value=esc(String(module2Values[key]||''));let control='';
+function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,masterField=module2MasterField(doc,field);if(masterField){const raw=module2MasterValue(masterField),value=esc(raw);return `<div class="module-field master-linked-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type linked-data-type">Dato maestro</span><p>${hint}</p></div><div class="module-field-control"><div class="master-linked-value ${value?'':'master-linked-empty'}"><span>${value||'Pendiente de captura en Datos Maestros'}</span><button type="button" data-open-master>Ir a Datos Maestros</button></div><small class="master-linked-source">Origen único: ${masterField}</small></div></div>`}const value=esc(String(module2Values[key]||''));let control='';
  if(type==='image'||type==='evidence'||type==='signature')control=`<label class="upload-box"><input type="file" data-module2-file="${key}" accept="${type==='image'?'image/*':type==='signature'?'image/*,.pdf':'image/*,.pdf'}"><span>${value?'Archivo seleccionado: '+value:'Seleccionar '+typeLabels[type].toLowerCase()}</span></label>`;
  else if(type==='textarea'||type==='table'||type==='schedule')control=`<textarea data-module2-input="${key}" placeholder="Capturar información…">${value}</textarea>`;
  else if(type==='list')control=`<select data-module2-input="${key}"><option value="">Seleccionar…</option>${['Baja','Media','Alta','No aplica'].map(x=>`<option ${value===x?'selected':''}>${x}</option>`).join('')}</select>`;
@@ -214,6 +240,7 @@ function openModule2(){const detail=document.getElementById('moduleDetail');deta
  detail.querySelectorAll('[data-sheet-toggle]').forEach(b=>b.addEventListener('click',()=>{const body=detail.querySelector(`#sheet-${b.dataset.sheetToggle}`);body.hidden=!body.hidden}));
  detail.querySelectorAll('[data-module2-input]').forEach(el=>el.addEventListener('input',()=>{module2Values[el.dataset.module2Input]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));renderModules()}));
  detail.querySelectorAll('[data-module2-file]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.module2File]=el.files[0]?.name||'';localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
+ detail.querySelectorAll('[data-open-master]').forEach(el=>el.addEventListener('click',()=>showView('datos')));
  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function openModule(m){if(m===2){openModule2();return}const st=moduleStatus(m),detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo ${m} · ${moduleNames[m]}</h2><p>Vista provisional basada en los datos transversales ya identificados.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><table class="module-detail-table"><thead><tr><th>Dato requerido</th><th>Valor capturado</th><th>Certeza</th><th>Destino</th></tr></thead><tbody>${st.fields.map(x=>{const value=fieldPreview(x);return `<tr><td><strong>${x.field}</strong><br><small>${x.detail}</small></td><td class="value-preview ${value?'':'empty-value'}">${esc(value||'Pendiente de captura')}</td><td><span class="certainty-label confirmed">Confirmado</span></td><td><span class="mapping-badge">M${m}</span></td></tr>`}).join('')}</tbody></table>`;detail.querySelector('[data-close-module]').addEventListener('click',()=>detail.hidden=true);detail.scrollIntoView({behavior:'smooth',block:'start'})}
@@ -222,6 +249,7 @@ function renderAll(){ensureStructuredDefaults();renderDashboard();renderTasks();
 let currentView='inicio',viewHistory=[];
 function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
 ensureStructuredDefaults();
+clearDuplicateModule2Values();
 document.getElementById('backButton').addEventListener('click',()=>{if(viewHistory.length)showView(viewHistory.pop(),false)});document.getElementById('homeButton').addEventListener('click',()=>showView('inicio'));document.getElementById('saveMasterDataButton').addEventListener('click',saveMasterData);
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}));
