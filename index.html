@@ -38,13 +38,17 @@
       <button class="nav-item" data-view="reportes"><span>▥</span> Reportes</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · v1.4</div>
+    <div class="sidebar-footer">RED Greenhouse · v1.5</div>
   </aside>
 
   <main class="main">
     <header class="topbar">
-      <button class="menu-button" id="menuButton">☰</button>
-      <div class="breadcrumb" id="breadcrumb">Inicio</div>
+      <div class="topbar-left">
+        <button class="menu-button" id="menuButton" aria-label="Abrir menú">☰</button>
+        <button class="nav-control" id="backButton" aria-label="Regresar" title="Regresar">←</button>
+        <button class="nav-control home-control" id="homeButton" aria-label="Ir al inicio" title="Inicio">⌂</button>
+        <div class="breadcrumb" id="breadcrumb">Inicio</div>
+      </div>
       <div class="topbar-right"><span class="portal-status"><i></i> Portal activo</span><span id="currentDate"></span></div>
     </header>
 
@@ -84,17 +88,21 @@
 
       <section class="master-summary">
         <article class="summary-card"><span>Campos identificados</span><strong id="masterFieldCount">0</strong></article>
-        <article class="summary-card"><span>Categorías</span><strong id="masterCategoryCount">0</strong></article>
+        <article class="summary-card"><span>Campos capturados</span><strong id="masterCompletedCount">0</strong></article>
         <article class="summary-card"><span>Módulos confirmados</span><strong>2–7</strong></article>
         <article class="summary-card"><span>Módulos por validar</span><strong>8–14</strong></article>
       </section>
 
       <section class="master-layout">
         <article class="card master-catalog-card">
-          <div class="section-heading">
+          <div class="section-heading master-heading">
             <div>
-              <h2>Catálogo de información</h2>
-              <p>Solamente datos que ayudan a completar los Excel SRRC.</p>
+              <h2>Captura de información</h2>
+              <p>Los datos se guardan en este navegador y después alimentarán los Excel SRRC.</p>
+            </div>
+            <div class="master-actions">
+              <span class="save-status" id="masterSaveStatus">Sin cambios</span>
+              <button class="primary-button" id="saveMasterData">Guardar datos</button>
             </div>
           </div>
           <div class="master-filters" id="masterFilters"></div>
