@@ -1,3 +1,63 @@
+
+
+const masterData = [
+  {category:'Identidad', field:'Nombre de la unidad de producción', detail:'Nombre oficial usado en encabezados, portadas y registros.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Identidad', field:'Folio SENASICA', detail:'Identificador repetido en portadas, procedimientos, análisis, mapas y bitácoras.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Identidad', field:'Razón social / propietario', detail:'Identidad legal o responsable de la unidad productiva.', source:'Por confirmar', modules:{2:'p',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Ubicación', field:'Domicilio de la unidad', detail:'Localidad, municipio, estado y referencias de acceso.', source:'M2', modules:{2:'c',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Ubicación', field:'Coordenadas geográficas', detail:'Polígono y puntos georreferenciados en grados decimales.', source:'M2', modules:{2:'c',3:'',4:'',5:'',6:'',7:'',8:'p',9:'',10:'p',11:'',12:'p',13:'',14:''}},
+  {category:'Ubicación', field:'Macro y microlocalización', detail:'Mapas y referencias territoriales de la unidad de producción.', source:'M2', modules:{2:'c',3:'',4:'',5:'',6:'',7:'',8:'p',9:'',10:'p',11:'',12:'p',13:'',14:''}},
+  {category:'Producción', field:'Cultivo y variedad', detail:'Producto agrícola al que aplican procedimientos, riesgos y registros.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Producción', field:'Superficie y áreas productivas', detail:'Extensión, invernaderos, bloques y zonas incluidas.', source:'M2', modules:{2:'c',3:'p',4:'p',5:'',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Alta Dirección', detail:'Nombre y cargo de quien autoriza procedimientos y recursos.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Responsable de inocuidad', detail:'Persona que implementa, supervisa y revisa el sistema SRRC.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos para los pies de firma de procedimientos.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Infraestructura', field:'Inventario de instalaciones y equipos', detail:'Áreas, estaciones sanitarias, almacenes, comedor, agua y equipos.', source:'M2–M4', modules:{2:'c',3:'c',4:'c',5:'',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Infraestructura', field:'Croquis de instalaciones', detail:'Distribución física y ubicación de puntos de control.', source:'M2–M4', modules:{2:'c',3:'c',4:'c',5:'',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Control documental', field:'Código del documento', detail:'Clave de procedimiento, programa, plan, análisis o registro.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Control documental', field:'Versión y fecha de emisión', detail:'Control uniforme de vigencia documental.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
+];
+
+let activeMasterCategory='Todas';
+
+function renderMasterData(){
+  const categories=['Todas',...new Set(masterData.map(x=>x.category))];
+  const filters=document.getElementById('masterFilters');
+  if(!filters) return;
+  filters.innerHTML=categories.map(c=>`<button class="master-filter ${c===activeMasterCategory?'active':''}" data-master-category="${c}">${c}</button>`).join('');
+  filters.querySelectorAll('[data-master-category]').forEach(b=>b.addEventListener('click',()=>{
+    activeMasterCategory=b.dataset.masterCategory;renderMasterData();
+  }));
+
+  const shown=activeMasterCategory==='Todas'?masterData:masterData.filter(x=>x.category===activeMasterCategory);
+  const groups=[...new Set(shown.map(x=>x.category))];
+  document.getElementById('masterCatalog').innerHTML=groups.map(group=>`
+    <section class="master-group">
+      <h3>${group}</h3>
+      ${shown.filter(x=>x.category===group).map((x,i)=>`
+        <div class="master-field">
+          <input type="checkbox" aria-label="Dato capturado">
+          <div><strong>${x.field}</strong><p>${x.detail}</p></div>
+          <span class="source-chip">${x.source}</span>
+        </div>`).join('')}
+    </section>`).join('');
+
+  document.getElementById('masterFieldCount').textContent=masterData.length;
+  document.getElementById('masterCategoryCount').textContent=new Set(masterData.map(x=>x.category)).size;
+
+  const modules=Array.from({length:13},(_,i)=>i+2);
+  document.getElementById('matrixHead').innerHTML=`<tr><th>Dato maestro</th>${modules.map(m=>`<th>M${m}</th>`).join('')}</tr>`;
+  document.getElementById('matrixBody').innerHTML=masterData.map(x=>`
+    <tr>
+      <td class="matrix-field-name"><strong>${x.field}</strong><small>${x.category}</small></td>
+      ${modules.map(m=>{
+        const s=x.modules[m]||'';
+        return `<td><span class="matrix-cell ${s==='c'?'confirmed':s==='p'?'probable':'empty'}">${s==='c'?'✓':s==='p'?'?':'–'}</span></td>`;
+      }).join('')}
+    </tr>`).join('');
+}
+
 const DEADLINE=new Date('2026-08-11T23:59:59');
 const defaultTasks=[
 {id:1,title:'Completar Datos Maestros',detail:'Razón social, unidad, ubicación, responsables y cultivo.',owner:'Dirección',priority:'critical',status:'doing',due:'30 jul'},
@@ -20,8 +80,8 @@ function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function renderDashboard(){const p=progress();document.getElementById('progressValue').textContent=`${p}%`;document.getElementById('progressFill').style.width=`${p}%`;document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>`<div class="compact-task"><div><strong>${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div>`).join('')}
 function renderTasks(){const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));document.getElementById('taskList').innerHTML=f.length?f.map(t=>`<div class="task-row"><input class="task-check" type="checkbox" ${t.status==='done'?'checked':''} data-id="${t.id}"><div class="task-title"><strong>${esc(t.title)}</strong><small>${esc(t.detail||'')}</small></div><div class="task-owner">${esc(t.owner)}</div><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><div class="task-date">${esc(t.due||'Sin fecha')}</div><button class="delete-task" data-delete="${t.id}">×</button></div>`).join(''):'<div class="placeholder"><p>No hay tareas para este filtro.</p></div>';document.getElementById('totalTasks').textContent=tasks.length;document.getElementById('pendingTasks').textContent=tasks.filter(t=>t.status==='pending').length;document.getElementById('doingTasks').textContent=tasks.filter(t=>t.status==='doing').length;document.getElementById('doneTasks').textContent=tasks.filter(t=>t.status==='done').length;document.querySelectorAll('.task-check').forEach(i=>i.addEventListener('change',()=>{const t=tasks.find(x=>x.id===Number(i.dataset.id));if(t){t.status=i.checked?'done':'pending';saveTasks();renderAll()}}));document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{tasks=tasks.filter(t=>t.id!==Number(b.dataset.delete));saveTasks();renderAll()}))}
-function renderAll(){renderDashboard();renderTasks()}
-function showView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':'Plan Maestro'}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+function renderAll(){renderDashboard();renderTasks();renderMasterData()}
+function showView(v){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}));
 const modal=document.getElementById('modalBackdrop');document.getElementById('addTaskButton').addEventListener('click',()=>modal.classList.add('open'));document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('open'));modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});document.getElementById('taskForm').addEventListener('submit',e=>{e.preventDefault();tasks.unshift({id:Date.now(),title:document.getElementById('taskTitle').value.trim(),detail:'Tarea agregada desde el portal.',owner:document.getElementById('taskOwner').value.trim(),priority:document.getElementById('taskPriority').value,status:document.getElementById('taskStatus').value,due:'Sin fecha'});saveTasks();e.target.reset();modal.classList.remove('open');renderAll()});setDate();renderAll();
