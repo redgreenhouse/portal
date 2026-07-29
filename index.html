@@ -35,10 +35,11 @@
       <button class="nav-item" data-view="certificaciones"><span>🏅</span> Certificaciones</button>
       <button class="nav-item" data-view="plan"><span>☷</span> Plan Maestro</button>
       <button class="nav-item" data-view="datos"><span>◆</span> Datos Maestros</button>
+      <button class="nav-item" data-view="modulos"><span>▤</span> Módulos SRRC</button>
       <button class="nav-item" data-view="reportes"><span>▥</span> Reportes</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · v1.7</div>
+    <div class="sidebar-footer">RED Greenhouse · v1.9</div>
   </aside>
 
   <main class="main">
@@ -64,12 +65,9 @@
         <article class="card deadline-card"><span class="kpi-label">Fecha compromiso</span><div class="deadline-date"><span>▣</span><div><strong>11</strong><b>Agosto 2026</b></div></div><small>Entrega de carpeta física al auditor interno</small></article>
       </section>
       <section class="executive-alert"><div class="alert-icon">⚠</div><div><strong>Atención ejecutiva</strong><p>Para cumplir con la fecha del 11 de agosto de 2026, es necesario completar las tareas críticas pendientes.</p></div><button class="ghost-button" data-go="plan">Ver tareas →</button></section>
-      <section class="home-tasks-section card">
-        <div class="section-heading">
-          <div><h2>Tareas del día</h2><p>Entra directamente a la pantalla donde se realiza cada acción.</p></div>
-          <button class="link-button" data-go="plan">Ver todas las tareas</button>
-        </div>
-        <div id="dashboardTasks" class="home-task-list"></div>
+      <section class="dashboard-grid">
+        <article class="card task-monitor"><div class="section-heading"><div><h2>Plan Maestro · Monitor de tareas</h2><p>Acciones clave para construir la carpeta SRRC.</p></div><button class="link-button" data-go="plan">Ver todo</button></div><div id="dashboardTasks" class="compact-task-list"></div></article>
+        <aside class="card today-card"><span class="eyebrow">PRIORIDAD DEL DÍA</span><h2>Qué debemos resolver hoy</h2><div class="today-item"><span>1</span><div><strong>Datos maestros</strong><p>Completar identidad, ubicación y responsables.</p></div></div><div class="today-item"><span>2</span><div><strong>Recepción documental</strong><p>Solicitar módulos 8 al 14.</p></div></div><div class="today-item"><span>3</span><div><strong>Infraestructura</strong><p>Levantar inventario y fotografías.</p></div></div></aside>
       </section>
     </section>
 
@@ -141,6 +139,17 @@
           </table>
         </div>
       </section>
+    </section>
+
+
+    <section class="view" id="view-modulos">
+      <div class="page-heading">
+        <div><h1>Módulos SRRC</h1><p>Vista estructurada de la información que deberá trasladarse a los Excel y a la carpeta física.</p></div>
+        <span class="analysis-stamp">Módulos disponibles: 2–7</span>
+      </div>
+      <section class="module-summary" id="moduleSummary"></section>
+      <section class="module-grid" id="moduleGrid"></section>
+      <section class="card module-detail-card" id="moduleDetail" hidden></section>
     </section>
 
     <section class="view" id="view-placeholder"><div class="placeholder"><div class="placeholder-icon">🌱</div><h1 id="placeholderTitle">Módulo</h1><p>Esta sección se integrará en las siguientes versiones del portal.</p><button class="primary-button" data-go="inicio">Volver al inicio</button></div></section>

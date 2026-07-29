@@ -19,22 +19,63 @@ const masterData = [
   {category:'Control documental', field:'Versión y fecha de emisión', detail:'Control uniforme de vigencia documental.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
 ];
 
+
+const structuredDefinitions={
+  'Responsables por área':{
+    columns:[{key:'nombre',label:'Nombre del responsable'},{key:'cargo',label:'Cargo / función'}],
+    rows:['Producción','Mantenimiento','Higiene','Capacitación','Fauna','Auditoría'].map(area=>({id:masterKey(area),label:area})),
+    mapping:'Catálogo transversal; se relacionará con perfiles, programas y procedimientos de M2–M7.'
+  },
+  'Firmas de elaboración, revisión y autorización':{
+    columns:[{key:'nombre',label:'Nombre completo'},{key:'cargo',label:'Cargo'}],
+    rows:[
+      {id:'elaboro',label:'Elaboró',defaultCargo:'Auxiliar en SRRC',mapping:'M2 POE MTTO: B67–C68 · M3 POES: B149–C150 · M4 POE: B72–D73 · M5 POE: B64–D65 · M6 POE: B102–D103 · M7 POE: B85–D86'},
+      {id:'reviso',label:'Revisó',defaultCargo:'Responsable de inocuidad',mapping:'M2: E67–F68 · M3: E149–F150 · M4: F72–G73 · M5: F64–G65 · M6: F102–G103 · M7: F85–G86'},
+      {id:'autorizo',label:'Autorizó',defaultCargo:'Director general',mapping:'M2: H67–I68 · M3: H149–I150 · M4: I72–J73 · M5: I64–J65 · M6: I102–J103 · M7: I85–J86'}
+    ],
+    mapping:'Ejemplo real confirmado en los pies de firma de los procedimientos recibidos.'
+  }
+};
+let structuredValues=JSON.parse(localStorage.getItem('redGreenhouseStructuredData')||'{}');
+function ensureStructuredDefaults(){
+  Object.entries(structuredDefinitions).forEach(([field,def])=>{
+    const k=masterKey(field);structuredValues[k]=structuredValues[k]||{};
+    def.rows.forEach(row=>{structuredValues[k][row.id]=structuredValues[k][row.id]||{};if(row.defaultCargo&&!structuredValues[k][row.id].cargo)structuredValues[k][row.id].cargo=row.defaultCargo});
+  });
+  const owner=masterValues[masterKey('Alta Dirección')]||masterValues[masterKey('Razón social / propietario')]||'';
+  const safety=masterValues[masterKey('Responsable de inocuidad')]||'';
+  const sig=structuredValues[masterKey('Firmas de elaboración, revisión y autorización')];
+  if(owner&&!sig.autorizo.nombre)sig.autorizo.nombre=owner;
+  if(safety&&!sig.reviso.nombre)sig.reviso.nombre=safety;
+}
+function structuredFieldStatus(field){
+  const def=structuredDefinitions[field],vals=structuredValues[masterKey(field)]||{};let total=0,filled=0;
+  def.rows.forEach(r=>def.columns.forEach(c=>{total++;if(String(vals[r.id]?.[c.key]||'').trim())filled++}));
+  return {total,filled,complete:total>0&&filled===total};
+}
+function renderStructuredCapture(item){
+  const def=structuredDefinitions[item.field],key=masterKey(item.field),vals=structuredValues[key]||{};
+  const old=String(masterValues[key]||'').trim();
+  return `<div class="structured-capture"><table><thead><tr><th>${item.field==='Responsables por área'?'Área':'Función'}</th>${def.columns.map(c=>`<th>${c.label}</th>`).join('')}<th>Destino confirmado</th></tr></thead><tbody>${def.rows.map(r=>`<tr><td class="fixed-cell">${r.label}</td>${def.columns.map(c=>`<td><input class="structured-input" data-structured-field="${key}" data-structured-row="${r.id}" data-structured-col="${c.key}" value="${esc(String(vals[r.id]?.[c.key]||''))}" placeholder="Capturar..."></td>`).join('')}<td class="mapping-cell">${r.mapping||def.mapping}</td></tr>`).join('')}</tbody></table></div>${old?`<div class="previous-text-note">Texto anterior conservado: ${esc(old)}</div>`:''}`;
+}
+
 let activeMasterCategory='Todas';
 let masterValues=JSON.parse(localStorage.getItem('redGreenhouseMasterData')||'{}');
 const requiredMasterFields=new Set(masterData.map(x=>x.field));
 function masterKey(field){return field.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
-function masterCompletion(){const total=requiredMasterFields.size;const filled=masterData.filter(x=>String(masterValues[masterKey(x.field)]||'').trim()).length;return {filled,total,percent:total?Math.round(filled/total*100):0}}
-function fieldCertainty(item){const states=Object.values(item.modules||{});return states.includes('c')?'confirmed':states.includes('p')?'probable':'none'}
-function certaintyLabel(level){return level==='confirmed'?'Confirmado':level==='probable'?'Probable':'No identificado'}
+function masterCompletion(){let total=0,filled=0;masterData.forEach(x=>{if(structuredDefinitions[x.field]){const st=structuredFieldStatus(x.field);total+=st.total;filled+=st.filled}else{total++;if(String(masterValues[masterKey(x.field)]||'').trim())filled++}});return {filled,total,percent:total?Math.round(filled/total*100):0}}
 function syncMasterTask(){
   let task=tasks.find(t=>t.linkedTo==='masterData'||/completar datos maestros|capturar datos maestros/i.test(t.title));
   if(!task){task={id:1,title:'Capturar Datos Maestros',detail:'Completar el catálogo único que alimentará los documentos SRRC.',owner:'Dirección',priority:'critical',status:'pending',due:'30 jul',linkedTo:'masterData'};tasks.unshift(task)}
-  task.title='Capturar Datos Maestros';task.detail='Completar el catálogo único que alimentará los documentos SRRC.';task.linkedTo='masterData';
+  task.title='Capturar Datos Maestros';task.detail='Completar el catálogo único que alimentará los documentos SRRC.';task.linkedTo='masterData';task.priority='critical';
   const c=masterCompletion();task.status=c.percent===100?'done':c.percent>0?'doing':'pending';saveTasks();return c;
 }
 function saveMasterData(){
   document.querySelectorAll('[data-master-input]').forEach(input=>{masterValues[input.dataset.masterInput]=input.value.trim()});
+  document.querySelectorAll('[data-structured-field]').forEach(input=>{structuredValues[input.dataset.structuredField]=structuredValues[input.dataset.structuredField]||{};structuredValues[input.dataset.structuredField][input.dataset.structuredRow]=structuredValues[input.dataset.structuredField][input.dataset.structuredRow]||{};structuredValues[input.dataset.structuredField][input.dataset.structuredRow][input.dataset.structuredCol]=input.value.trim()});
+  ensureStructuredDefaults();
   localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));
+  localStorage.setItem('redGreenhouseStructuredData',JSON.stringify(structuredValues));
   const c=syncMasterTask();renderAll();
   const msg=document.getElementById('masterSaveMessage');if(msg){msg.textContent=`Guardado · ${c.filled} de ${c.total}`;setTimeout(()=>{msg.textContent=''},2500)}
 }
@@ -51,17 +92,15 @@ function renderMasterData(){
   document.getElementById('masterCatalog').innerHTML=groups.map(group=>`
     <section class="master-group">
       <h3>${group}</h3>
-      ${shown.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),value=esc(String(masterValues[key]||'')),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);return `
+      ${shown.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),value=esc(String(masterValues[key]||'')),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);const certainty=x.source==='Por confirmar'?'probable':'confirmed';const confirmedCount=Object.values(x.modules).filter(v=>v==='c').length;const probableCount=Object.values(x.modules).filter(v=>v==='p').length;const impactText=certainty==='confirmed'?`Impacto real: ${confirmedCount} módulo${confirmedCount===1?'':'s'}`:`Impacto probable: ${probableCount} módulo${probableCount===1?'':'s'}`;return `
         <div class="master-field">
-          <span class="field-complete ${value?'complete':''}">${value?'✓':'○'}</span>
-          <div class="master-input-wrap">
-            <div class="master-field-heading"><strong>${x.field}<span class="required-mark">*</span></strong><span class="field-certainty ${fieldCertainty(x)}" title="Nivel de certeza: ${certaintyLabel(fieldCertainty(x))}"><i></i>${certaintyLabel(fieldCertainty(x))}</span></div>
-            <p>${x.detail}</p>${long?`<textarea class="master-textarea" data-master-input="${key}" placeholder="Capturar información...">${value}</textarea>`:`<input class="master-input" data-master-input="${key}" value="${value}" placeholder="Capturar información...">`}
-          </div>
+          <span class="field-certainty ${certainty}" title="${certainty==='confirmed'?'Confirmado en Excel recibidos':'Probable; pendiente de validar'}"></span>
+          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p><div class="field-meta"><span class="certainty-label ${certainty}">${certainty==='confirmed'?'Confirmado':'Probable'}</span><span class="impact-chip">${impactText}</span></div>${structuredDefinitions[x.field]?renderStructuredCapture(x):(long?`<textarea class="master-textarea" data-master-input="${key}">${value}</textarea>`:`<input class="master-input" data-master-input="${key}" value="${value}">`)}</div>
           <span class="source-chip">${x.source}</span>
         </div>`}).join('')}
     </section>`).join('');
-  document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{const dot=input.closest('.master-field').querySelector('.field-complete');dot.classList.toggle('complete',!!input.value.trim());dot.textContent=input.value.trim()?'✓':'○'}));
+  document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{input.closest('.master-field').classList.toggle('has-value',!!input.value.trim())}));
+  document.querySelectorAll('[data-structured-field]').forEach(input=>input.addEventListener('input',()=>input.closest('.master-field').classList.add('has-value')));
 
   document.getElementById('masterFieldCount').textContent=masterData.length;
   document.getElementById('masterCategoryCount').textContent=new Set(masterData.map(x=>x.category)).size;
@@ -94,27 +133,41 @@ function saveTasks(){localStorage.setItem('redGreenhouseTasks',JSON.stringify(ta
 function setDate(){document.getElementById('currentDate').textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());document.getElementById('daysRemaining').textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
 function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,t)=>s+(t.status==='done'?1:t.status==='doing'?.5:0),0)/tasks.length*100)}
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function taskAction(t){if(t.linkedTo==='masterData')return {label:'Continuar captura',view:'datos'};return {label:'Ver tarea',view:'plan'}}
+function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
 function renderDashboard(){
   const p=progress(),c=masterCompletion();
   document.getElementById('progressValue').textContent=`${p}%`;
   document.getElementById('progressFill').style.width=`${p}%`;
   const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
-  const prioritized=[...tasks].sort((a,b)=>{const rank={critical:0,high:1,medium:2};return Number(a.status==='done')-Number(b.status==='done')+(rank[a.priority]??9)-(rank[b.priority]??9)}).slice(0,5);
-  document.getElementById('dashboardTasks').innerHTML=prioritized.map(t=>{const action=taskAction(t);return `<article class="home-task ${t.linkedTo==='masterData'?'linked-task':''}"><div class="home-task-main"><div class="home-task-title"><strong>${esc(t.title)}</strong><span class="badge status-badge">${statusLabels[t.status]}</span></div><p>${esc(t.detail||'')}</p><small>${esc(t.owner)} · ${esc(t.due||'Sin fecha')}</small></div><button class="task-action-button" data-task-view="${action.view}">${action.label} →</button></article>`}).join('');
-  document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.taskView)));
+  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
+  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
-  document.getElementById('taskList').innerHTML=f.length?f.map(t=>`<div class="task-row ${t.linkedTo==='masterData'?'linked-task':''}"><input class="task-check" type="checkbox" ${t.status==='done'?'checked':''} ${t.linkedTo==='masterData'?'disabled title="Se actualiza desde Datos Maestros"':''} data-id="${t.id}"><div class="task-title"><strong>${esc(t.title)}</strong><small>${esc(t.detail||'')}</small>${t.linkedTo==='masterData'?'<button class="task-inline-action" data-open-master>Ir a Datos Maestros →</button>':''}</div><div class="task-owner">${esc(t.owner)}</div>${t.linkedTo==='masterData'?'<span class="linked-chip">Vinculada</span>':`<span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span>`}<div class="task-date">${esc(t.due||'Sin fecha')}</div>${t.linkedTo==='masterData'?'<span class="task-linked-mark" title="Tarea vinculada">↗</span>':`<button class="delete-task" data-delete="${t.id}">×</button>`}</div>`).join(''):'<div class="placeholder"><p>No hay tareas para este filtro.</p></div>';
+  document.getElementById('taskList').innerHTML=f.length?f.map(t=>{const target=taskActionView(t);return `<div class="task-row ${target?'linked-task':''}"><input class="task-check" type="checkbox" ${t.status==='done'?'checked':''} ${target?'disabled title="Se actualiza desde Datos Maestros"':''} data-id="${t.id}"><div class="task-title">${target?`<button class="task-title-link" data-task-view="${target}">${esc(t.title)}</button>`:`<strong>${esc(t.title)}</strong>`}<small>${esc(t.detail||'')}</small></div><div class="task-owner">${esc(t.owner)}</div><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span><div class="task-date">${esc(t.due||'Sin fecha')}</div>${target?`<button class="task-open-link" data-task-view="${target}">Abrir</button>`:`<button class="delete-task" data-delete="${t.id}">×</button>`}</div>`}).join(''):'<div class="placeholder"><p>No hay tareas para este filtro.</p></div>';
   document.getElementById('totalTasks').textContent=tasks.length;document.getElementById('pendingTasks').textContent=tasks.filter(t=>t.status==='pending').length;document.getElementById('doingTasks').textContent=tasks.filter(t=>t.status==='doing').length;document.getElementById('doneTasks').textContent=tasks.filter(t=>t.status==='done').length;
   document.querySelectorAll('.task-check:not([disabled])').forEach(i=>i.addEventListener('change',()=>{const t=tasks.find(x=>x.id===Number(i.dataset.id));if(t){t.status=i.checked?'done':'pending';saveTasks();renderAll()}}));
   document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{tasks=tasks.filter(t=>t.id!==Number(b.dataset.delete));saveTasks();renderAll()}));
-  document.querySelectorAll('[data-open-master]').forEach(b=>b.addEventListener('click',()=>showView('datos')));
+  document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();showView(b.dataset.taskView)}));
 }
-function renderAll(){renderDashboard();renderTasks();renderMasterData()}
+
+const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos'};
+function fieldHasValue(item){if(structuredDefinitions[item.field])return structuredFieldStatus(item.field).complete;return !!String(masterValues[masterKey(item.field)]||'').trim()}
+function fieldPreview(item){if(structuredDefinitions[item.field]){const st=structuredFieldStatus(item.field);return `${st.filled} de ${st.total} celdas capturadas`}return String(masterValues[masterKey(item.field)]||'').trim()}
+function moduleStatus(m){const fields=masterData.filter(x=>x.modules[m]==='c');const filled=fields.filter(fieldHasValue).length;return {fields,filled,total:fields.length,percent:fields.length?Math.round(filled/fields.length*100):0}}
+function renderModules(){
+  const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
+  const mods=[2,3,4,5,6,7];const ready=mods.filter(m=>moduleStatus(m).percent===100).length;const avg=Math.round(mods.reduce((a,m)=>a+moduleStatus(m).percent,0)/mods.length);
+  summary.innerHTML=`<article class="summary-card"><span>Módulos analizados</span><strong>6</strong></article><article class="summary-card"><span>Avance promedio</span><strong>${avg}%</strong></article><article class="summary-card"><span>Listos para revisión</span><strong>${ready}</strong></article>`;
+  grid.innerHTML=mods.map(m=>{const st=moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${st.filled} de ${st.total} datos aplicables</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">Abrir tabla estructurada →</span></article>`}).join('');
+  grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
+}
+function openModule(m){const st=moduleStatus(m),detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo ${m} · ${moduleNames[m]}</h2><p>Vista previa de los datos que alimentarán el archivo oficial.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><table class="module-detail-table"><thead><tr><th>Dato requerido</th><th>Valor capturado</th><th>Certeza</th><th>Destino</th></tr></thead><tbody>${st.fields.map(x=>{const value=fieldPreview(x);return `<tr><td><strong>${x.field}</strong><br><small>${x.detail}</small></td><td class="value-preview ${value?'':'empty-value'}">${esc(value||'Pendiente de captura')}</td><td><span class="certainty-label confirmed">Confirmado</span></td><td><span class="mapping-badge">M${m}</span></td></tr>`}).join('')}</tbody></table>`;detail.querySelector('[data-close-module]').addEventListener('click',()=>detail.hidden=true);detail.scrollIntoView({behavior:'smooth',block:'start'})}
+function renderAll(){ensureStructuredDefaults();renderDashboard();renderTasks();renderMasterData();renderModules()}
+
 let currentView='inicio',viewHistory=[];
-function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+ensureStructuredDefaults();
 document.getElementById('backButton').addEventListener('click',()=>{if(viewHistory.length)showView(viewHistory.pop(),false)});document.getElementById('homeButton').addEventListener('click',()=>showView('inicio'));document.getElementById('saveMasterDataButton').addEventListener('click',saveMasterData);
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}));
