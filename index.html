@@ -38,15 +38,15 @@
       <button class="nav-item" data-view="reportes"><span>▥</span> Reportes</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · v1.5</div>
+    <div class="sidebar-footer">RED Greenhouse · v1.6</div>
   </aside>
 
   <main class="main">
     <header class="topbar">
       <div class="topbar-left">
-        <button class="menu-button" id="menuButton" aria-label="Abrir menú">☰</button>
-        <button class="nav-control" id="backButton" aria-label="Regresar" title="Regresar">←</button>
-        <button class="nav-control home-control" id="homeButton" aria-label="Ir al inicio" title="Inicio">⌂</button>
+        <button class="menu-button" id="menuButton">☰</button>
+        <button class="nav-control" id="backButton" title="Regresar" disabled>←</button>
+        <button class="nav-control home-control" id="homeButton" title="Ir al inicio">⌂ <span>Inicio</span></button>
         <div class="breadcrumb" id="breadcrumb">Inicio</div>
       </div>
       <div class="topbar-right"><span class="portal-status"><i></i> Portal activo</span><span id="currentDate"></span></div>
@@ -58,7 +58,7 @@
         <button class="primary-button" data-go="plan">Ver Plan Maestro</button>
       </div>
       <section class="kpi-grid">
-        <article class="card kpi-card"><span class="kpi-label">Avance general</span><div class="kpi-value green" id="progressValue">18%</div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><small>Progreso total de implementación</small></article>
+        <article class="card kpi-card"><span class="kpi-label">Avance general</span><div class="kpi-value green" id="progressValue">18%</div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><small>Progreso total de implementación</small><div class="master-dashboard-line"><span>Datos maestros capturados</span><strong id="dashboardMasterProgress">0%</strong></div></article>
         <article class="card kpi-card"><span class="kpi-label">Riesgo actual</span><div class="risk-value"><span>⚠</span><strong>MEDIO</strong></div><small>Requiere atención para cumplir la fecha compromiso</small></article>
         <article class="card kpi-card"><span class="kpi-label">Días restantes</span><div class="days-value"><span>▣</span><strong id="daysRemaining">13</strong></div><small>Días calendario</small></article>
         <article class="card deadline-card"><span class="kpi-label">Fecha compromiso</span><div class="deadline-date"><span>▣</span><div><strong>11</strong><b>Agosto 2026</b></div></div><small>Entrega de carpeta física al auditor interno</small></article>
@@ -86,23 +86,26 @@
         <span class="analysis-stamp">Análisis actual: módulos 2–7</span>
       </div>
 
+      <section class="card capture-progress-card">
+        <div class="capture-progress-head"><div><strong>Avance de captura</strong><p>Este porcentaje actualiza automáticamente la tarea “Capturar Datos Maestros”.</p></div><span class="capture-progress-value" id="masterProgressValue">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="masterProgressFill"></div></div>
+      </section>
+
+      <div class="master-savebar"><div><strong>Captura directa</strong><p>Los datos se guardan en este navegador y alimentarán los documentos SRRC.</p></div><div style="display:flex;align-items:center;gap:12px"><span class="save-message" id="masterSaveMessage"></span><button class="primary-button" id="saveMasterDataButton">Guardar datos</button></div></div>
+
       <section class="master-summary">
         <article class="summary-card"><span>Campos identificados</span><strong id="masterFieldCount">0</strong></article>
-        <article class="summary-card"><span>Campos capturados</span><strong id="masterCompletedCount">0</strong></article>
+        <article class="summary-card"><span>Categorías</span><strong id="masterCategoryCount">0</strong></article>
         <article class="summary-card"><span>Módulos confirmados</span><strong>2–7</strong></article>
         <article class="summary-card"><span>Módulos por validar</span><strong>8–14</strong></article>
       </section>
 
       <section class="master-layout">
         <article class="card master-catalog-card">
-          <div class="section-heading master-heading">
+          <div class="section-heading">
             <div>
-              <h2>Captura de información</h2>
-              <p>Los datos se guardan en este navegador y después alimentarán los Excel SRRC.</p>
-            </div>
-            <div class="master-actions">
-              <span class="save-status" id="masterSaveStatus">Sin cambios</span>
-              <button class="primary-button" id="saveMasterData">Guardar datos</button>
+              <h2>Catálogo de información</h2>
+              <p>Solamente datos que ayudan a completar los Excel SRRC.</p>
             </div>
           </div>
           <div class="master-filters" id="masterFilters"></div>
