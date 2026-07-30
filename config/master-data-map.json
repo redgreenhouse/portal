@@ -1,0 +1,38 @@
+{
+  "empresa": {
+    "unidadProduccion": {
+      "label": "Nombre de la unidad de producción",
+      "value": "RED Greenhouse"
+    },
+    "domicilio": {
+      "label": "Domicilio",
+      "value": ""
+    },
+    "folioSenasica": {
+      "label": "Folio SENASICA",
+      "value": ""
+    }
+  },
+  "responsables": {
+    "directorGeneral": {
+      "label": "Director general",
+      "value": "Eduardo Romero Mani"
+    },
+    "responsableTecnico": {
+      "label": "Responsable técnico",
+      "value": "Christian Nieto"
+    },
+    "auxiliarSRRC": {
+      "label": "Auxiliar SRRC",
+      "value": ""
+    }
+  },
+  "personal": [
+    {
+      "id": "EMP-001",
+      "nombre": "",
+      "puesto": "",
+      "activo": true
+    }
+  ]
+}

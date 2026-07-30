@@ -1,0 +1,1322 @@
+{
+  "version": "1.18",
+  "colorRules": {
+    "rosa": "image",
+    "amarillo": "text/date",
+    "verde": "masterData",
+    "azul cielo": "status (✓ / ✗ / NL)",
+    "rojo": "checkbox (default activo)"
+  },
+  "modules": [
+    {
+      "module": 2,
+      "title": "Infraestructura",
+      "sheets": [
+        {
+          "index": 1,
+          "name": "PORTADA",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H01.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:C7"
+            },
+            {
+              "id": "M2.H01.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "D1:I4"
+            },
+            {
+              "id": "M2.H01.MASTER2",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "I4:I6"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "name": "POE MTTO INFRAESTR",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H02.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:C7"
+            },
+            {
+              "id": "M2.H02.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "D1:J4"
+            },
+            {
+              "id": "M2.H02.MASTER2",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "I4:I6"
+            },
+            {
+              "id": "M2.H02.TXT1",
+              "type": "text",
+              "label": "*",
+              "range": "B66:B66"
+            },
+            {
+              "id": "M2.H02.TXT2",
+              "type": "text",
+              "label": "Plan de Mantenimiento Preventivo a la Infraestructura DOC-2.3",
+              "range": "H66:H66"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "name": "ANALISIS DE PELIGRO DESCRIP",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H03.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M2.H03.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AY5"
+            },
+            {
+              "id": "M2.H03.STS1",
+              "type": "status",
+              "label": "Estado de cumplimiento",
+              "options": [
+                "✓",
+                "✗",
+                "NL"
+              ],
+              "default": "✓",
+              "range": "AA10:AL78"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "name": "ANALISIS DE PEL ACCIO",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H04.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:C5"
+            },
+            {
+              "id": "M2.H04.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "D1:AF5"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "name": "MAPAS GEOREFERENCIACION 2.1",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H05.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A2:G6"
+            },
+            {
+              "id": "M2.H05.IMG2",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "B10:AV35"
+            },
+            {
+              "id": "M2.H05.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H2:AW6"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "name": "MAPAS GEOREFERENCIACION 2.1.1.",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H06.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A2:G6"
+            },
+            {
+              "id": "M2.H06.IMG2",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "B10:AV35"
+            },
+            {
+              "id": "M2.H06.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H2:AW6"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "name": "MAPA POLIONOS  2.1.2.",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H07.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A2:B6"
+            },
+            {
+              "id": "M2.H07.IMG2",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "C16:Q40"
+            },
+            {
+              "id": "M2.H07.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "C2:S6"
+            },
+            {
+              "id": "M2.H07.TXT1",
+              "type": "text",
+              "label": "A",
+              "range": "E9:G14"
+            },
+            {
+              "id": "M2.H07.TXT2",
+              "type": "text",
+              "label": "D",
+              "range": "J9:L14"
+            },
+            {
+              "id": "M2.H07.TXT3",
+              "type": "text",
+              "label": "G",
+              "range": "O9:Q14"
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "name": "CROQUIS DE INSTALACIONES 2.2",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H08.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "B2:H6"
+            },
+            {
+              "id": "M2.H08.IMG2",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "B8:AX38"
+            },
+            {
+              "id": "M2.H08.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "I2:AX6"
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "name": "BITACORA 2.3 FRENTE.",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M2.H09.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M2.H09.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M2.H09.STS1",
+              "type": "status",
+              "label": "Estado de cumplimiento",
+              "options": [
+                "✓",
+                "✗",
+                "NL"
+              ],
+              "default": "✓",
+              "range": "L11:AI34"
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "name": "BITACORA 2.3 ATRAS",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M2.H10.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M2.H10.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M2.H10.TXT1",
+              "type": "date",
+              "label": "FECHA HALLAZGO (DD/MM/AAAA) HORA",
+              "range": "A9:AW35"
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "name": "ORGANIGRAMA 2.4",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H11.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M2.H11.IMG2",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A7:AW32"
+            },
+            {
+              "id": "M2.H11.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "name": "PERFIL DE PUESTOS 2.5",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M2.H12.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M2.H12.IMG2",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "C10:G15"
+            },
+            {
+              "id": "M2.H12.IMG3",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "C25:G30"
+            },
+            {
+              "id": "M2.H12.IMG4",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "C40:G45"
+            },
+            {
+              "id": "M2.H12.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AK5"
+            },
+            {
+              "id": "M2.H12.TXT1",
+              "type": "textarea",
+              "label": "DIRECTOR GENERAL",
+              "range": "B16:H21"
+            },
+            {
+              "id": "M2.H12.TXT2",
+              "type": "textarea",
+              "label": "AUXILIAR DE CAMPO",
+              "range": "B31:H36"
+            },
+            {
+              "id": "M2.H12.TXT3",
+              "type": "textarea",
+              "label": "RESPONSABLE DE INOCUIDAD",
+              "range": "B46:H51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "module": 3,
+      "title": "Higiene",
+      "sheets": [
+        {
+          "index": 6,
+          "name": "ANALISIS DE PELIGRO FRENTE 3.0",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H06.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H06.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AY5"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "name": "ANALISIS DE PEL ATRAS 3.0",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H07.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:C5"
+            },
+            {
+              "id": "M3.H07.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "D1:AF5"
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "name": "PLAN DE HIGIENE 3.1.",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H08.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H08.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M3.H08.CHK1",
+              "type": "checkbox",
+              "label": "QUINCENAL",
+              "default": true,
+              "range": "E30:AW30"
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "name": "HIGIENE COMEDOR 3.1.",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H09.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H09.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M3.H09.H12",
+              "type": "checkbox",
+              "label": "COMEDOR",
+              "excelCell": "H12",
+              "default": true
+            },
+            {
+              "id": "M3.H09.O12",
+              "type": "checkbox",
+              "label": "PAÑO MICRO FIBRA",
+              "excelCell": "O12",
+              "default": true
+            },
+            {
+              "id": "M3.H09.V12",
+              "type": "checkbox",
+              "label": "ESCOBA",
+              "excelCell": "V12",
+              "default": true
+            },
+            {
+              "id": "M3.H09.AC12",
+              "type": "checkbox",
+              "label": "CUBETA",
+              "excelCell": "AC12",
+              "default": true
+            },
+            {
+              "id": "M3.H09.AJ12",
+              "type": "checkbox",
+              "label": "CEPILLO",
+              "excelCell": "AJ12",
+              "default": true
+            },
+            {
+              "id": "M3.H09.AQ12",
+              "type": "checkbox",
+              "label": "AGUA POTABLE",
+              "excelCell": "AQ12",
+              "default": true
+            },
+            {
+              "id": "M3.H09.H14",
+              "type": "checkbox",
+              "label": "COMEDOR",
+              "excelCell": "H14",
+              "default": true
+            },
+            {
+              "id": "M3.H09.O14",
+              "type": "checkbox",
+              "label": "ATOMIZADOR",
+              "excelCell": "O14",
+              "default": true
+            },
+            {
+              "id": "M3.H09.V14",
+              "type": "checkbox",
+              "label": "RECOGEDOR",
+              "excelCell": "V14",
+              "default": true
+            },
+            {
+              "id": "M3.H09.AC14",
+              "type": "checkbox",
+              "label": "CEPILLO MANUAL",
+              "excelCell": "AC14",
+              "default": true
+            },
+            {
+              "id": "M3.H09.AJ14",
+              "type": "checkbox",
+              "label": "BOLSA PLÁSTICA",
+              "excelCell": "AJ14",
+              "default": true
+            },
+            {
+              "id": "M3.H09.AQ14",
+              "type": "checkbox",
+              "label": "DETERGENTE",
+              "excelCell": "AQ14",
+              "default": true
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "name": "HIIGIENE CISTERNA Y TINACO 3.1",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H10.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H10.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M3.H10.I12",
+              "type": "checkbox",
+              "label": "CISTERNA Y TINACO",
+              "excelCell": "I12",
+              "default": true
+            },
+            {
+              "id": "M3.H10.P12",
+              "type": "checkbox",
+              "label": "PAÑO MICRO FIBRA",
+              "excelCell": "P12",
+              "default": true
+            },
+            {
+              "id": "M3.H10.W12",
+              "type": "checkbox",
+              "label": "ESCOBA",
+              "excelCell": "W12",
+              "default": true
+            },
+            {
+              "id": "M3.H10.AD12",
+              "type": "checkbox",
+              "label": "CUBETA",
+              "excelCell": "AD12",
+              "default": true
+            },
+            {
+              "id": "M3.H10.AK12",
+              "type": "checkbox",
+              "label": "CEPILLO",
+              "excelCell": "AK12",
+              "default": true
+            },
+            {
+              "id": "M3.H10.AR12",
+              "type": "checkbox",
+              "label": "AGUA POTABLE",
+              "excelCell": "AR12",
+              "default": true
+            },
+            {
+              "id": "M3.H10.I14",
+              "type": "checkbox",
+              "label": "CISTERNA Y TINACO",
+              "excelCell": "I14",
+              "default": true
+            },
+            {
+              "id": "M3.H10.P14",
+              "type": "checkbox",
+              "label": "ATOMIZADOR",
+              "excelCell": "P14",
+              "default": true
+            },
+            {
+              "id": "M3.H10.W14",
+              "type": "checkbox",
+              "label": "RECOGEDOR",
+              "excelCell": "W14",
+              "default": true
+            },
+            {
+              "id": "M3.H10.AD14",
+              "type": "checkbox",
+              "label": "CEPILLO MANUAL",
+              "excelCell": "AD14",
+              "default": true
+            },
+            {
+              "id": "M3.H10.AK14",
+              "type": "checkbox",
+              "label": "BOLSA PLÁSTICA",
+              "excelCell": "AK14",
+              "default": true
+            },
+            {
+              "id": "M3.H10.AR14",
+              "type": "checkbox",
+              "label": "DETERGENTE",
+              "excelCell": "AR14",
+              "default": true
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "name": "HIIGIENE ALAMCEN 3.1.",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H11.I12",
+              "type": "checkbox",
+              "label": "BODEGA DE AGROQUIMICOS, MATERIALES DE FUMIGACION Y EPP",
+              "excelCell": "I12",
+              "default": true
+            },
+            {
+              "id": "M3.H11.P12",
+              "type": "checkbox",
+              "label": "PAÑO MICRO FIBRA",
+              "excelCell": "P12",
+              "default": true
+            },
+            {
+              "id": "M3.H11.W12",
+              "type": "checkbox",
+              "label": "ESCOBA",
+              "excelCell": "W12",
+              "default": true
+            },
+            {
+              "id": "M3.H11.AD12",
+              "type": "checkbox",
+              "label": "CUBETA",
+              "excelCell": "AD12",
+              "default": true
+            },
+            {
+              "id": "M3.H11.AK12",
+              "type": "checkbox",
+              "label": "CEPILLO",
+              "excelCell": "AK12",
+              "default": true
+            },
+            {
+              "id": "M3.H11.AR12",
+              "type": "checkbox",
+              "label": "AGUA POTABLE",
+              "excelCell": "AR12",
+              "default": true
+            },
+            {
+              "id": "M3.H11.I14",
+              "type": "checkbox",
+              "label": "BODEGA DE AGROQUIMICOS, MATERIALES DE FUMIGACION Y EPP",
+              "excelCell": "I14",
+              "default": true
+            },
+            {
+              "id": "M3.H11.P14",
+              "type": "checkbox",
+              "label": "ATOMIZADOR",
+              "excelCell": "P14",
+              "default": true
+            },
+            {
+              "id": "M3.H11.W14",
+              "type": "checkbox",
+              "label": "RECOGEDOR",
+              "excelCell": "W14",
+              "default": true
+            },
+            {
+              "id": "M3.H11.AD14",
+              "type": "checkbox",
+              "label": "CEPILLO MANUAL",
+              "excelCell": "AD14",
+              "default": true
+            },
+            {
+              "id": "M3.H11.AK14",
+              "type": "checkbox",
+              "label": "BOLSA PLÁSTICA",
+              "excelCell": "AK14",
+              "default": true
+            },
+            {
+              "id": "M3.H11.AR14",
+              "type": "checkbox",
+              "label": "DETERGENTE",
+              "excelCell": "AR14",
+              "default": true
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "name": "HIGIENE SANITARIOS 3.1.",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H12.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H12.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M3.H12.I12",
+              "type": "checkbox",
+              "label": "SANITARIOS",
+              "excelCell": "I12",
+              "default": true
+            },
+            {
+              "id": "M3.H12.P12",
+              "type": "checkbox",
+              "label": "PAÑO MICRO FIBRA",
+              "excelCell": "P12",
+              "default": true
+            },
+            {
+              "id": "M3.H12.W12",
+              "type": "checkbox",
+              "label": "ESCOBA",
+              "excelCell": "W12",
+              "default": true
+            },
+            {
+              "id": "M3.H12.AD12",
+              "type": "checkbox",
+              "label": "CUBETA",
+              "excelCell": "AD12",
+              "default": true
+            },
+            {
+              "id": "M3.H12.AK12",
+              "type": "checkbox",
+              "label": "TRAPEADOR",
+              "excelCell": "AK12",
+              "default": true
+            },
+            {
+              "id": "M3.H12.AR12",
+              "type": "checkbox",
+              "label": "AGUA POTABLE",
+              "excelCell": "AR12",
+              "default": true
+            },
+            {
+              "id": "M3.H12.I14",
+              "type": "checkbox",
+              "label": "SANITARIOS",
+              "excelCell": "I14",
+              "default": true
+            },
+            {
+              "id": "M3.H12.P14",
+              "type": "checkbox",
+              "label": "ATOMIZADOR",
+              "excelCell": "P14",
+              "default": true
+            },
+            {
+              "id": "M3.H12.W14",
+              "type": "checkbox",
+              "label": "RECOGEDOR",
+              "excelCell": "W14",
+              "default": true
+            },
+            {
+              "id": "M3.H12.AD14",
+              "type": "checkbox",
+              "label": "CEPILLO PARA ESCUSADO",
+              "excelCell": "AD14",
+              "default": true
+            },
+            {
+              "id": "M3.H12.AK14",
+              "type": "checkbox",
+              "label": "BOLSA PLÁSTICA",
+              "excelCell": "AK14",
+              "default": true
+            },
+            {
+              "id": "M3.H12.AR14",
+              "type": "checkbox",
+              "label": "DETERGENTE",
+              "excelCell": "AR14",
+              "default": true
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "name": "HIGIENE  UNID PRODUCCIOIN 3.1",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H13.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H13.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AW5"
+            },
+            {
+              "id": "M3.H13.I12",
+              "type": "checkbox",
+              "label": "UNIDAD DE PRODUCCIÓN, HERRAMIENTAS Y EQUIPOS",
+              "excelCell": "I12",
+              "default": true
+            },
+            {
+              "id": "M3.H13.P12",
+              "type": "checkbox",
+              "label": "PALA",
+              "excelCell": "P12",
+              "default": true
+            },
+            {
+              "id": "M3.H13.W12",
+              "type": "checkbox",
+              "label": "DESBROZADORA",
+              "excelCell": "W12",
+              "default": true
+            },
+            {
+              "id": "M3.H13.AD12",
+              "type": "checkbox",
+              "label": "MACHETE",
+              "excelCell": "AD12",
+              "default": true
+            },
+            {
+              "id": "M3.H13.AK12",
+              "type": "checkbox",
+              "label": "CARRETILLA",
+              "excelCell": "AK12",
+              "default": true
+            },
+            {
+              "id": "M3.H13.AR12",
+              "type": "checkbox",
+              "label": "BOLSA PLÁSTICA",
+              "excelCell": "AR12",
+              "default": true
+            },
+            {
+              "id": "M3.H13.I14",
+              "type": "checkbox",
+              "label": "UNIDAD DE PRODUCCIÓN, HERRAMIENTAS Y EQUIPOS",
+              "excelCell": "I14",
+              "default": true
+            },
+            {
+              "id": "M3.H13.P14",
+              "type": "checkbox",
+              "label": "CEPILLO (FITOSAN)",
+              "excelCell": "P14",
+              "default": true
+            },
+            {
+              "id": "M3.H13.W14",
+              "type": "checkbox",
+              "label": "ATOMIZADOR",
+              "excelCell": "W14",
+              "default": true
+            },
+            {
+              "id": "M3.H13.AD14",
+              "type": "checkbox",
+              "label": "CUBETA",
+              "excelCell": "AD14",
+              "default": true
+            },
+            {
+              "id": "M3.H13.AK14",
+              "type": "checkbox",
+              "label": "CLORO 100 - 200 PPM",
+              "excelCell": "AK14",
+              "default": true
+            },
+            {
+              "id": "M3.H13.AR14",
+              "type": "checkbox",
+              "label": "SOLUCIÓN DETERGENTE",
+              "excelCell": "AR14",
+              "default": true
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "name": "BIT HIGIENE DE INST B 06 FRENTE",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M3.H14.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H14.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AZ5"
+            },
+            {
+              "id": "M3.H14.CHK1",
+              "type": "checkbox",
+              "label": "SANITARIOS",
+              "default": true,
+              "range": "A25:B28"
+            },
+            {
+              "id": "M3.H14.TXT1",
+              "type": "text",
+              "label": "AÑO",
+              "range": "C9:F10"
+            },
+            {
+              "id": "M3.H14.TXT2",
+              "type": "text",
+              "label": "MES",
+              "range": "I9:N10"
+            },
+            {
+              "id": "M3.H14.TXT3",
+              "type": "textarea",
+              "label": "1",
+              "range": "P10:AT12"
+            },
+            {
+              "id": "M3.H14.TXT4",
+              "type": "textarea",
+              "label": "DETERGENTE",
+              "range": "AU13:AZ36"
+            },
+            {
+              "id": "M3.H14.STS1",
+              "type": "status",
+              "label": "Estado de cumplimiento",
+              "options": [
+                "✓",
+                "✗",
+                "NL"
+              ],
+              "default": "✓",
+              "range": "P13:AT36"
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "name": "BIT HIIENE INST B 06 ATRAS",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M3.H15.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H15.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AZ5"
+            },
+            {
+              "id": "M3.H15.TXT1",
+              "type": "date",
+              "label": "FECHA HALLAZGO (DD/MM/AAAA)",
+              "range": "A9:AZ29"
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "name": "REV DE PERSONAL FRENTE BIT 08",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M3.H16.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H16.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AX5"
+            },
+            {
+              "id": "M3.H16.MASTER2",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "C19:S37"
+            },
+            {
+              "id": "M3.H16.TXT1",
+              "type": "text",
+              "label": "AÑO",
+              "range": "C16:F17"
+            },
+            {
+              "id": "M3.H16.TXT2",
+              "type": "text",
+              "label": "MES",
+              "range": "I16:R17"
+            },
+            {
+              "id": "M3.H16.TXT3",
+              "type": "textarea",
+              "label": "HORA",
+              "range": "T16:AX17"
+            },
+            {
+              "id": "M3.H16.STS1",
+              "type": "status",
+              "label": "Estado de cumplimiento",
+              "options": [
+                "✓",
+                "✗",
+                "NL"
+              ],
+              "default": "✓",
+              "range": "T19:AX37"
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "name": "REV PERSONAL ATRAS BIT 08",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M3.H17.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H17.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AM5"
+            },
+            {
+              "id": "M3.H17.TXT1",
+              "type": "date",
+              "label": "FECHA HALLAZGO (DD/MM/AAAA)",
+              "range": "A9:AM24"
+            }
+          ]
+        },
+        {
+          "index": 18,
+          "name": "REGLAMENTO INOCUIDAD 3.6",
+          "kind": "documento",
+          "controls": [
+            {
+              "id": "M3.H18.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:G5"
+            },
+            {
+              "id": "M3.H18.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "H1:AQ5"
+            },
+            {
+              "id": "M3.H18.CHK1",
+              "type": "checkbox",
+              "label": "1",
+              "default": true,
+              "range": "A9:A32"
+            },
+            {
+              "id": "M3.H18.CHK2",
+              "type": "checkbox",
+              "label": "PROHIBIDO",
+              "default": true,
+              "range": "D9:G32"
+            }
+          ]
+        },
+        {
+          "index": 19,
+          "name": "REGISTRO DE VISITANTES 3.8",
+          "kind": "bitacora",
+          "controls": [
+            {
+              "id": "M3.H19.IMG1",
+              "type": "image",
+              "label": "Imagen / evidencia documental",
+              "range": "A1:C5"
+            },
+            {
+              "id": "M3.H19.MASTER1",
+              "type": "masterData",
+              "label": "Encabezado de Datos Maestros",
+              "fields": [
+                "unidadProduccion",
+                "domicilio",
+                "folioSenasica"
+              ],
+              "range": "D1:AD5"
+            },
+            {
+              "id": "M3.H19.TXT1",
+              "type": "textarea",
+              "label": "DD.MM.AA.",
+              "range": "A11:AA22"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
