@@ -147,3 +147,28 @@
 .replica-image-drop input{display:none}.replica-image-drop img{max-width:100%;max-height:760px;object-fit:contain}.replica-image-drop span{font-size:16px}
 @media(max-width:760px){.excel-replica-scroll{max-height:620px;padding:6px}.replica-image-drop{min-height:360px;margin:10px}}
 @media print{.excel-replica{border:0}.excel-replica-scroll{overflow:visible;max-height:none;padding:0;background:#fff}.excel-grid{box-shadow:none;transform-origin:top left}.replica-image-drop{border:0;margin:0;min-height:700px}}
+
+/* Módulo 2 v1.15: segunda pasada de fidelidad + presentación */
+.excel-sheet-body{padding:0;background:#e9efeb}
+.excel-replica{margin:0;border:0;border-radius:0;background:#e9efeb}
+.excel-replica-scroll{overflow:auto;max-height:850px;padding:24px;background:#e9efeb}
+.excel-paper{width:max-content;min-width:720px;margin:0 auto;background:#fff;padding:22px;box-shadow:0 8px 26px rgba(24,63,49,.13);border-radius:3px}
+.excel-grid{border-collapse:collapse;table-layout:fixed;background:#fff;color:#1d2722;min-width:max-content;box-shadow:none}
+.excel-grid td{box-sizing:border-box;padding:5px 7px;overflow:hidden;line-height:1.28;white-space:normal;word-break:normal;border:1px solid #e0e6e2}
+.excel-grid td[style*="border-"]{border-color:#34443c}
+.excel-grid tr[data-row="1"] td,.excel-grid tr[data-row="2"] td{border-top-color:transparent}
+.excel-editable-cell{padding:3px!important;background:#f1fff7!important;box-shadow:inset 0 0 0 2px #18875f}
+.excel-cell-input{display:block;width:100%;height:100%;min-height:34px;box-sizing:border-box;border:0;background:transparent;padding:5px 7px;font:inherit;font-weight:700;text-align:center!important;color:#134d38}
+.excel-cell-input::placeholder{color:#548271;font-weight:600;opacity:.85}
+.excel-cell-input:focus{outline:3px solid rgba(24,135,95,.22);background:#fff}
+.sheet-poe-mtto-infraestr .excel-paper,.sheet-portada .excel-paper{min-width:760px}
+.sheet-an-lisis-descriptivo .excel-paper,.sheet-plan-de-acci-n .excel-paper{min-width:1180px}
+.sheet-doc-2-3-frente .excel-paper,.sheet-doc-2-3-reverso .excel-paper{min-width:1080px}
+.sheet-doc-2-5 .excel-paper{min-width:900px}
+.image-replica{padding:20px;background:#e9efeb}
+.replica-image-drop-wrap{max-width:1200px;margin:0 auto;background:#fff;padding:22px;box-shadow:0 8px 26px rgba(24,63,49,.13)}
+.replica-image-drop{margin:0;min-height:650px;border:2px dashed #78a590;border-radius:10px;background:#f8fbf9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;color:#176246;text-align:center;padding:24px}
+.replica-image-drop span{display:grid;gap:8px}.replica-image-drop b{font-size:20px}.replica-image-drop small{font-size:13px;font-weight:600;color:#668076}
+.replica-image-drop input{display:none}.replica-image-drop img{max-width:100%;max-height:790px;object-fit:contain}
+@media(max-width:760px){.excel-replica-scroll{padding:8px;max-height:650px}.excel-paper{padding:8px;min-width:680px}.image-replica{padding:8px}.replica-image-drop-wrap{padding:8px}.replica-image-drop{min-height:420px}}
+@media print{.excel-sheet-head,.module-detail-head{display:none!important}.excel-sheet-body[hidden]{display:block!important}.excel-sheet-card{border:0!important}.excel-replica-scroll{overflow:visible;max-height:none;padding:0;background:#fff}.excel-paper{box-shadow:none;padding:0;margin:0;border-radius:0}.excel-grid td{border-color:#bbb}.image-replica,.replica-image-drop-wrap{padding:0;box-shadow:none;background:#fff}.replica-image-drop{border:0;min-height:700px}}

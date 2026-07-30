@@ -8,3 +8,10 @@
 - No se requiere una carpeta de imágenes de referencia del Excel.
 
 Abrir `index.html` o publicar el contenido de esta carpeta en GitHub Pages.
+
+## v1.15 · Segunda pasada del Módulo 2
+- Conserva la transcripción literal del Excel.
+- Convierte correctamente tamaños de fuente y fechas de Excel.
+- Refuerza bordes, alineación y presentación de campos editables.
+- Elimina bloques explicativos duplicados antes de cada réplica.
+- Mantiene mapas, croquis y organigrama como áreas de imagen grande.
