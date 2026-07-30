@@ -38,7 +38,7 @@ const RED_DATA = {
       id:"RG-02-002", code:"POE MTTO INFRAESTR", title:"Procedimiento de Mantenimiento de Infraestructura", type:"Procedimiento", risk:"high", effort:"Alto",
       action:"Revisar, adaptar, aprobar y firmar", frequency:"Al inicio y cuando cambie", status:"Por diagnosticar",
       description:"Documento rector del módulo. Debe describir cómo se inspecciona, mantiene, repara y documenta la infraestructura para prevenir peligros de contaminación.",
-      fields:["Objetivo", "Alcance", "Responsabilidades", "Frecuencias", "Método de inspección", "Acciones correctivas", "Registros relacionados", "Firmas de aprobación"],
+      fields:["Objetivo", "Alcance", "Frecuencia", "Definiciones", "Responsabilidades", "Materiales", "Reglas de operación", "Descripción del procedimiento", "Referencias", "Formatos / Anexos", "Firmas de aprobación"],
       preview:"procedure"
     },
     {

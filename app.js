@@ -157,7 +157,17 @@ const module2CaptureSpecs={
  ['Nombre de la unidad de producción','text','Identidad que aparecerá en la carpeta impresa'],['Domicilio de la unidad','textarea','Dirección completa del sitio'],['Folio SENASICA','text','Identificador oficial'],['Fecha de emisión','date','Fecha de publicación'],['Vigencia','date','Fecha límite de vigencia'],['Versión','text','Clave de control documental']
 ],
 'POE MTTO INFRAESTR':[
- ['Objetivo','textarea','Propósito del procedimiento'],['Alcance','textarea','Áreas, instalaciones y personal al que aplica'],['Definiciones y abreviaturas','textarea','Conceptos usados en el procedimiento'],['Responsabilidades','table','Puesto, responsabilidad y autoridad'],['Descripción del procedimiento','textarea','Secuencia de inspección, mantenimiento y reparación'],['Frecuencias de revisión','table','Área o equipo, actividad y frecuencia'],['Acciones correctivas','textarea','Respuesta ante deterioros o fallas'],['Registros relacionados','textarea','Formatos y evidencias que demuestran cumplimiento'],['Elaboró / Revisó / Autorizó','signature','Nombres, cargos y firmas de aprobación']
+ ['Objetivo','textarea','Texto base recuperado de la hoja POE MTTO INFRAESTR del Excel','* Evitar demoras en los procesos de producción por fallas en la infraestructura productiva\n* Reducir los riesgos de contaminación derivado de un desgaste o falla en la infraestructura productiva\n* Actuar de manera eficiente si se presenta una eventualidad por fallas en la infraestructura productiva'],
+ ['Alcance','textarea','Texto base recuperado de la hoja POE MTTO INFRAESTR del Excel','El Plan de Mantenimiento cubre las instalaciones (áreas e instalaciones) y equipos mecánicos (equipos de aspersión, transporte, etc.).'],
+ ['Frecuencia','textarea','Periodicidad indicada en el procedimiento','El Plan de Mantenimiento Preventivo a la Infraestructura se revisa y actualiza una vez al año.'],
+ ['Definiciones','textarea','Conceptos incluidos en el procedimiento','* Infraestructura Productiva. Son todas las áreas e instalaciones que se habilitaron para el funcionamiento de la Unidad de Producción.\n* Plan de Mantenimiento Preventivo. Es un documento elaborado por el responsable de inocuidad y autorizado por la Dirección de la UP, para realizar los mantenimientos preventivos en la Infraestructura Productiva'],
+ ['Responsabilidades','textarea','Funciones definidas para cada participante','* Alta Dirección. Abastece los elementos necesarios para la implementación eficiente del presente procedimiento.\n* Responsable de Inocuidad. Implementa el presente documento en las áreas equipos e instalaciones correspondientes.\n* Personal Operativo. Auxilia al responsable de inocuidad en la implementación de los mantenimientos que se realizan en la U.P.'],
+ ['Materiales','textarea','Materiales indicados en el procedimiento','* Herramientas múltiples en función a las necesidades de mantenimiento'],
+ ['Reglas de operación','textarea','Regla general indicada en el procedimiento','* Todas las áreas, instalaciones y equipos que forman parte de la Unidad de Producción se verifican y se programan los mantenimientos preventivos a fin de evitar problemas que ocasionen demoras operacionales y/o problemas de inocuidad agroalimentaria.'],
+ ['Descripción del procedimiento','textarea','Secuencia recuperada del Excel; revisar y personalizar cuando corresponda','* Durante la preparación de la Unidad de Producción previo al inicio del ciclo productivo, el Responsable de Inocuidad revisa y actualiza el Plan de Mantenimiento Preventivo a la Infraestructura, el cual considera lo siguiente:\n\n1. Área, instalación y/o equipo.\n2. Frecuencia.\n3. Día realizado.\n4. Estado: Cumple (Sin Fallas) o Falla (Deficiencias en el funcionamiento).\n5. Descripción de las observaciones y/o Acciones Correctivas al reverso del formato.\n\n* Para las instalaciones y/o equipos (sanitarios, tuberías, válvulas, sistema, equipos de aspersión) cuyos mantenimientos requieren instrucciones detallas, hacen referencia al instructivo del fabricante del equipo, por lo que se solicitan y controlan dichos documentos para su consulta durante el mantenimiento.\n\n* Entre más detalladas sean las instrucciones y que utilizan las recomendaciones del fabricante del equipo, detallan al operador los puntos de seguridad.'],
+ ['Referencias','textarea','Referencia incluida en el Excel','* SENASICA (2021), Anexo Técnico 1. Requisitos Generales para la Certificación y Reconocimiento de Sistemas de Reducción de Riesgos de Contaminación (SRRC), Buen Uso y Manejo de Plaguicidas (BUMP) o Buenas Prácticas Agrícolas en la Actividad de Cosecha (BPCo) Durante la Producción Primaria de Vegetales.'],
+ ['Formatos / Anexos','textarea','Formato relacionado indicado en el Excel','* Plan de Mantenimiento Preventivo a la Infraestructura DOC-2.3'],
+ ['Elaboró / Revisó / Autorizó','signature','Nombres, cargos y firmas de aprobación']
 ],
 'ANÁLISIS DESCRIPTIVO':[
  ['Área, instalación o equipo','table','Elemento evaluado'],['Peligro de contaminación','table','Descripción del peligro identificado'],['Causa u origen','table','Condición que puede generar el peligro'],['Probabilidad','list','Baja, media o alta'],['Severidad','list','Baja, media o alta'],['Medidas preventivas existentes','table','Controles actuales'],['Evidencia o referencia','evidence','Fotografía, documento o registro de soporte']
@@ -191,6 +201,32 @@ const module2CaptureSpecs={
 ]
 };
 let module2Values=JSON.parse(localStorage.getItem('redGreenhouseModule2')||'{}');
+
+function migrateModule2PoeValues(){
+  const version=localStorage.getItem('redGreenhouseModule2Schema');
+  if(version==='poe-excel-v1')return;
+  const oldValues={...module2Values};
+  const mapping={0:0,1:1,2:3,3:4,4:7,5:2,8:10};
+  Object.entries(mapping).forEach(([from,to])=>{
+    const oldKey=`RG-02-002-${from}`,newKey=`RG-02-002-${to}`;
+    if(Object.prototype.hasOwnProperty.call(oldValues,oldKey)&&!Object.prototype.hasOwnProperty.call(module2Values,newKey)){
+      module2Values[newKey]=oldValues[oldKey];
+    }
+  });
+  for(let i=0;i<=8;i++)delete module2Values[`RG-02-002-${i}`];
+  Object.entries(mapping).forEach(([from,to])=>{
+    const oldKey=`RG-02-002-${from}`,newKey=`RG-02-002-${to}`;
+    if(Object.prototype.hasOwnProperty.call(oldValues,oldKey))module2Values[newKey]=oldValues[oldKey];
+  });
+  localStorage.setItem('redGreenhouseModule2Schema','poe-excel-v1');
+  localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));
+}
+function module2EffectiveValue(doc,field,i){
+  const key=`${doc.id}-${i}`;
+  if(Object.prototype.hasOwnProperty.call(module2Values,key))return String(module2Values[key]||'');
+  return String(field[3]||'');
+}
+migrateModule2PoeValues();
 const typeLabels={text:'Texto corto',textarea:'Texto amplio',date:'Fecha',datetime:'Fecha y hora',number:'Número',list:'Lista',table:'Tabla',signature:'Firma',image:'Imagen',evidence:'Evidencia',coordinates:'Coordenadas',person:'Persona',schedule:'Registro periódico','document-control':'Control documental'};
 
 // Campos del Módulo 2 que ya existen en Datos Maestros.
@@ -221,7 +257,7 @@ function clearDuplicateModule2Values(){
 function fieldHasValue(item){if(structuredDefinitions[item.field])return structuredFieldStatus(item.field).complete;return !!String(masterValues[masterKey(item.field)]||'').trim()}
 function fieldPreview(item){if(structuredDefinitions[item.field]){const st=structuredFieldStatus(item.field);return `${st.filled} de ${st.total} celdas capturadas`}return String(masterValues[masterKey(item.field)]||'').trim()}
 function moduleStatus(m){const fields=masterData.filter(x=>x.modules[m]==='c');const filled=fields.filter(fieldHasValue).length;return {fields,filled,total:fields.length,percent:fields.length?Math.round(filled/fields.length*100):0}}
-function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!String(module2Values[`${d.id}-${i}`]||'').trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
+function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
  const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
  const m2=module2Status(),mods=[2,3,4,5,6,7];
@@ -229,7 +265,7 @@ function renderModules(){
  grid.innerHTML=mods.map(m=>{const st=m===2?m2:moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${m===2?'Piloto completo':st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${m===2?`${RED_DATA.module2.length} hojas · ${st.total} campos`:`${st.filled} de ${st.total} datos aplicables`}</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">${m===2?'Ver contenido completo del Excel →':'Abrir tabla estructurada →'}</span></article>`}).join('');
  grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
 }
-function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,masterField=module2MasterField(doc,field);if(masterField){const raw=module2MasterValue(masterField),value=esc(raw);return `<div class="module-field master-linked-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type linked-data-type">Dato maestro</span><p>${hint}</p></div><div class="module-field-control"><div class="master-linked-value ${value?'':'master-linked-empty'}"><span>${value||'Pendiente de captura en Datos Maestros'}</span><button type="button" data-open-master>Ir a Datos Maestros</button></div><small class="master-linked-source">Origen único: ${masterField}</small></div></div>`}const value=esc(String(module2Values[key]||''));let control='';
+function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,masterField=module2MasterField(doc,field);if(masterField){const raw=module2MasterValue(masterField),value=esc(raw);return `<div class="module-field master-linked-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type linked-data-type">Dato maestro</span><p>${hint}</p></div><div class="module-field-control"><div class="master-linked-value ${value?'':'master-linked-empty'}"><span>${value||'Pendiente de captura en Datos Maestros'}</span><button type="button" data-open-master>Ir a Datos Maestros</button></div><small class="master-linked-source">Origen único: ${masterField}</small></div></div>`}const value=esc(module2EffectiveValue(doc,field,i));let control='';
  if(type==='image'||type==='evidence'||type==='signature')control=`<label class="upload-box"><input type="file" data-module2-file="${key}" accept="${type==='image'?'image/*':type==='signature'?'image/*,.pdf':'image/*,.pdf'}"><span>${value?'Archivo seleccionado: '+value:'Seleccionar '+typeLabels[type].toLowerCase()}</span></label>`;
  else if(type==='textarea'||type==='table'||type==='schedule')control=`<textarea data-module2-input="${key}" placeholder="Capturar información…">${value}</textarea>`;
  else if(type==='list')control=`<select data-module2-input="${key}"><option value="">Seleccionar…</option>${['Baja','Media','Alta','No aplica'].map(x=>`<option ${value===x?'selected':''}>${x}</option>`).join('')}</select>`;
