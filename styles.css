@@ -115,3 +115,13 @@
 .master-linked-empty{border-color:#e4c77e;background:#fffaf0;color:#8a6515}
 .master-linked-source{display:block;margin-top:6px;color:#65786d}
 @media(max-width:650px){.master-linked-value{align-items:flex-start;flex-direction:column}.master-linked-value button{padding:0}}
+/* v1.12 · Tablas fieles de las hojas 3 y 4 */
+.srrc-table-note{margin-bottom:12px;padding:11px 13px;border:1px solid #d9e7df;border-radius:10px;background:#f4f8f5;color:#49645a;font-size:12px;line-height:1.5}
+.srrc-table-scroll{overflow:auto;border:1px solid #d7e2dc;border-radius:12px;background:#fff}
+.srrc-risk-table,.srrc-action-table{width:100%;min-width:1280px;border-collapse:collapse;font-size:12px;line-height:1.35}
+.srrc-risk-table th,.srrc-action-table th{position:sticky;top:0;z-index:1;background:#eaf4ef;color:#173f31;text-align:center;padding:9px 8px;border:1px solid #cbdcd3;font-size:11px;text-transform:uppercase;letter-spacing:.02em}
+.srrc-risk-table td,.srrc-action-table td{vertical-align:top;padding:9px 8px;border:1px solid #dfe8e3;color:#29483c}
+.srrc-risk-table tbody tr:nth-child(6n+1),.srrc-risk-table tbody tr:nth-child(6n+2),.srrc-risk-table tbody tr:nth-child(6n+3),.srrc-action-table tbody tr:nth-child(6n+1),.srrc-action-table tbody tr:nth-child(6n+2),.srrc-action-table tbody tr:nth-child(6n+3){background:#fbfdfc}
+.srrc-risk-table td:nth-child(1){text-align:center;font-weight:900;width:38px}.srrc-risk-table td:nth-child(2){min-width:145px}.srrc-risk-table td:nth-child(3){min-width:330px}.srrc-risk-table td:nth-child(4){min-width:190px}.srrc-risk-table td:nth-child(7){min-width:300px}
+.risk-options{display:flex;gap:5px;justify-content:center;min-width:185px}.risk-x{display:grid;grid-template-columns:20px;justify-items:center;gap:2px;cursor:pointer}.risk-x input{position:absolute;opacity:0;pointer-events:none}.risk-x span{width:20px;height:20px;border:1px solid #8eaca0;border-radius:4px;display:grid;place-items:center;background:#fff;font-weight:900;color:#176246}.risk-x input:checked+span{background:#dff2e8;border-color:#259566}.risk-x small{font-size:9px;color:#647a70}.empty-slot{color:#9aa9a2;font-style:italic}.srrc-action-table td:nth-child(1){min-width:180px}.srrc-action-table td:nth-child(2){text-align:center;width:35px;font-weight:900}.srrc-action-table td:nth-child(3){min-width:330px}.srrc-action-table td:nth-child(4){min-width:110px}.srrc-action-table td:nth-child(5){min-width:220px}.srrc-action-table td:nth-child(6){min-width:160px}.srrc-action-table td:nth-child(7){min-width:250px}
+@media print{.srrc-table-scroll{overflow:visible;border:0}.srrc-risk-table,.srrc-action-table{min-width:0;font-size:8px}.srrc-risk-table th,.srrc-action-table th{position:static;font-size:7px}.risk-x small{font-size:6px}}
