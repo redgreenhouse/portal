@@ -36,10 +36,13 @@
       <button class="nav-item" data-view="plan"><span>☷</span> Plan Maestro</button>
       <button class="nav-item" data-view="datos"><span>◆</span> Datos Maestros</button>
       <button class="nav-item" data-view="modulos"><span>▤</span> Módulos SRRC</button>
+      <button class="nav-item" data-view="captura"><span>✎</span> Captura M2 y M3</button>
+      <button class="nav-item" data-view="bitacoras"><span>☑</span> Bitácoras</button>
+      <button class="nav-item" data-view="vinculacion"><span>⌘</span> Tabla de vinculación</button>
       <button class="nav-item" data-view="reportes"><span>▥</span> Reportes</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · v1.11</div>
+    <div class="sidebar-footer">RED Greenhouse · v1.19</div>
   </aside>
 
   <main class="main">
@@ -152,12 +155,23 @@
       <section class="card module-detail-card" id="moduleDetail" hidden></section>
     </section>
 
+
+    <section class="view" id="view-captura">
+      <div id="captureApp"></div>
+    </section>
+    <section class="view" id="view-bitacoras">
+      <div id="logsApp"></div>
+    </section>
+    <section class="view" id="view-vinculacion">
+      <div id="mapApp"></div>
+    </section>
+
     <section class="view" id="view-placeholder"><div class="placeholder"><div class="placeholder-icon">🌱</div><h1 id="placeholderTitle">Módulo</h1><p>Esta sección se integrará en las siguientes versiones del portal.</p><button class="primary-button" data-go="inicio">Volver al inicio</button></div></section>
   </main>
 
   <div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="taskForm"><div class="modal-heading"><h2>Nueva tarea</h2><button type="button" id="closeModal">×</button></div><label>Tarea<input id="taskTitle" required maxlength="100"></label><label>Responsable<input id="taskOwner" required maxlength="70"></label><label>Prioridad<select id="taskPriority"><option value="critical">Crítica</option><option value="high">Alta</option><option value="medium">Media</option></select></label><label>Estado<select id="taskStatus"><option value="pending">Pendiente</option><option value="doing">En proceso</option><option value="done">Completada</option></select></label><button class="primary-button" type="submit">Guardar tarea</button></form></div>
   <script src="data.js"></script>
-  <script src="module2-replicas.js"></script>
   <script src="app.js"></script>
+  <script src="capture.js"></script>
 </body>
 </html>

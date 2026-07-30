@@ -288,47 +288,20 @@ function riskChoice(areaIndex,hazardIndex,dimension,defaultValue){const key=`ris
 function renderRiskOptions(areaIndex,hazardIndex,dimension,defaultValue){const selected=riskChoice(areaIndex,hazardIndex,dimension,defaultValue);return ['Alto','Medio','Bajo'].map(v=>`<label class="risk-x"><input type="radio" name="risk-${areaIndex}-${hazardIndex}-${dimension}" data-risk-key="risk-s3-${areaIndex}-${hazardIndex}-${dimension}" value="${v}" ${selected===v?'checked':''}><span>${selected===v?'X':'○'}</span><small>${v}</small></label>`).join('')}
 function renderRiskTable(){return `<div class="srrc-table-note"><b>Hoja 3 · Análisis descriptivo.</b> Se conserva el contenido del Excel. Sólo son editables las columnas de Probabilidad y Severidad para marcar con una X.</div><div class="srrc-table-scroll"><table class="srrc-risk-table"><thead><tr><th>N°</th><th>Fase / área</th><th>Descripción</th><th>Peligro significativo</th><th>Probabilidad</th><th>Severidad</th><th>Justificación</th></tr></thead><tbody>${module2RiskAreas.map((a,ai)=>a.hazards.map((h,hi)=>`<tr>${hi===0?`<td rowspan="3">${a.n}</td><td rowspan="3"><strong>${a.area}</strong></td><td rowspan="3">${a.description}</td>`:''}<td><b>${h[0]}:</b> ${h[1]}</td><td><div class="risk-options">${renderRiskOptions(ai,hi,'p',h[2])}</div></td><td><div class="risk-options">${renderRiskOptions(ai,hi,'s',h[3])}</div></td>${hi===0?`<td rowspan="3">${a.justification}</td>`:''}</tr>`).join('')).join('')}</tbody></table></div>`}
 function renderActionTable(){return `<div class="srrc-table-note"><b>Hoja 4 · Acciones del análisis de peligros.</b> Se copia la estructura y contenido del Excel. Cada una de las 11 áreas conserva exactamente tres espacios de acción.</div><div class="srrc-table-scroll"><table class="srrc-action-table"><thead><tr><th>Área</th><th>N°</th><th>Acciones de control</th><th>Método</th><th>Indicador</th><th>Criterio</th><th>Documentación</th></tr></thead><tbody>${module2ActionAreas.map(a=>a.actions.map((r,i)=>`<tr>${i===0?`<td rowspan="3"><strong>${a.area}</strong></td>`:''}<td>${i+1}</td><td>${r[0]||'<span class="empty-slot">Espacio disponible</span>'}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')).join('')}</tbody></table></div>`}
-const module2HeaderMasterLinks={
-  'PORTADA':[['D1','Razón social / propietario'],['D2','Nombre de la unidad de producción'],['D3','Domicilio de la unidad'],['H1','Folio SENASICA']],
-  'POE MTTO INFRAESTR':[['D1','Razón social / propietario'],['D2','Nombre de la unidad de producción'],['D3','Domicilio de la unidad'],['H1','Folio SENASICA']],
-  'ANÁLISIS DESCRIPTIVO':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
-  'PLAN DE ACCIÓN':[['D1','Nombre de la unidad de producción'],['D2','Domicilio de la unidad']],
-  'MAPA 2.1':[['H2','Nombre de la unidad de producción'],['H3','Domicilio de la unidad']],
-  'MAPA 2.1.1':[['H2','Nombre de la unidad de producción'],['H3','Domicilio de la unidad']],
-  'MAPA 2.1.2':[['C2','Nombre de la unidad de producción'],['C3','Domicilio de la unidad']],
-  'CROQUIS 2.2':[['I2','Nombre de la unidad de producción'],['I3','Domicilio de la unidad']],
-  'DOC-2.3 FRENTE':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
-  'DOC-2.3 REVERSO':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
-  'DOC-2.4':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
-  'DOC-2.5':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']]
+const module2ExcelPreviews={
+ 'PORTADA':'assets/excel/01-portada.png',
+ 'POE MTTO INFRAESTR':'assets/excel/02-poe.png',
+ 'DOC-2.3 FRENTE':'assets/excel/09-bitacora-frente.png',
+ 'DOC-2.3 REVERSO':'assets/excel/10-bitacora-atras.png',
+ 'DOC-2.4':'assets/excel/11-organigrama.png',
+ 'DOC-2.5':'assets/excel/12-perfil-puestos.png'
 };
+function renderExcelPreview(doc){const src=module2ExcelPreviews[doc.code];return src?`<div class="excel-source-preview"><div class="excel-source-title"><b>Vista fiel del Excel original</b><span>Referencia para revisión e impresión</span></div><div class="excel-source-scroll"><img src="${src}" alt="Vista de la hoja ${esc(doc.title)}"></div></div>`:''}
 function renderModule2DocumentContent(doc){
- const replica=typeof MODULE2_REPLICAS!=='undefined'?MODULE2_REPLICAS[doc.code]:'';
- return replica?`<div class="module2-replica-host" data-module2-replica-code="${esc(doc.code)}">${replica}</div>`:'<p class="empty-value">No se encontró la réplica de esta hoja.</p>';
-}
-function bindModule2MasterHeaders(detail){
- detail.querySelectorAll('[data-module2-replica-code]').forEach(host=>{
-  const code=host.dataset.module2ReplicaCode;
-  (module2HeaderMasterLinks[code]||[]).forEach(([cell,field])=>{
-   const target=host.querySelector(`[data-cell="${cell}"]`);if(!target)return;
-   const raw=module2MasterValue(field);
-   target.innerHTML=`<button type="button" class="replica-master-value ${raw?'':'is-empty'}" data-open-master title="Dato vinculado: ${esc(field)}">${esc(raw||'Pendiente en Datos Maestros')}</button>`;
-   target.dataset.masterField=field;
-  });
- });
-}
-function bindModule2ReplicaControls(detail){
- detail.querySelectorAll('[data-excel-cell]').forEach(el=>{
-   const key=`excel|${el.dataset.excelCell}`;
-   el.value=module2Values[key]||'';
-   el.addEventListener('input',()=>{module2Values[key]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));});
- });
- detail.querySelectorAll('[data-replica-image]').forEach(el=>el.addEventListener('change',()=>{
-   const file=el.files&&el.files[0];if(!file)return;
-   const key=el.dataset.replicaImage,preview=detail.querySelector(`[data-replica-image-preview="${CSS.escape(key)}"]`),label=detail.querySelector(`[data-replica-image-label="${CSS.escape(key)}"]`);
-   const reader=new FileReader();reader.onload=()=>{if(preview){preview.src=reader.result;preview.hidden=false}if(label)label.hidden=true};reader.readAsDataURL(file);
-   module2Values[`image|${key}`]=file.name;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));
- }));
+ if(doc.code==='ANÁLISIS DESCRIPTIVO')return renderRiskTable();
+ if(doc.code==='PLAN DE ACCIÓN')return renderActionTable();
+ const fields=module2CaptureSpecs[doc.code]||[];
+ return `${renderExcelPreview(doc)}${fields.length?`<div class="module-fields">${fields.map((field,i)=>renderCaptureControl(doc,field,i)).join('')}</div>`:'<p class="empty-value">Esta hoja no requiere captura adicional.</p>'}`;
 }
 function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
@@ -344,15 +317,13 @@ function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${
  else if(type==='list')control=`<select data-module2-input="${key}"><option value="">Seleccionar…</option>${['Baja','Media','Alta','No aplica'].map(x=>`<option ${value===x?'selected':''}>${x}</option>`).join('')}</select>`;
  else control=`<input data-module2-input="${key}" type="${type==='date'?'date':type==='datetime'?'datetime-local':type==='number'?'number':'text'}" value="${value}" placeholder="Capturar información…">`;
  return `<div class="module-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type">${typeLabels[type]||type}</span><p>${hint}</p></div><div class="module-field-control">${control}</div></div>`}
-function openModule2(){const detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo 2 · Infraestructura</h2><p>Documentos transcritos directamente del libro original. El contenido fijo se conserva y sólo las celdas marcadas con X permanecen editables.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><div class="module-document-list">${RED_DATA.module2.map((doc,index)=>`<article class="excel-sheet-card"><button class="excel-sheet-head" data-sheet-toggle="${doc.id}"><span class="sheet-index">${String(index+1).padStart(2,'0')}</span><span><strong>${doc.title}</strong><small>${doc.code}</small></span><span class="sheet-chevron">⌄</span></button><div class="excel-sheet-body" id="sheet-${doc.id}" ${index?'hidden':''}>${renderModule2DocumentContent(doc)}</div></article>`).join('')}</div>`;
+function openModule2(){const detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo 2 · Mantenimiento de infraestructura</h2><p>Las 12 hojas útiles del Excel están representadas abajo. Cada campo indica exactamente el tipo de información que debe entregar el usuario.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><div class="module-document-list">${RED_DATA.module2.map((doc,index)=>`<article class="excel-sheet-card"><button class="excel-sheet-head" data-sheet-toggle="${doc.id}"><span class="sheet-index">${String(index+1).padStart(2,'0')}</span><span><strong>${doc.title}</strong><small>Hoja: ${doc.code} · ${doc.type}</small></span><span class="sheet-chevron">⌄</span></button><div class="excel-sheet-body" id="sheet-${doc.id}" ${index?'hidden':''}><p class="sheet-description">${doc.description}</p><div class="sheet-action"><b>Acción para la carpeta:</b> ${doc.action} · <b>Frecuencia:</b> ${doc.frequency}</div>${renderModule2DocumentContent(doc)}</div></article>`).join('')}</div>`;
  detail.querySelector('[data-close-module]').addEventListener('click',()=>detail.hidden=true);
  detail.querySelectorAll('[data-sheet-toggle]').forEach(b=>b.addEventListener('click',()=>{const body=detail.querySelector(`#sheet-${b.dataset.sheetToggle}`);body.hidden=!body.hidden}));
  detail.querySelectorAll('[data-module2-input]').forEach(el=>el.addEventListener('input',()=>{module2Values[el.dataset.module2Input]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));renderModules()}));
  detail.querySelectorAll('[data-risk-key]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.riskKey]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
  detail.querySelectorAll('[data-module2-file]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.module2File]=el.files[0]?.name||'';localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
- bindModule2MasterHeaders(detail);
  detail.querySelectorAll('[data-open-master]').forEach(el=>el.addEventListener('click',()=>showView('datos')));
- bindModule2ReplicaControls(detail);
  detail.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function openModule(m){if(m===2){openModule2();return}const st=moduleStatus(m),detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo ${m} · ${moduleNames[m]}</h2><p>Vista provisional basada en los datos transversales ya identificados.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><table class="module-detail-table"><thead><tr><th>Dato requerido</th><th>Valor capturado</th><th>Certeza</th><th>Destino</th></tr></thead><tbody>${st.fields.map(x=>{const value=fieldPreview(x);return `<tr><td><strong>${x.field}</strong><br><small>${x.detail}</small></td><td class="value-preview ${value?'':'empty-value'}">${esc(value||'Pendiente de captura')}</td><td><span class="certainty-label confirmed">Confirmado</span></td><td><span class="mapping-badge">M${m}</span></td></tr>`}).join('')}</tbody></table>`;detail.querySelector('[data-close-module]').addEventListener('click',()=>detail.hidden=true);detail.scrollIntoView({behavior:'smooth',block:'start'})}
