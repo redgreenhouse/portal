@@ -134,3 +134,16 @@
 .excel-source-scroll img{display:block;max-width:none;width:auto;min-width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(18,57,44,.08)}
 .module-fields{border-top:1px solid #e3ebe7;margin-top:18px}
 @media(max-width:760px){.excel-source-title{align-items:flex-start;flex-direction:column}.excel-source-scroll{max-height:520px}}
+
+/* v1.14 · Réplicas HTML fieles del Excel del Módulo 2 */
+.excel-replica{margin-top:10px;background:#fff;border:1px solid #d9e3dd;border-radius:12px;overflow:hidden}
+.excel-replica-scroll{overflow:auto;max-height:820px;padding:14px;background:#eef2ef}
+.excel-grid{border-collapse:collapse;table-layout:fixed;background:#fff;color:#111;min-width:max-content;box-shadow:0 2px 10px rgba(18,57,44,.08)}
+.excel-grid td{box-sizing:border-box;padding:2px 4px;overflow:hidden;line-height:1.18;white-space:normal;word-break:normal}
+.excel-cell-input{display:block;width:100%;min-width:34px;height:100%;min-height:25px;box-sizing:border-box;border:2px solid #18875f;background:#f5fff9;padding:3px 5px;font:inherit;text-align:inherit}
+.excel-cell-input:focus{outline:3px solid rgba(24,135,95,.2);background:#fff}
+.image-replica{padding:0}.replica-image-title{padding:13px 16px;background:#f3f7f4;border-bottom:1px solid #dbe5df;font-weight:800;color:#244b3c}
+.replica-image-drop{margin:18px;min-height:560px;border:2px dashed #7eaa97;border-radius:12px;background:#f8fbf9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;color:#176246;font-weight:800;text-align:center;padding:24px}
+.replica-image-drop input{display:none}.replica-image-drop img{max-width:100%;max-height:760px;object-fit:contain}.replica-image-drop span{font-size:16px}
+@media(max-width:760px){.excel-replica-scroll{max-height:620px;padding:6px}.replica-image-drop{min-height:360px;margin:10px}}
+@media print{.excel-replica{border:0}.excel-replica-scroll{overflow:visible;max-height:none;padding:0;background:#fff}.excel-grid{box-shadow:none;transform-origin:top left}.replica-image-drop{border:0;margin:0;min-height:700px}}

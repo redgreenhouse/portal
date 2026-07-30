@@ -1,10 +1,10 @@
-# Portal RED Greenhouse — Módulo 2 piloto
+# RED Greenhouse · Portal SRRC
 
-Versión de trabajo enfocada en la carpeta física SRRC.
+## Versión 1.14 · Módulo 2 reconstruido desde Excel
 
-Cambios principales:
-- El Módulo 2 muestra las 12 hojas útiles del Excel original.
-- Se identificaron 87 campos/unidades de captura.
-- Cada campo indica el tipo de información esperada.
-- Se agregaron controles de captura para texto, fechas, tablas, imágenes, firmas, evidencias y registros periódicos.
-- La captura del piloto se conserva en localStorage del navegador.
+- Las hojas que no son mapas se muestran como réplicas HTML del contenido del Excel original.
+- Sólo las celdas marcadas con X en **Análisis de peligro descripciones** y **Perfil de puestos** son campos de captura.
+- Los mapas, el croquis y el organigrama incluyen un área grande para cargar una imagen.
+- No se requiere una carpeta de imágenes de referencia del Excel.
+
+Abrir `index.html` o publicar el contenido de esta carpeta en GitHub Pages.
