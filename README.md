@@ -9,9 +9,17 @@
 
 Abrir `index.html` o publicar el contenido de esta carpeta en GitHub Pages.
 
-## v1.15 · Segunda pasada del Módulo 2
+## v1.16 · Tercera pasada del Módulo 2
 - Conserva la transcripción literal del Excel.
 - Convierte correctamente tamaños de fuente y fechas de Excel.
 - Refuerza bordes, alineación y presentación de campos editables.
 - Elimina bloques explicativos duplicados antes de cada réplica.
 - Mantiene mapas, croquis y organigrama como áreas de imagen grande.
+
+
+## v1.16 — Compactación de espacios vacíos
+
+- Elimina bandas grandes de filas y columnas completamente vacías.
+- Conserva filas y columnas con texto, bordes, fondos o celdas combinadas.
+- Mantiene un solo espacio de separación entre bloques para no pegar el contenido.
+- Reduce el peso de `module2-replicas.js` sin cambiar el contenido documental.
