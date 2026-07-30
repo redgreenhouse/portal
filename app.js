@@ -288,7 +288,21 @@ function riskChoice(areaIndex,hazardIndex,dimension,defaultValue){const key=`ris
 function renderRiskOptions(areaIndex,hazardIndex,dimension,defaultValue){const selected=riskChoice(areaIndex,hazardIndex,dimension,defaultValue);return ['Alto','Medio','Bajo'].map(v=>`<label class="risk-x"><input type="radio" name="risk-${areaIndex}-${hazardIndex}-${dimension}" data-risk-key="risk-s3-${areaIndex}-${hazardIndex}-${dimension}" value="${v}" ${selected===v?'checked':''}><span>${selected===v?'X':'○'}</span><small>${v}</small></label>`).join('')}
 function renderRiskTable(){return `<div class="srrc-table-note"><b>Hoja 3 · Análisis descriptivo.</b> Se conserva el contenido del Excel. Sólo son editables las columnas de Probabilidad y Severidad para marcar con una X.</div><div class="srrc-table-scroll"><table class="srrc-risk-table"><thead><tr><th>N°</th><th>Fase / área</th><th>Descripción</th><th>Peligro significativo</th><th>Probabilidad</th><th>Severidad</th><th>Justificación</th></tr></thead><tbody>${module2RiskAreas.map((a,ai)=>a.hazards.map((h,hi)=>`<tr>${hi===0?`<td rowspan="3">${a.n}</td><td rowspan="3"><strong>${a.area}</strong></td><td rowspan="3">${a.description}</td>`:''}<td><b>${h[0]}:</b> ${h[1]}</td><td><div class="risk-options">${renderRiskOptions(ai,hi,'p',h[2])}</div></td><td><div class="risk-options">${renderRiskOptions(ai,hi,'s',h[3])}</div></td>${hi===0?`<td rowspan="3">${a.justification}</td>`:''}</tr>`).join('')).join('')}</tbody></table></div>`}
 function renderActionTable(){return `<div class="srrc-table-note"><b>Hoja 4 · Acciones del análisis de peligros.</b> Se copia la estructura y contenido del Excel. Cada una de las 11 áreas conserva exactamente tres espacios de acción.</div><div class="srrc-table-scroll"><table class="srrc-action-table"><thead><tr><th>Área</th><th>N°</th><th>Acciones de control</th><th>Método</th><th>Indicador</th><th>Criterio</th><th>Documentación</th></tr></thead><tbody>${module2ActionAreas.map(a=>a.actions.map((r,i)=>`<tr>${i===0?`<td rowspan="3"><strong>${a.area}</strong></td>`:''}<td>${i+1}</td><td>${r[0]||'<span class="empty-slot">Espacio disponible</span>'}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')).join('')}</tbody></table></div>`}
-function renderModule2DocumentContent(doc){if(doc.code==='ANÁLISIS DESCRIPTIVO')return renderRiskTable();if(doc.code==='PLAN DE ACCIÓN')return renderActionTable();return `${renderModule2DocumentContent(doc)}`}
+const module2ExcelPreviews={
+ 'PORTADA':'assets/excel/01-portada.png',
+ 'POE MTTO INFRAESTR':'assets/excel/02-poe.png',
+ 'DOC-2.3 FRENTE':'assets/excel/09-bitacora-frente.png',
+ 'DOC-2.3 REVERSO':'assets/excel/10-bitacora-atras.png',
+ 'DOC-2.4':'assets/excel/11-organigrama.png',
+ 'DOC-2.5':'assets/excel/12-perfil-puestos.png'
+};
+function renderExcelPreview(doc){const src=module2ExcelPreviews[doc.code];return src?`<div class="excel-source-preview"><div class="excel-source-title"><b>Vista fiel del Excel original</b><span>Referencia para revisión e impresión</span></div><div class="excel-source-scroll"><img src="${src}" alt="Vista de la hoja ${esc(doc.title)}"></div></div>`:''}
+function renderModule2DocumentContent(doc){
+ if(doc.code==='ANÁLISIS DESCRIPTIVO')return renderRiskTable();
+ if(doc.code==='PLAN DE ACCIÓN')return renderActionTable();
+ const fields=module2CaptureSpecs[doc.code]||[];
+ return `${renderExcelPreview(doc)}${fields.length?`<div class="module-fields">${fields.map((field,i)=>renderCaptureControl(doc,field,i)).join('')}</div>`:'<p class="empty-value">Esta hoja no requiere captura adicional.</p>'}`;
+}
 function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
  const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
