@@ -23,3 +23,8 @@ Abrir `index.html` o publicar el contenido de esta carpeta en GitHub Pages.
 - Conserva filas y columnas con texto, bordes, fondos o celdas combinadas.
 - Mantiene un solo espacio de separación entre bloques para no pegar el contenido.
 - Reduce el peso de `module2-replicas.js` sin cambiar el contenido documental.
+
+
+## v1.17
+- Las cabeceras de las 12 hojas del Módulo 2 toman nombre de la unidad, domicilio, razón social y folio SENASICA desde Datos Maestros.
+- Al hacer clic en un dato vinculado se abre el Catálogo Maestro SRRC.

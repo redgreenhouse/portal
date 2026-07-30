@@ -288,9 +288,34 @@ function riskChoice(areaIndex,hazardIndex,dimension,defaultValue){const key=`ris
 function renderRiskOptions(areaIndex,hazardIndex,dimension,defaultValue){const selected=riskChoice(areaIndex,hazardIndex,dimension,defaultValue);return ['Alto','Medio','Bajo'].map(v=>`<label class="risk-x"><input type="radio" name="risk-${areaIndex}-${hazardIndex}-${dimension}" data-risk-key="risk-s3-${areaIndex}-${hazardIndex}-${dimension}" value="${v}" ${selected===v?'checked':''}><span>${selected===v?'X':'○'}</span><small>${v}</small></label>`).join('')}
 function renderRiskTable(){return `<div class="srrc-table-note"><b>Hoja 3 · Análisis descriptivo.</b> Se conserva el contenido del Excel. Sólo son editables las columnas de Probabilidad y Severidad para marcar con una X.</div><div class="srrc-table-scroll"><table class="srrc-risk-table"><thead><tr><th>N°</th><th>Fase / área</th><th>Descripción</th><th>Peligro significativo</th><th>Probabilidad</th><th>Severidad</th><th>Justificación</th></tr></thead><tbody>${module2RiskAreas.map((a,ai)=>a.hazards.map((h,hi)=>`<tr>${hi===0?`<td rowspan="3">${a.n}</td><td rowspan="3"><strong>${a.area}</strong></td><td rowspan="3">${a.description}</td>`:''}<td><b>${h[0]}:</b> ${h[1]}</td><td><div class="risk-options">${renderRiskOptions(ai,hi,'p',h[2])}</div></td><td><div class="risk-options">${renderRiskOptions(ai,hi,'s',h[3])}</div></td>${hi===0?`<td rowspan="3">${a.justification}</td>`:''}</tr>`).join('')).join('')}</tbody></table></div>`}
 function renderActionTable(){return `<div class="srrc-table-note"><b>Hoja 4 · Acciones del análisis de peligros.</b> Se copia la estructura y contenido del Excel. Cada una de las 11 áreas conserva exactamente tres espacios de acción.</div><div class="srrc-table-scroll"><table class="srrc-action-table"><thead><tr><th>Área</th><th>N°</th><th>Acciones de control</th><th>Método</th><th>Indicador</th><th>Criterio</th><th>Documentación</th></tr></thead><tbody>${module2ActionAreas.map(a=>a.actions.map((r,i)=>`<tr>${i===0?`<td rowspan="3"><strong>${a.area}</strong></td>`:''}<td>${i+1}</td><td>${r[0]||'<span class="empty-slot">Espacio disponible</span>'}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')).join('')}</tbody></table></div>`}
+const module2HeaderMasterLinks={
+  'PORTADA':[['D1','Razón social / propietario'],['D2','Nombre de la unidad de producción'],['D3','Domicilio de la unidad'],['H1','Folio SENASICA']],
+  'POE MTTO INFRAESTR':[['D1','Razón social / propietario'],['D2','Nombre de la unidad de producción'],['D3','Domicilio de la unidad'],['H1','Folio SENASICA']],
+  'ANÁLISIS DESCRIPTIVO':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
+  'PLAN DE ACCIÓN':[['D1','Nombre de la unidad de producción'],['D2','Domicilio de la unidad']],
+  'MAPA 2.1':[['H2','Nombre de la unidad de producción'],['H3','Domicilio de la unidad']],
+  'MAPA 2.1.1':[['H2','Nombre de la unidad de producción'],['H3','Domicilio de la unidad']],
+  'MAPA 2.1.2':[['C2','Nombre de la unidad de producción'],['C3','Domicilio de la unidad']],
+  'CROQUIS 2.2':[['I2','Nombre de la unidad de producción'],['I3','Domicilio de la unidad']],
+  'DOC-2.3 FRENTE':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
+  'DOC-2.3 REVERSO':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
+  'DOC-2.4':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']],
+  'DOC-2.5':[['H1','Nombre de la unidad de producción'],['H2','Domicilio de la unidad']]
+};
 function renderModule2DocumentContent(doc){
  const replica=typeof MODULE2_REPLICAS!=='undefined'?MODULE2_REPLICAS[doc.code]:'';
- return replica||'<p class="empty-value">No se encontró la réplica de esta hoja.</p>';
+ return replica?`<div class="module2-replica-host" data-module2-replica-code="${esc(doc.code)}">${replica}</div>`:'<p class="empty-value">No se encontró la réplica de esta hoja.</p>';
+}
+function bindModule2MasterHeaders(detail){
+ detail.querySelectorAll('[data-module2-replica-code]').forEach(host=>{
+  const code=host.dataset.module2ReplicaCode;
+  (module2HeaderMasterLinks[code]||[]).forEach(([cell,field])=>{
+   const target=host.querySelector(`[data-cell="${cell}"]`);if(!target)return;
+   const raw=module2MasterValue(field);
+   target.innerHTML=`<button type="button" class="replica-master-value ${raw?'':'is-empty'}" data-open-master title="Dato vinculado: ${esc(field)}">${esc(raw||'Pendiente en Datos Maestros')}</button>`;
+   target.dataset.masterField=field;
+  });
+ });
 }
 function bindModule2ReplicaControls(detail){
  detail.querySelectorAll('[data-excel-cell]').forEach(el=>{
@@ -325,6 +350,7 @@ function openModule2(){const detail=document.getElementById('moduleDetail');deta
  detail.querySelectorAll('[data-module2-input]').forEach(el=>el.addEventListener('input',()=>{module2Values[el.dataset.module2Input]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));renderModules()}));
  detail.querySelectorAll('[data-risk-key]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.riskKey]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
  detail.querySelectorAll('[data-module2-file]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.module2File]=el.files[0]?.name||'';localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
+ bindModule2MasterHeaders(detail);
  detail.querySelectorAll('[data-open-master]').forEach(el=>el.addEventListener('click',()=>showView('datos')));
  bindModule2ReplicaControls(detail);
  detail.scrollIntoView({behavior:'smooth',block:'start'});

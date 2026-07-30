@@ -172,3 +172,35 @@
 .replica-image-drop input{display:none}.replica-image-drop img{max-width:100%;max-height:790px;object-fit:contain}
 @media(max-width:760px){.excel-replica-scroll{padding:8px;max-height:650px}.excel-paper{padding:8px;min-width:680px}.image-replica{padding:8px}.replica-image-drop-wrap{padding:8px}.replica-image-drop{min-height:420px}}
 @media print{.excel-sheet-head,.module-detail-head{display:none!important}.excel-sheet-body[hidden]{display:block!important}.excel-sheet-card{border:0!important}.excel-replica-scroll{overflow:visible;max-height:none;padding:0;background:#fff}.excel-paper{box-shadow:none;padding:0;margin:0;border-radius:0}.excel-grid td{border-color:#bbb}.image-replica,.replica-image-drop-wrap{padding:0;box-shadow:none;background:#fff}.replica-image-drop{border:0;min-height:700px}}
+
+/* v1.17 · Cabeceras del Módulo 2 vinculadas a Datos Maestros */
+.replica-master-value{
+  display:block;
+  width:100%;
+  min-height:100%;
+  padding:2px 6px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:inherit;
+  line-height:inherit;
+  text-align:inherit;
+  white-space:normal;
+  cursor:pointer;
+}
+.replica-master-value:hover{
+  outline:2px solid rgba(22,101,52,.28);
+  outline-offset:-2px;
+  background:rgba(22,101,52,.06);
+}
+.replica-master-value.is-empty{
+  color:#8a6d1f;
+  font-size:12px;
+  font-style:italic;
+  background:#fff8dc;
+}
+@media print{
+  .replica-master-value{pointer-events:none}
+  .replica-master-value.is-empty{color:#777;background:transparent}
+}
