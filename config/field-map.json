@@ -125,7 +125,7 @@
                 "✗",
                 "NL"
               ],
-              "default": "✓",
+              "default": "",
               "range": "AA10:AL78"
             }
           ]
@@ -323,7 +323,7 @@
                 "✗",
                 "NL"
               ],
-              "default": "✓",
+              "default": "",
               "range": "L11:AI34"
             }
           ]
@@ -528,7 +528,7 @@
               "id": "M3.H08.CHK1",
               "type": "checkbox",
               "label": "QUINCENAL",
-              "default": true,
+              "default": false,
               "range": "E30:AW30"
             }
           ]
@@ -560,84 +560,84 @@
               "type": "checkbox",
               "label": "COMEDOR",
               "excelCell": "H12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.O12",
               "type": "checkbox",
               "label": "PAÑO MICRO FIBRA",
               "excelCell": "O12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.V12",
               "type": "checkbox",
               "label": "ESCOBA",
               "excelCell": "V12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.AC12",
               "type": "checkbox",
               "label": "CUBETA",
               "excelCell": "AC12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.AJ12",
               "type": "checkbox",
               "label": "CEPILLO",
               "excelCell": "AJ12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.AQ12",
               "type": "checkbox",
               "label": "AGUA POTABLE",
               "excelCell": "AQ12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.H14",
               "type": "checkbox",
               "label": "COMEDOR",
               "excelCell": "H14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.O14",
               "type": "checkbox",
               "label": "ATOMIZADOR",
               "excelCell": "O14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.V14",
               "type": "checkbox",
               "label": "RECOGEDOR",
               "excelCell": "V14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.AC14",
               "type": "checkbox",
               "label": "CEPILLO MANUAL",
               "excelCell": "AC14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.AJ14",
               "type": "checkbox",
               "label": "BOLSA PLÁSTICA",
               "excelCell": "AJ14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H09.AQ14",
               "type": "checkbox",
               "label": "DETERGENTE",
               "excelCell": "AQ14",
-              "default": true
+              "default": false
             }
           ]
         },
@@ -668,84 +668,84 @@
               "type": "checkbox",
               "label": "CISTERNA Y TINACO",
               "excelCell": "I12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.P12",
               "type": "checkbox",
               "label": "PAÑO MICRO FIBRA",
               "excelCell": "P12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.W12",
               "type": "checkbox",
               "label": "ESCOBA",
               "excelCell": "W12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.AD12",
               "type": "checkbox",
               "label": "CUBETA",
               "excelCell": "AD12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.AK12",
               "type": "checkbox",
               "label": "CEPILLO",
               "excelCell": "AK12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.AR12",
               "type": "checkbox",
               "label": "AGUA POTABLE",
               "excelCell": "AR12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.I14",
               "type": "checkbox",
               "label": "CISTERNA Y TINACO",
               "excelCell": "I14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.P14",
               "type": "checkbox",
               "label": "ATOMIZADOR",
               "excelCell": "P14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.W14",
               "type": "checkbox",
               "label": "RECOGEDOR",
               "excelCell": "W14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.AD14",
               "type": "checkbox",
               "label": "CEPILLO MANUAL",
               "excelCell": "AD14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.AK14",
               "type": "checkbox",
               "label": "BOLSA PLÁSTICA",
               "excelCell": "AK14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H10.AR14",
               "type": "checkbox",
               "label": "DETERGENTE",
               "excelCell": "AR14",
-              "default": true
+              "default": false
             }
           ]
         },
@@ -759,84 +759,84 @@
               "type": "checkbox",
               "label": "BODEGA DE AGROQUIMICOS, MATERIALES DE FUMIGACION Y EPP",
               "excelCell": "I12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.P12",
               "type": "checkbox",
               "label": "PAÑO MICRO FIBRA",
               "excelCell": "P12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.W12",
               "type": "checkbox",
               "label": "ESCOBA",
               "excelCell": "W12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.AD12",
               "type": "checkbox",
               "label": "CUBETA",
               "excelCell": "AD12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.AK12",
               "type": "checkbox",
               "label": "CEPILLO",
               "excelCell": "AK12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.AR12",
               "type": "checkbox",
               "label": "AGUA POTABLE",
               "excelCell": "AR12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.I14",
               "type": "checkbox",
               "label": "BODEGA DE AGROQUIMICOS, MATERIALES DE FUMIGACION Y EPP",
               "excelCell": "I14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.P14",
               "type": "checkbox",
               "label": "ATOMIZADOR",
               "excelCell": "P14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.W14",
               "type": "checkbox",
               "label": "RECOGEDOR",
               "excelCell": "W14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.AD14",
               "type": "checkbox",
               "label": "CEPILLO MANUAL",
               "excelCell": "AD14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.AK14",
               "type": "checkbox",
               "label": "BOLSA PLÁSTICA",
               "excelCell": "AK14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H11.AR14",
               "type": "checkbox",
               "label": "DETERGENTE",
               "excelCell": "AR14",
-              "default": true
+              "default": false
             }
           ]
         },
@@ -867,84 +867,84 @@
               "type": "checkbox",
               "label": "SANITARIOS",
               "excelCell": "I12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.P12",
               "type": "checkbox",
               "label": "PAÑO MICRO FIBRA",
               "excelCell": "P12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.W12",
               "type": "checkbox",
               "label": "ESCOBA",
               "excelCell": "W12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.AD12",
               "type": "checkbox",
               "label": "CUBETA",
               "excelCell": "AD12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.AK12",
               "type": "checkbox",
               "label": "TRAPEADOR",
               "excelCell": "AK12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.AR12",
               "type": "checkbox",
               "label": "AGUA POTABLE",
               "excelCell": "AR12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.I14",
               "type": "checkbox",
               "label": "SANITARIOS",
               "excelCell": "I14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.P14",
               "type": "checkbox",
               "label": "ATOMIZADOR",
               "excelCell": "P14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.W14",
               "type": "checkbox",
               "label": "RECOGEDOR",
               "excelCell": "W14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.AD14",
               "type": "checkbox",
               "label": "CEPILLO PARA ESCUSADO",
               "excelCell": "AD14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.AK14",
               "type": "checkbox",
               "label": "BOLSA PLÁSTICA",
               "excelCell": "AK14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H12.AR14",
               "type": "checkbox",
               "label": "DETERGENTE",
               "excelCell": "AR14",
-              "default": true
+              "default": false
             }
           ]
         },
@@ -975,84 +975,84 @@
               "type": "checkbox",
               "label": "UNIDAD DE PRODUCCIÓN, HERRAMIENTAS Y EQUIPOS",
               "excelCell": "I12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.P12",
               "type": "checkbox",
               "label": "PALA",
               "excelCell": "P12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.W12",
               "type": "checkbox",
               "label": "DESBROZADORA",
               "excelCell": "W12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.AD12",
               "type": "checkbox",
               "label": "MACHETE",
               "excelCell": "AD12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.AK12",
               "type": "checkbox",
               "label": "CARRETILLA",
               "excelCell": "AK12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.AR12",
               "type": "checkbox",
               "label": "BOLSA PLÁSTICA",
               "excelCell": "AR12",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.I14",
               "type": "checkbox",
               "label": "UNIDAD DE PRODUCCIÓN, HERRAMIENTAS Y EQUIPOS",
               "excelCell": "I14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.P14",
               "type": "checkbox",
               "label": "CEPILLO (FITOSAN)",
               "excelCell": "P14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.W14",
               "type": "checkbox",
               "label": "ATOMIZADOR",
               "excelCell": "W14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.AD14",
               "type": "checkbox",
               "label": "CUBETA",
               "excelCell": "AD14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.AK14",
               "type": "checkbox",
               "label": "CLORO 100 - 200 PPM",
               "excelCell": "AK14",
-              "default": true
+              "default": false
             },
             {
               "id": "M3.H13.AR14",
               "type": "checkbox",
               "label": "SOLUCIÓN DETERGENTE",
               "excelCell": "AR14",
-              "default": true
+              "default": false
             }
           ]
         },
@@ -1082,7 +1082,7 @@
               "id": "M3.H14.CHK1",
               "type": "checkbox",
               "label": "SANITARIOS",
-              "default": true,
+              "default": false,
               "range": "A25:B28"
             },
             {
@@ -1118,7 +1118,7 @@
                 "✗",
                 "NL"
               ],
-              "default": "✓",
+              "default": "",
               "range": "P13:AT36"
             }
           ]
@@ -1213,7 +1213,7 @@
                 "✗",
                 "NL"
               ],
-              "default": "✓",
+              "default": "",
               "range": "T19:AX37"
             }
           ]
@@ -1274,14 +1274,14 @@
               "id": "M3.H18.CHK1",
               "type": "checkbox",
               "label": "1",
-              "default": true,
+              "default": false,
               "range": "A9:A32"
             },
             {
               "id": "M3.H18.CHK2",
               "type": "checkbox",
               "label": "PROHIBIDO",
-              "default": true,
+              "default": false,
               "range": "D9:G32"
             }
           ]
