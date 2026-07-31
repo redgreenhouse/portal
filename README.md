@@ -1,24 +1,11 @@
-# RED Greenhouse · Portal v1.19
+# RED Greenhouse Portal v1.21 — Módulo 2
 
-Versión completa para sustituir el contenido actual del repositorio GitHub Pages.
+Cambios del piloto:
 
-Incluye el portal anterior y agrega:
-- Captura de Módulo 2 y Módulo 3.
-- Datos Maestros vinculados.
-- Texto y fechas.
-- Imágenes.
-- Selector ✓ / ✗ / NL.
-- Checkbox activo por defecto.
-- Bitácoras periódicas.
-- Catálogo de personal general.
-- Tabla de vinculación descargable en `config/field-map.json`.
+- Se agregaron las nueve coordenadas amarillas de la hoja `MAPA POLIONOS 2.1.2.` como campos editables.
+- Se eliminó `Ver referencias`.
+- Se agregó `Generar Excel listo para imprimir`; toma la plantilla original, escribe la captura y descarga una copia conservando el formato.
+- Los nombres de Elaboró, Revisó y Autorizó se leen de Datos Maestros.
+- Los estados de bitácora inician vacíos y recorren: vacío → ✓ → ✗ → NL → vacío.
 
-## Publicación
-Borrar el contenido anterior del repositorio (excepto `.git` si se usa Git local) y subir todo el contenido de esta carpeta a la raíz.
-
-## v1.20 — Piloto de documento vivo (Módulo 2)
-- Se eliminó la captura separada del menú.
-- El Módulo 2 usa las transcripciones HTML del Excel.
-- Los datos maestros, textos, imágenes y estados se incrustan dentro de las celdas correspondientes.
-- El botón “Ver referencias” muestra las coordenadas Excel para mantenimiento.
-- Los valores se conservan localmente en el navegador durante esta etapa piloto.
+La exportación Excel utiliza xlsx-populate desde CDN. La plantilla `MODULO-2-PLANTILLA.xlsx` debe permanecer junto a `index.html`.

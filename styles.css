@@ -150,3 +150,13 @@
 .m2-status-cell{padding:1px!important}.m2-image-region{background:#f8fbf9!important}.embedded-logo-slot{display:flex;align-items:center;justify-content:center;position:relative;min-height:55px}.embedded-logo-slot img{max-width:95%;max-height:70px;object-fit:contain}
 .embedded-image-input{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:100px;border:2px dashed #b7c9c0;border-radius:8px;background:#f7fbf9;color:#166442;font-weight:700;cursor:pointer;padding:10px;box-sizing:border-box}.embedded-image-input input{display:none}
 @media(max-width:800px){.living-document{padding:8px}.living-document-toolbar{align-items:flex-start}.living-document .excel-paper{transform-origin:top left}}
+
+/* v1.21: documento vivo y salida Excel */
+.embedded-status.status-empty{background:#fff;color:#64748b}
+.embedded-status.status-empty span::after{content:' ';display:inline-block;min-width:1em}
+.embedded-signature-master{display:flex;min-height:42px;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px;text-align:center}
+.embedded-signature-master strong{font-size:12px;line-height:1.15}
+.embedded-signature-master small{font-size:10px;color:#455b55}
+.m2-master-cell{background:#e9f6ee!important}
+.m2-export-excel{white-space:nowrap}
+@media(max-width:700px){.living-document-toolbar{align-items:flex-start;gap:10px;flex-direction:column}.m2-export-excel{width:100%}}

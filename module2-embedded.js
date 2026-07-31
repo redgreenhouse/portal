@@ -21,7 +21,7 @@ function m2MasterValue(field){
 function m2RenderDocument(doc){
  const replica=m2Replica(doc);
  if(!replica)return '<p class="empty-value">No se encontró la transcripción HTML de esta hoja.</p>';
- return `<div class="living-document-toolbar"><div><b>Documento vivo</b><span>Captura directamente en el contexto del formato original.</span></div><button type="button" class="ghost-button m2-design-toggle">Ver referencias</button></div><div class="living-document" data-m2-code="${esc(doc.code)}">${replica}</div>`;
+ return `<div class="living-document-toolbar"><div><b>Documento vivo</b><span>Captura directamente en el contexto del formato original.</span></div><button type="button" class="primary-button m2-export-excel">Generar Excel listo para imprimir</button></div><div class="living-document" data-m2-code="${esc(doc.code)}">${replica}</div>`;
 }
 function m2ParseCell(cell){const m=/^([A-Z]+)(\d+)$/.exec(cell);if(!m)return null;let col=0;for(const ch of m[1])col=col*26+ch.charCodeAt(0)-64;return {col,row:Number(m[2])};}
 function m2CellsInRange(root,range){
@@ -58,8 +58,13 @@ function m2AddImages(root,doc){
 }
 function m2AddControls(root,doc){
  const sheetName=M2_SHEET_NAME_BY_CODE[doc.code]||doc.code;
- const controls=(typeof MODULE2_ANNOTATIONS!=='undefined'&&MODULE2_ANNOTATIONS[sheetName])||[];
- controls.forEach(item=>{
+ const controls=[...((typeof MODULE2_ANNOTATIONS!=='undefined'&&MODULE2_ANNOTATIONS[sheetName])||[])];
+ if(doc.code==='MAPA 2.1.2') controls.push(...[
+  ['E9',' 18.988608° -98.488697°'],['J9',' 18.987893° -98.488645°'],['O9',' 18.988337° -98.487868°'],
+  ['E11',' 18.989391° -98.489109°'],['J11',' 18.988251° -98.488463°'],['O11',' 18.988573° -98.487551°'],
+  ['E13',' 18.988319° -98.489547°'],['J13',' 18.988219° -98.488380°'],['O13',' 18.988684° -98.487619°']
+ ].map(([cell,value])=>({cell,type:'text',value})));
+ [...new Map(controls.map(x=>[x.cell,x])).values()].forEach(item=>{
   const cell=m2TopCell(root,item.cell);if(!cell)return;
   const key=`${doc.code}|${item.cell}`;
   if(item.type==='text'){
@@ -68,8 +73,8 @@ function m2AddControls(root,doc){
    cell.innerHTML=`<div class="embedded-control-wrap"><input class="embedded-text" data-m2-input="${esc(key)}" type="${isDate?'date':'text'}" value="${esc(String(current))}" placeholder="Capturar…"><small data-m2-ref>${item.cell}</small></div>`;
    cell.classList.add('m2-editable-cell');
   }else if(item.type==='status'){
-   const current=m2EmbeddedValues[key]||'✓';
-   cell.innerHTML=`<button type="button" class="embedded-status status-${current==='✓'?'yes':current==='✗'?'no':'nl'}" data-m2-status="${esc(key)}" title="Clic para cambiar: ✓, ✗, NL"><span>${current}</span><small data-m2-ref>${item.cell}</small></button>`;
+   const current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'';
+   cell.innerHTML=`<button type="button" class="embedded-status ${current==='✓'?'status-yes':current==='✗'?'status-no':current==='NL'?'status-nl':'status-empty'}" data-m2-status="${esc(key)}" title="Clic para cambiar: ✓, ✗, NL"><span>${current||' '}</span><small data-m2-ref>${item.cell}</small></button>`;
    cell.classList.add('m2-editable-cell','m2-status-cell');
   }
  });
@@ -77,13 +82,49 @@ function m2AddControls(root,doc){
 function m2Bind(root){
  root.querySelectorAll('[data-m2-input]').forEach(el=>el.addEventListener('input',()=>{m2EmbeddedValues[el.dataset.m2Input]=el.value;m2Save();}));
  root.querySelectorAll('[data-m2-status]').forEach(btn=>btn.addEventListener('click',()=>{
-  const seq=['✓','✗','NL'],key=btn.dataset.m2Status,next=seq[(seq.indexOf(m2EmbeddedValues[key]||'✓')+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
-  btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':'status-nl');
+  const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
+  btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
  root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{const name=el.files[0]?.name||'';m2EmbeddedValues[el.dataset.m2Image]=name;m2Save();el.nextElementSibling.textContent=name?'Imagen seleccionada: '+name:'＋ Agregar imagen';}));
 }
+
+function m2SignatureData(){
+ const sig=structuredValues[masterKey('Firmas de elaboración, revisión y autorización')]||{};
+ return {
+  elaboro:{nombre:String(sig.elaboro?.nombre||'').trim(),cargo:String(sig.elaboro?.cargo||'Auxiliar en SRRC').trim()},
+  reviso:{nombre:String(sig.reviso?.nombre||m2MasterValue('Responsable de inocuidad')||'').trim(),cargo:String(sig.reviso?.cargo||'Responsable de inocuidad').trim()},
+  autorizo:{nombre:String(sig.autorizo?.nombre||m2MasterValue('Alta Dirección')||'Eduardo Romero Mani').trim(),cargo:String(sig.autorizo?.cargo||'Director general').trim()}
+ };
+}
+function m2AddMasterSignatures(root,doc){
+ if(doc.code!=='POE MTTO INFRAESTR')return;
+ const sig=m2SignatureData();
+ [['B64',sig.elaboro,'Elaboró'],['E64',sig.reviso,'Revisó'],['H64',sig.autorizo,'Autorizó']].forEach(([cell,data,label])=>{
+  const el=m2TopCell(root,cell);if(!el)return;
+  el.innerHTML=`<div class="embedded-signature-master" title="Dato Maestro: ${label}"><strong>${esc(data.nombre||'Pendiente en Datos Maestros')}</strong><small>${esc(data.cargo)}</small></div>`;
+  el.classList.add('m2-master-cell');
+ });
+}
+async function m2GenerateExcel(){
+ const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
+ try{
+  if(typeof XlsxPopulate==='undefined')throw new Error('No se cargó el motor de Excel. Revisa la conexión y vuelve a intentar.');
+  const response=await fetch('MODULO-2-PLANTILLA.xlsx');if(!response.ok)throw new Error('No se encontró la plantilla Excel del Módulo 2.');
+  const workbook=await XlsxPopulate.fromDataAsync(await response.arrayBuffer());
+  Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
+   const parts=key.split('|');if(parts.length!==2||parts[1].startsWith('image'))return;
+   const [code,cell]=parts,sheetName=M2_SHEET_NAME_BY_CODE[code];if(!sheetName||!cell)return;
+   const sheet=workbook.sheet(sheetName);if(sheet)sheet.cell(cell).value(value||'');
+  });
+  const sig=m2SignatureData(),poe=workbook.sheet(M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
+  if(poe){poe.cell('B64').value(sig.elaboro.nombre);poe.cell('E64').value(sig.reviso.nombre);poe.cell('H64').value(sig.autorizo.nombre);}
+  const blob=await workbook.outputAsync();
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+ }catch(err){alert('No se pudo generar el Excel: '+err.message);}
+ finally{buttons.forEach(b=>{b.disabled=false;b.textContent='Generar Excel listo para imprimir'});}
+}
 function m2EnhanceOpenDocument(detail,doc){
  const root=detail.querySelector(`.living-document[data-m2-code="${CSS.escape(doc.code)}"]`);if(!root)return;
- m2ReplaceMasterText(root);m2AddImages(root,doc);m2AddControls(root,doc);m2Bind(root);
- const toggle=detail.querySelector('.m2-design-toggle');if(toggle)toggle.addEventListener('click',()=>{root.classList.toggle('show-m2-refs');toggle.textContent=root.classList.contains('show-m2-refs')?'Ocultar referencias':'Ver referencias';});
+ m2ReplaceMasterText(root);m2AddImages(root,doc);m2AddControls(root,doc);m2AddMasterSignatures(root,doc);m2Bind(root);
+ detail.querySelectorAll('.m2-export-excel').forEach(btn=>{if(!btn.dataset.bound){btn.dataset.bound='1';btn.addEventListener('click',m2GenerateExcel);}});
 }
