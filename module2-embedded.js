@@ -13,7 +13,15 @@ const M2_IMAGE_RANGES={
 };
 const M2_STORE_KEY='redGreenhouseM2Embedded';
 let m2EmbeddedValues=JSON.parse(localStorage.getItem(M2_STORE_KEY)||'{}');
-function m2Save(){localStorage.setItem(M2_STORE_KEY,JSON.stringify(m2EmbeddedValues));}
+const m2ImageFiles=new Map();
+function m2Save(){
+ const safe={};
+ Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
+  if(value&&typeof value==='object'&&value.dataUrl)safe[key]={name:value.name||'',type:value.type||''};
+  else safe[key]=value;
+ });
+ try{localStorage.setItem(M2_STORE_KEY,JSON.stringify(safe));}catch(err){console.warn('No se pudo guardar temporalmente el Módulo 2',err);}
+}
 function m2Replica(doc){return (typeof MODULE2_REPLICAS!=='undefined'&&MODULE2_REPLICAS[doc.code])||'';}
 function m2MasterValue(field){
  const key=masterKey(field); return String(masterValues[key]||'').trim();
@@ -98,7 +106,13 @@ function m2Bind(root){
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
- root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{const file=el.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{m2EmbeddedValues[el.dataset.m2Image]={name:file.name,type:file.type,dataUrl:reader.result};m2Save();el.nextElementSibling.textContent='Imagen seleccionada: '+file.name;};reader.readAsDataURL(file);}));
+ root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{
+  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image;
+  m2ImageFiles.set(key,file);
+  m2EmbeddedValues[key]={name:file.name,type:file.type||'image/png'};
+  m2Save();
+  el.nextElementSibling.textContent='Imagen lista para enviar al Excel: '+file.name;
+ }));
 }
 
 function m2SignatureData(){
@@ -118,6 +132,37 @@ function m2AddMasterSignatures(root,doc){
   el.classList.add('m2-master-cell');
  });
 }
+const M2_HEADER_CELLS={
+ 'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H2'},
+ 'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2'},
+ 'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2'},
+ 'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2'},
+ 'MAPA 2.1':{empresa:'H2',domicilio:'H3',folio:'AP3'},
+ 'MAPA 2.1.1':{empresa:'H2',domicilio:'H3',folio:'AP3'},
+ 'MAPA 2.1.2':{empresa:'C2',domicilio:'C3',folio:'R3'},
+ 'CROQUIS 2.2':{empresa:'I2',domicilio:'I3',folio:'AQ3'},
+ 'DOC-2.3 FRENTE':{empresa:'H1',domicilio:'H2',folio:'AP2'},
+ 'DOC-2.3 REVERSO':{empresa:'H1',domicilio:'H2',folio:'AP2'},
+ 'DOC-2.4':{empresa:'H1',domicilio:'H2',folio:'AP2'},
+ 'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2'}
+};
+function m2CurrentMaster(field,captureKey,fallback=''){
+ const direct=m2MasterValue(field);if(direct)return direct;
+ try{const capture=JSON.parse(localStorage.getItem('red_srrc_capture_v119')||'{}');const value=capture['master.'+captureKey];if(String(value||'').trim())return String(value).trim();}catch(_err){}
+ return fallback;
+}
+function m2ApplyHeaders(workbook){
+ const values={
+  empresa:m2CurrentMaster('Nombre de la unidad de producción','unidadProduccion','RED Greenhouse'),
+  domicilio:m2CurrentMaster('Domicilio de la unidad','domicilio',''),
+  folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente')
+ };
+ Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{
+  const sheet=workbook.sheet(M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
+  Object.entries(cells).forEach(([key,cell])=>sheet.cell(cell).value(values[key]||''));
+ });
+}
+function m2FileToDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('No se pudo leer '+file.name));reader.readAsDataURL(file);});}
 async function m2GenerateExcel(){
  const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
  try{
@@ -129,22 +174,23 @@ async function m2GenerateExcel(){
    const [code,cell]=parts,sheetName=M2_SHEET_NAME_BY_CODE[code];if(!sheetName||!cell)return;
    const sheet=workbook.sheet(sheetName);if(sheet)sheet.cell(cell).value(value||'');
   });
+  m2ApplyHeaders(workbook);
   const sig=m2SignatureData(),poe=workbook.sheet(M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
   if(poe){poe.cell('B66').value(sig.elaboro.nombre);poe.cell('E66').value(sig.reviso.nombre);poe.cell('H66').value(sig.autorizo.nombre);}
-  const masterReplacements={
-   'SUGEILI PEREZ ALVARADO':m2MasterValue('Alta Dirección')||sig.autorizo.nombre,
-   'RANCHO PEREZ PEREZ':m2MasterValue('Nombre de la unidad de producción')||'RED Greenhouse',
-   'PARAJE LA PARCELA S/N SAN FRANCISCO TEPANGO, COHUECAN C.P. 74522':m2MasterValue('Domicilio de la unidad')||'',
-   'UP2022005242':m2MasterValue('Folio SENASICA')||''
-  };
-  workbook.sheets().forEach(sheet=>{const used=sheet.usedRange();if(!used)return;const values=used.value();if(!Array.isArray(values))return;values.forEach((row,r)=>{if(!Array.isArray(row))return;row.forEach((value,c)=>{if(typeof value!=='string')return;const trimmed=value.trim();if(Object.prototype.hasOwnProperty.call(masterReplacements,trimmed))used.cell(r+1,c+1).value(masterReplacements[trimmed]);});});});
   let blob=await workbook.outputAsync();
-  const mapImage=m2EmbeddedValues['MAPA 2.1.2|image|1'];
-  if(mapImage&&typeof mapImage==='object'&&mapImage.dataUrl){
+  if(m2ImageFiles.size){
    if(typeof ExcelJS==='undefined')throw new Error('No se cargó el motor para insertar imágenes en Excel.');
    const excelBook=new ExcelJS.Workbook();await excelBook.xlsx.load(await blob.arrayBuffer());
-   const imageSheet=excelBook.getWorksheet(M2_SHEET_NAME_BY_CODE['MAPA 2.1.2']);
-   if(imageSheet){const ext=(mapImage.type||'image/png').toLowerCase().includes('jpeg')?'jpeg':'png';const imageId=excelBook.addImage({base64:mapImage.dataUrl,extension:ext});imageSheet.addImage(imageId,{tl:{col:2,row:15},br:{col:17,row:40},editAs:'oneCell'});}
+   for(const [key,file] of m2ImageFiles.entries()){
+    const parts=key.split('|');if(parts.length!==3||parts[1]!=='image')continue;
+    const code=parts[0],index=Number(parts[2]),range=(M2_IMAGE_RANGES[code]||[])[index];if(!range)continue;
+    const imageSheet=excelBook.getWorksheet(M2_SHEET_NAME_BY_CODE[code]);if(!imageSheet)continue;
+    const dataUrl=await m2FileToDataUrl(file),mime=(file.type||'').toLowerCase();
+    const extension=mime.includes('jpeg')||mime.includes('jpg')?'jpeg':'png';
+    const imageId=excelBook.addImage({base64:dataUrl,extension});
+    const [from,to]=range.split(':');const a=m2ParseCell(from),b=m2ParseCell(to||from);if(!a||!b)continue;
+    imageSheet.addImage(imageId,{tl:{col:a.col-1,row:a.row-1},br:{col:b.col,row:b.row},editAs:'oneCell'});
+   }
    blob=new Blob([await excelBook.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   }
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
