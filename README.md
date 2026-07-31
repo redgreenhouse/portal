@@ -15,3 +15,10 @@ Incluye el portal anterior y agrega:
 
 ## Publicación
 Borrar el contenido anterior del repositorio (excepto `.git` si se usa Git local) y subir todo el contenido de esta carpeta a la raíz.
+
+## v1.20 — Piloto de documento vivo (Módulo 2)
+- Se eliminó la captura separada del menú.
+- El Módulo 2 usa las transcripciones HTML del Excel.
+- Los datos maestros, textos, imágenes y estados se incrustan dentro de las celdas correspondientes.
+- El botón “Ver referencias” muestra las coordenadas Excel para mantenimiento.
+- Los valores se conservan localmente en el navegador durante esta etapa piloto.
