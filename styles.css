@@ -168,3 +168,4 @@
 .m2-coordinate-item{display:grid;grid-template-columns:42px 1fr;align-items:stretch;border:1px solid #118b80;background:#ffff9d;min-height:44px}
 .m2-coordinate-item>b{display:grid;place-items:center;background:#ddd;border-right:1px solid #118b80}.m2-coordinate-item>span{display:block}.m2-coordinate-item .embedded-control-wrap,.m2-coordinate-item .embedded-text{height:100%;width:100%;margin:0}.m2-coordinate-item .embedded-text{border:0;background:transparent;padding:8px;font-size:15px}
 @media(max-width:900px){.m2-coordinate-grid{grid-template-columns:1fr}}
+.excel-reference-input{width:100%;padding:8px 10px;border:1px solid #c9d8d1;border-radius:8px;font:inherit;background:#fff}.excel-reference-input:focus{outline:2px solid rgba(25,120,82,.18);border-color:#197852}.map-table-wrap{overflow:auto}.map-table-wrap table{min-width:980px}

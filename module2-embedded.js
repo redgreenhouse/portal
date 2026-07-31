@@ -11,6 +11,28 @@ const M2_IMAGE_RANGES={
  'CROQUIS 2.2':['B2:H6','B8:AX38'],'DOC-2.3 FRENTE':['A1:G5'],'DOC-2.3 REVERSO':['A1:G5'],
  'DOC-2.4':['A1:G5','A7:AW32'],'DOC-2.5':['A1:G5','C10:G15','C25:G30','C40:G45']
 };
+
+const M2_REFERENCE_STORE_KEY='redGreenhouseExcelReferences';
+function m2Reference(id,fallback){
+ try{const refs=JSON.parse(localStorage.getItem(M2_REFERENCE_STORE_KEY)||'{}');return String(refs[id]||fallback||'').trim();}catch(_err){return fallback;}
+}
+function m2PopulateSheet(workbook,name){
+ const exact=workbook.sheet(name);if(exact)return exact;
+ const wanted=String(name||'').trim();
+ return workbook.sheets().find(sheet=>String(sheet.name()||'').trim()===wanted);
+}
+function m2ExcelJsSheet(workbook,name){
+ const exact=workbook.getWorksheet(name);if(exact)return exact;
+ const wanted=String(name||'').trim();
+ return workbook.worksheets.find(sheet=>String(sheet.name||'').trim()===wanted);
+}
+const M2_IMAGE_IDS={
+ 'PORTADA':['M2.H01.IMG1'],'POE MTTO INFRAESTR':['M2.H02.IMG1'],'ANÁLISIS DESCRIPTIVO':['M2.H03.IMG1'],'PLAN DE ACCIÓN':['M2.H04.IMG1'],
+ 'MAPA 2.1':['M2.H05.IMG1','M2.H05.IMG2'],'MAPA 2.1.1':['M2.H06.IMG1','M2.H06.IMG2'],'MAPA 2.1.2':['M2.H07.IMG1','M2.H07.IMG2'],
+ 'CROQUIS 2.2':['M2.H08.IMG1','M2.H08.IMG2'],'DOC-2.3 FRENTE':['M2.H09.IMG1'],'DOC-2.3 REVERSO':['M2.H10.IMG1'],
+ 'DOC-2.4':['M2.H11.IMG1','M2.H11.IMG2'],'DOC-2.5':['M2.H12.IMG1','M2.H12.IMG2','M2.H12.IMG3','M2.H12.IMG4']
+};
+function m2ImageRange(code,index){return m2Reference((M2_IMAGE_IDS[code]||[])[index],(M2_IMAGE_RANGES[code]||[])[index]);}
 const M2_STORE_KEY='redGreenhouseM2Embedded';
 let m2EmbeddedValues=JSON.parse(localStorage.getItem(M2_STORE_KEY)||'{}');
 const m2ImageFiles=new Map();
@@ -53,7 +75,8 @@ function m2ReplaceMasterText(root){
  });
 }
 function m2AddImages(root,doc){
- (M2_IMAGE_RANGES[doc.code]||[]).forEach((range,index)=>{
+ (M2_IMAGE_RANGES[doc.code]||[]).forEach((_range,index)=>{
+  const range=m2ImageRange(doc.code,index);
   const cells=m2CellsInRange(root,range),top=m2TopCell(root,range);if(!top)return;
   cells.forEach(c=>c.classList.add('m2-image-region'));
   const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'',storedName=typeof stored==='object'?stored.name:stored;
@@ -158,7 +181,7 @@ function m2ApplyHeaders(workbook){
   folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente')
  };
  Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{
-  const sheet=workbook.sheet(M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
+  const sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
   Object.entries(cells).forEach(([key,cell])=>sheet.cell(cell).value(values[key]||''));
  });
 }
@@ -206,19 +229,19 @@ async function m2GenerateExcel(){
   Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
    const parts=key.split('|');if(parts.length!==2||parts[1].startsWith('image'))return;
    const [code,cell]=parts,sheetName=M2_SHEET_NAME_BY_CODE[code];if(!sheetName||!cell)return;
-   const sheet=workbook.sheet(sheetName);if(sheet)sheet.cell(cell).value(value||'');
+   const sheet=m2PopulateSheet(workbook,sheetName);if(sheet)sheet.cell(cell).value(value||'');
   });
   m2ApplyHeaders(workbook);
-  const sig=m2SignatureData(),poe=workbook.sheet(M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
-  if(poe){poe.cell('B66').value(sig.elaboro.nombre);poe.cell('E66').value(sig.reviso.nombre);poe.cell('H66').value(sig.autorizo.nombre);}
+  const sig=m2SignatureData(),poe=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
+  if(poe){poe.cell(m2Reference('M2.SIGN.ELABORO','B66')).value(sig.elaboro.nombre);poe.cell(m2Reference('M2.SIGN.REVISO','E66')).value(sig.reviso.nombre);poe.cell(m2Reference('M2.SIGN.AUTORIZO','H66')).value(sig.autorizo.nombre);}
   let blob=await workbook.outputAsync();
   if(m2ImageFiles.size){
    if(typeof ExcelJS==='undefined')throw new Error('No se cargó el motor para insertar imágenes en Excel.');
    const excelBook=new ExcelJS.Workbook();await excelBook.xlsx.load(await blob.arrayBuffer());
    for(const [key,file] of m2ImageFiles.entries()){
     const parts=key.split('|');if(parts.length!==3||parts[1]!=='image')continue;
-    const code=parts[0],index=Number(parts[2]),range=(M2_IMAGE_RANGES[code]||[])[index];if(!range)continue;
-    const imageSheet=excelBook.getWorksheet(M2_SHEET_NAME_BY_CODE[code]);if(!imageSheet)continue;
+    const code=parts[0],index=Number(parts[2]),range=m2ImageRange(code,index);if(!range)continue;
+    const imageSheet=m2ExcelJsSheet(excelBook,M2_SHEET_NAME_BY_CODE[code]);if(!imageSheet)continue;
     const dataUrl=await m2FileToDataUrl(file),mime=(file.type||'').toLowerCase();
     const extension=mime.includes('jpeg')||mime.includes('jpg')?'jpeg':'png';
     const imageId=excelBook.addImage({base64:dataUrl,extension});

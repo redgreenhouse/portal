@@ -1,16 +1,12 @@
-RED Greenhouse Portal v1.24 — Protección de fórmulas del Módulo 2
+# RED Greenhouse Portal v1.25
 
-CAMBIO PRINCIPAL
-- El generador conserva y restaura las fórmulas XML originales de la plantilla después de insertar datos e imágenes.
-- Fuerza el recálculo completo al abrir el archivo en Excel.
-- Evita que Excel elimine fórmulas por registros ilegibles creados durante la segunda escritura del libro.
+Cambios principales:
+- Botón "Referencias Excel" en la cabecera de Módulos SRRC.
+- Pantalla editable de mapeo; sólo permite cambiar celda o rango destino.
+- Validación de referencias como H66 o C16:Q40.
+- Restauración de referencias originales.
+- El exportador usa los rangos de imagen modificados en la pantalla.
+- Búsqueda tolerante a espacios finales en los nombres de hojas del Excel. Esto corrige especialmente "ANALISIS DE PELIGRO DESCRIP  " y "BITACORA 2.3 ATRAS ".
+- Se conserva el protector de fórmulas de la v1.24.
 
-PRUEBA
-1. Abrir el portal desde GitHub Pages o servidor web.
-2. Capturar datos y seleccionar imágenes.
-3. Generar el Excel.
-4. Abrirlo en Microsoft Excel.
-5. El archivo debe abrir directamente, sin el aviso "We found a problem with some content".
-
-NOTA
-La página requiere conexión para cargar JSZip, XlsxPopulate y ExcelJS.
+Subir todos los archivos y carpetas respetando la estructura.
