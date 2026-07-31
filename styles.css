@@ -160,3 +160,11 @@
 .m2-master-cell{background:#e9f6ee!important}
 .m2-export-excel{white-space:nowrap}
 @media(max-width:700px){.living-document-toolbar{align-items:flex-start;gap:10px;flex-direction:column}.m2-export-excel{width:100%}}
+
+/* v1.22 · coordenadas visibles dentro del documento vivo */
+.m2-coordinate-panel{margin:14px 16px 4px;padding:14px;border:1px solid #b8d7c8;border-radius:12px;background:#f8fcfa}
+.m2-coordinate-title{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}.m2-coordinate-title span{font-size:13px;color:#567267}
+.m2-coordinate-grid{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));gap:8px 12px}
+.m2-coordinate-item{display:grid;grid-template-columns:42px 1fr;align-items:stretch;border:1px solid #118b80;background:#ffff9d;min-height:44px}
+.m2-coordinate-item>b{display:grid;place-items:center;background:#ddd;border-right:1px solid #118b80}.m2-coordinate-item>span{display:block}.m2-coordinate-item .embedded-control-wrap,.m2-coordinate-item .embedded-text{height:100%;width:100%;margin:0}.m2-coordinate-item .embedded-text{border:0;background:transparent;padding:8px;font-size:15px}
+@media(max-width:900px){.m2-coordinate-grid{grid-template-columns:1fr}}

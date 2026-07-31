@@ -1,11 +1,10 @@
-# RED Greenhouse Portal v1.21 — Módulo 2
+# RED Greenhouse Portal v1.22 — conexiones Módulo 2
 
-Cambios del piloto:
+Cambios principales:
+- Las nueve coordenadas del polígono aparecen en el documento vivo y se escriben en E9, J9, O9, E11, J11, O11, E13, J13 y O13.
+- La imagen seleccionada para MAPA 2.1.2 se incrusta en el Excel generado, dentro de C16:Q40.
+- Los Datos Maestros sustituyen las cabeceras heredadas en todas las hojas del libro.
+- Las firmas permanentes se escriben en B66 (Auxiliar SRRC), E66 (Responsable técnico) y H66 (Director general).
+- Los estados de bitácora permanecen vacíos por defecto.
 
-- Se agregaron las nueve coordenadas amarillas de la hoja `MAPA POLIONOS 2.1.2.` como campos editables.
-- Se eliminó `Ver referencias`.
-- Se agregó `Generar Excel listo para imprimir`; toma la plantilla original, escribe la captura y descarga una copia conservando el formato.
-- Los nombres de Elaboró, Revisó y Autorizó se leen de Datos Maestros.
-- Los estados de bitácora inician vacíos y recorren: vacío → ✓ → ✗ → NL → vacío.
-
-La exportación Excel utiliza xlsx-populate desde CDN. La plantilla `MODULO-2-PLANTILLA.xlsx` debe permanecer junto a `index.html`.
+Nota: el portal usa librerías web para modificar el Excel; al probarlo requiere conexión a internet.

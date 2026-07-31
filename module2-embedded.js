@@ -48,15 +48,27 @@ function m2AddImages(root,doc){
  (M2_IMAGE_RANGES[doc.code]||[]).forEach((range,index)=>{
   const cells=m2CellsInRange(root,range),top=m2TopCell(root,range);if(!top)return;
   cells.forEach(c=>c.classList.add('m2-image-region'));
-  const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'';
+  const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'',storedName=typeof stored==='object'?stored.name:stored;
   if(index===0){
    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/logo-red-greenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
-   top.innerHTML=`<label class="embedded-image-input"><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${stored?'Imagen seleccionada: '+esc(stored):'＋ Agregar imagen'}</span><small data-m2-ref>${range}</small></label>`;
+   top.innerHTML=`<label class="embedded-image-input"><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Imagen seleccionada: '+esc(storedName):'＋ Agregar imagen'}</span><small data-m2-ref>${range}</small></label>`;
   }
  });
 }
+function m2EnsureCoordinateGrid(root,doc){
+ if(doc.code!=='MAPA 2.1.2'||root.querySelector('.m2-coordinate-grid'))return;
+ const rows=[
+  [['A','E9','18.988608° -98.488697°'],['D','J9','18.987893° -98.488645°'],['G','O9','18.988337° -98.487868°']],
+  [['B','E11','18.989391° -98.489109°'],['E','J11','18.988251° -98.488463°'],['H','O11','18.988573° -98.487551°']],
+  [['C','E13','18.988319° -98.489547°'],['F','J13','18.988219° -98.488380°'],['I','O13','18.988684° -98.487619°']]
+ ];
+ const panel=document.createElement('section');panel.className='m2-coordinate-panel';
+ panel.innerHTML=`<div class="m2-coordinate-title"><strong>Coordenadas geográficas del polígono</strong><span>Estos valores se escribirán en la hoja MAPA 2.1.2 del Excel.</span></div><div class="m2-coordinate-grid">${rows.flat().map(([label,cell,value])=>`<label class="m2-coordinate-item"><b>${label}</b><span data-cell="${cell}"></span></label>`).join('')}</div>`;
+ root.appendChild(panel);
+}
 function m2AddControls(root,doc){
+ m2EnsureCoordinateGrid(root,doc);
  const sheetName=M2_SHEET_NAME_BY_CODE[doc.code]||doc.code;
  const controls=[...((typeof MODULE2_ANNOTATIONS!=='undefined'&&MODULE2_ANNOTATIONS[sheetName])||[])];
  if(doc.code==='MAPA 2.1.2') controls.push(...[
@@ -69,6 +81,7 @@ function m2AddControls(root,doc){
   const key=`${doc.code}|${item.cell}`;
   if(item.type==='text'){
    const current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:(item.value||'');
+   if(!Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)&&item.value){m2EmbeddedValues[key]=item.value;m2Save();}
    const isDate=/fecha/i.test(item.value||cell.textContent||'');
    cell.innerHTML=`<div class="embedded-control-wrap"><input class="embedded-text" data-m2-input="${esc(key)}" type="${isDate?'date':'text'}" value="${esc(String(current))}" placeholder="Capturar…"><small data-m2-ref>${item.cell}</small></div>`;
    cell.classList.add('m2-editable-cell');
@@ -85,21 +98,21 @@ function m2Bind(root){
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
- root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{const name=el.files[0]?.name||'';m2EmbeddedValues[el.dataset.m2Image]=name;m2Save();el.nextElementSibling.textContent=name?'Imagen seleccionada: '+name:'＋ Agregar imagen';}));
+ root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{const file=el.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{m2EmbeddedValues[el.dataset.m2Image]={name:file.name,type:file.type,dataUrl:reader.result};m2Save();el.nextElementSibling.textContent='Imagen seleccionada: '+file.name;};reader.readAsDataURL(file);}));
 }
 
 function m2SignatureData(){
  const sig=structuredValues[masterKey('Firmas de elaboración, revisión y autorización')]||{};
  return {
-  elaboro:{nombre:String(sig.elaboro?.nombre||'').trim(),cargo:String(sig.elaboro?.cargo||'Auxiliar en SRRC').trim()},
-  reviso:{nombre:String(sig.reviso?.nombre||m2MasterValue('Responsable de inocuidad')||'').trim(),cargo:String(sig.reviso?.cargo||'Responsable de inocuidad').trim()},
+  elaboro:{nombre:String(sig.elaboro?.nombre||m2MasterValue('Auxiliar SRRC')||'').trim(),cargo:String(sig.elaboro?.cargo||'Auxiliar en SRRC').trim()},
+  reviso:{nombre:String(sig.reviso?.nombre||m2MasterValue('Responsable técnico')||'').trim(),cargo:String(sig.reviso?.cargo||'Responsable técnico').trim()},
   autorizo:{nombre:String(sig.autorizo?.nombre||m2MasterValue('Alta Dirección')||'Eduardo Romero Mani').trim(),cargo:String(sig.autorizo?.cargo||'Director general').trim()}
  };
 }
 function m2AddMasterSignatures(root,doc){
  if(doc.code!=='POE MTTO INFRAESTR')return;
  const sig=m2SignatureData();
- [['B64',sig.elaboro,'Elaboró'],['E64',sig.reviso,'Revisó'],['H64',sig.autorizo,'Autorizó']].forEach(([cell,data,label])=>{
+ [['B66',sig.elaboro,'Elaboró'],['E66',sig.reviso,'Revisó'],['H66',sig.autorizo,'Autorizó']].forEach(([cell,data,label])=>{
   const el=m2TopCell(root,cell);if(!el)return;
   el.innerHTML=`<div class="embedded-signature-master" title="Dato Maestro: ${label}"><strong>${esc(data.nombre||'Pendiente en Datos Maestros')}</strong><small>${esc(data.cargo)}</small></div>`;
   el.classList.add('m2-master-cell');
@@ -117,8 +130,23 @@ async function m2GenerateExcel(){
    const sheet=workbook.sheet(sheetName);if(sheet)sheet.cell(cell).value(value||'');
   });
   const sig=m2SignatureData(),poe=workbook.sheet(M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
-  if(poe){poe.cell('B64').value(sig.elaboro.nombre);poe.cell('E64').value(sig.reviso.nombre);poe.cell('H64').value(sig.autorizo.nombre);}
-  const blob=await workbook.outputAsync();
+  if(poe){poe.cell('B66').value(sig.elaboro.nombre);poe.cell('E66').value(sig.reviso.nombre);poe.cell('H66').value(sig.autorizo.nombre);}
+  const masterReplacements={
+   'SUGEILI PEREZ ALVARADO':m2MasterValue('Alta Dirección')||sig.autorizo.nombre,
+   'RANCHO PEREZ PEREZ':m2MasterValue('Nombre de la unidad de producción')||'RED Greenhouse',
+   'PARAJE LA PARCELA S/N SAN FRANCISCO TEPANGO, COHUECAN C.P. 74522':m2MasterValue('Domicilio de la unidad')||'',
+   'UP2022005242':m2MasterValue('Folio SENASICA')||''
+  };
+  workbook.sheets().forEach(sheet=>{const used=sheet.usedRange();if(!used)return;const values=used.value();if(!Array.isArray(values))return;values.forEach((row,r)=>{if(!Array.isArray(row))return;row.forEach((value,c)=>{if(typeof value!=='string')return;const trimmed=value.trim();if(Object.prototype.hasOwnProperty.call(masterReplacements,trimmed))used.cell(r+1,c+1).value(masterReplacements[trimmed]);});});});
+  let blob=await workbook.outputAsync();
+  const mapImage=m2EmbeddedValues['MAPA 2.1.2|image|1'];
+  if(mapImage&&typeof mapImage==='object'&&mapImage.dataUrl){
+   if(typeof ExcelJS==='undefined')throw new Error('No se cargó el motor para insertar imágenes en Excel.');
+   const excelBook=new ExcelJS.Workbook();await excelBook.xlsx.load(await blob.arrayBuffer());
+   const imageSheet=excelBook.getWorksheet(M2_SHEET_NAME_BY_CODE['MAPA 2.1.2']);
+   if(imageSheet){const ext=(mapImage.type||'image/png').toLowerCase().includes('jpeg')?'jpeg':'png';const imageId=excelBook.addImage({base64:mapImage.dataUrl,extension:ext});imageSheet.addImage(imageId,{tl:{col:2,row:15},br:{col:17,row:40},editAs:'oneCell'});}
+   blob=new Blob([await excelBook.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){alert('No se pudo generar el Excel: '+err.message);}
  finally{buttons.forEach(b=>{b.disabled=false;b.textContent='Generar Excel listo para imprimir'});}
