@@ -162,13 +162,47 @@ function m2ApplyHeaders(workbook){
   Object.entries(cells).forEach(([key,cell])=>sheet.cell(cell).value(values[key]||''));
  });
 }
+
+async function m2RestoreTemplateFormulas(templateBuffer,generatedBuffer){
+ if(typeof JSZip==='undefined')throw new Error('No se cargó el protector de fórmulas de Excel.');
+ const [templateZip,generatedZip]=await Promise.all([JSZip.loadAsync(templateBuffer),JSZip.loadAsync(generatedBuffer)]);
+ const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));
+ const parser=new DOMParser(),serializer=new XMLSerializer();
+ for(const path of sheetPaths){
+  const templateFile=templateZip.file(path),generatedFile=generatedZip.file(path);if(!templateFile||!generatedFile)continue;
+  const [templateXml,generatedXml]=await Promise.all([templateFile.async('string'),generatedFile.async('string')]);
+  const templateDoc=parser.parseFromString(templateXml,'application/xml');
+  const generatedDoc=parser.parseFromString(generatedXml,'application/xml');
+  if(templateDoc.querySelector('parsererror')||generatedDoc.querySelector('parsererror'))throw new Error('No se pudo proteger las fórmulas de '+path+'.');
+  const generatedCells=new Map([...generatedDoc.getElementsByTagName('c')].map(cell=>[cell.getAttribute('r'),cell]));
+  [...templateDoc.getElementsByTagName('c')].forEach(sourceCell=>{
+   const sourceFormula=[...sourceCell.children].find(node=>node.localName==='f');if(!sourceFormula)return;
+   const targetCell=generatedCells.get(sourceCell.getAttribute('r'));if(!targetCell)return;
+   [...targetCell.children].filter(node=>node.localName==='f').forEach(node=>node.remove());
+   const imported=generatedDoc.importNode(sourceFormula,true);
+   const before=[...targetCell.children].find(node=>node.localName==='v'||node.localName==='is'||node.localName==='inlineStr');
+   targetCell.insertBefore(imported,before||targetCell.firstChild);
+  });
+  generatedZip.file(path,serializer.serializeToString(generatedDoc));
+ }
+ const workbookPath='xl/workbook.xml',workbookFile=generatedZip.file(workbookPath);
+ if(workbookFile){
+  const workbookXml=await workbookFile.async('string'),doc=parser.parseFromString(workbookXml,'application/xml');
+  let calcPr=[...doc.getElementsByTagName('*')].find(node=>node.localName==='calcPr');
+  if(!calcPr){calcPr=doc.createElementNS(doc.documentElement.namespaceURI,'calcPr');doc.documentElement.appendChild(calcPr);}
+  calcPr.setAttribute('calcMode','auto');calcPr.setAttribute('fullCalcOnLoad','1');calcPr.setAttribute('forceFullCalc','1');
+  generatedZip.file(workbookPath,serializer.serializeToString(doc));
+ }
+ return generatedZip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
+}
 function m2FileToDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('No se pudo leer '+file.name));reader.readAsDataURL(file);});}
 async function m2GenerateExcel(){
  const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
  try{
   if(typeof XlsxPopulate==='undefined')throw new Error('No se cargó el motor de Excel. Revisa la conexión y vuelve a intentar.');
   const response=await fetch('MODULO-2-PLANTILLA.xlsx');if(!response.ok)throw new Error('No se encontró la plantilla Excel del Módulo 2.');
-  const workbook=await XlsxPopulate.fromDataAsync(await response.arrayBuffer());
+  const templateBuffer=await response.arrayBuffer();
+  const workbook=await XlsxPopulate.fromDataAsync(templateBuffer.slice(0));
   Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
    const parts=key.split('|');if(parts.length!==2||parts[1].startsWith('image'))return;
    const [code,cell]=parts,sheetName=M2_SHEET_NAME_BY_CODE[code];if(!sheetName||!cell)return;
@@ -191,7 +225,13 @@ async function m2GenerateExcel(){
     const [from,to]=range.split(':');const a=m2ParseCell(from),b=m2ParseCell(to||from);if(!a||!b)continue;
     imageSheet.addImage(imageId,{tl:{col:a.col-1,row:a.row-1},br:{col:b.col,row:b.row},editAs:'oneCell'});
    }
-   blob=new Blob([await excelBook.xlsx.writeBuffer()],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+   const generatedBuffer=await excelBook.xlsx.writeBuffer();
+   const protectedBuffer=await m2RestoreTemplateFormulas(templateBuffer,generatedBuffer);
+   blob=new Blob([protectedBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  if(!m2ImageFiles.size){
+   const protectedBuffer=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
+   blob=new Blob([protectedBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   }
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){alert('No se pudo generar el Excel: '+err.message);}

@@ -1,9 +1,16 @@
-# RED Greenhouse Portal v1.23 — Módulo 2
+RED Greenhouse Portal v1.24 — Protección de fórmulas del Módulo 2
 
-Correcciones del piloto Documento Vivo:
+CAMBIO PRINCIPAL
+- El generador conserva y restaura las fórmulas XML originales de la plantilla después de insertar datos e imágenes.
+- Fuerza el recálculo completo al abrir el archivo en Excel.
+- Evita que Excel elimine fórmulas por registros ilegibles creados durante la segunda escritura del libro.
 
-- Las cabeceras escriben directamente empresa, domicilio y folio en las celdas correspondientes de cada hoja.
-- Las firmas del POE toman Auxiliar SRRC, Responsable técnico y Director general.
-- Todas las imágenes seleccionables del Módulo 2 se insertan en su hoja y rango correspondiente.
-- Las imágenes se mantienen en memoria hasta generar el Excel; selecciónalas y genera el archivo antes de recargar la página.
-- Los estados de bitácora continúan vacíos por defecto.
+PRUEBA
+1. Abrir el portal desde GitHub Pages o servidor web.
+2. Capturar datos y seleccionar imágenes.
+3. Generar el Excel.
+4. Abrirlo en Microsoft Excel.
+5. El archivo debe abrir directamente, sin el aviso "We found a problem with some content".
+
+NOTA
+La página requiere conexión para cargar JSZip, XlsxPopulate y ExcelJS.
