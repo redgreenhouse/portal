@@ -1,22 +1,17 @@
 
 
 const masterData = [
-  {category:'Identidad', field:'Nombre de la unidad de producción', detail:'Nombre oficial usado en encabezados, portadas y registros.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Identidad', field:'Folio SENASICA', detail:'Identificador repetido en portadas, procedimientos, análisis, mapas y bitácoras.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Identidad', field:'Nombre de la unidad de producción', detail:'Nombre oficial usado en encabezados, portadas y registros.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Identidad', field:'Folio SENASICA', detail:'Folio puntual que se mostrará en las hojas oficiales.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
   {category:'Identidad', field:'Razón social / propietario', detail:'Identidad legal o responsable de la unidad productiva.', source:'Por confirmar', modules:{2:'p',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Ubicación', field:'Domicilio de la unidad', detail:'Localidad, municipio, estado y referencias de acceso.', source:'M2', modules:{2:'c',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Ubicación', field:'Coordenadas geográficas', detail:'Polígono y puntos georreferenciados en grados decimales.', source:'M2', modules:{2:'c',3:'',4:'',5:'',6:'',7:'',8:'p',9:'',10:'p',11:'',12:'p',13:'',14:''}},
-  {category:'Ubicación', field:'Macro y microlocalización', detail:'Mapas y referencias territoriales de la unidad de producción.', source:'M2', modules:{2:'c',3:'',4:'',5:'',6:'',7:'',8:'p',9:'',10:'p',11:'',12:'p',13:'',14:''}},
-  {category:'Producción', field:'Cultivo y variedad', detail:'Producto agrícola al que aplican procedimientos, riesgos y registros.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Producción', field:'Superficie y áreas productivas', detail:'Extensión, invernaderos, bloques y zonas incluidas.', source:'M2', modules:{2:'c',3:'p',4:'p',5:'',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Alta Dirección', detail:'Nombre y cargo de quien autoriza procedimientos y recursos.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Responsable de inocuidad', detail:'Persona que implementa, supervisa y revisa el sistema SRRC.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos para los pies de firma de procedimientos.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Infraestructura', field:'Inventario de instalaciones y equipos', detail:'Áreas, estaciones sanitarias, almacenes, comedor, agua y equipos.', source:'M2–M4', modules:{2:'c',3:'c',4:'c',5:'',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Infraestructura', field:'Croquis de instalaciones', detail:'Distribución física y ubicación de puntos de control.', source:'M2–M4', modules:{2:'c',3:'c',4:'c',5:'',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Control documental', field:'Código del documento', detail:'Clave de procedimiento, programa, plan, análisis o registro.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Control documental', field:'Versión y fecha de emisión', detail:'Control uniforme de vigencia documental.', source:'M2–M7', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
+  {category:'Ubicación', field:'Domicilio de la unidad', detail:'Dirección utilizada en las cabeceras de los documentos.', source:'M2–M14', modules:{2:'c',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Producción', field:'Cultivo y variedad', detail:'Producto agrícola al que aplican procedimientos, riesgos y registros.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Alta Dirección', detail:'Nombre y cargo de quien autoriza procedimientos y recursos.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Responsable de inocuidad', detail:'Persona que implementa, supervisa y revisa el sistema SRRC.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos estables para los pies de aprobación.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Control documental', field:'Versión', detail:'Versión vigente del documento.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Control documental', field:'Fecha de emisión', detail:'Fecha de emisión del documento oficial.', inputType:'date', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
 ];
 
 
@@ -237,9 +232,6 @@ const module2MasterLinks={
   'PORTADA|Folio SENASICA':'Folio SENASICA',
   'POE MTTO INFRAESTR|Elaboró / Revisó / Autorizó':'Firmas de elaboración, revisión y autorización',
   'MAPA 2.1|Nombre de la unidad':'Nombre de la unidad de producción',
-  'MAPA 2.1|Coordenadas':'Coordenadas geográficas',
-  'MAPA 2.1.1|Coordenadas':'Coordenadas geográficas',
-  'CROQUIS 2.2|Croquis de instalaciones':'Croquis de instalaciones',
   'DOC-2.4|Responsable de inocuidad':'Responsable de inocuidad'
 };
 function module2MasterField(doc,field){return module2MasterLinks[`${doc.code}|${field[0]}`]||''}
@@ -328,7 +320,28 @@ function openModule(m){if(m===2){openModule2();return}const st=moduleStatus(m),d
 function renderAll(){ensureStructuredDefaults();renderDashboard();renderTasks();renderMasterData();renderModules()}
 
 let currentView='inicio',viewHistory=[];
-function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v==='configuracion'?'Administración':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+
+// Acceso público / privado y configuración básica.
+const DEFAULT_PORTAL_PASSWORD='RED2026';
+const portalPassword=()=>localStorage.getItem('redGreenhousePortalPassword')||DEFAULT_PORTAL_PASSWORD;
+function openLogin(){document.getElementById('loginBackdrop').hidden=false;document.getElementById('loginPassword').focus()}
+function closeLogin(){document.getElementById('loginBackdrop').hidden=true;document.getElementById('loginError').textContent='';document.getElementById('loginForm').reset()}
+function enterPrivatePortal(){document.getElementById('publicSite').hidden=true;document.getElementById('privateApp').hidden=false;sessionStorage.setItem('redGreenhousePrivateSession','1');showView('inicio',false)}
+function exitPrivatePortal(){sessionStorage.removeItem('redGreenhousePrivateSession');document.getElementById('privateApp').hidden=true;document.getElementById('publicSite').hidden=false;showView('inicio',false)}
+document.getElementById('openLoginButton').addEventListener('click',openLogin);
+document.getElementById('footerLoginButton').addEventListener('click',openLogin);
+document.getElementById('closeLoginButton').addEventListener('click',closeLogin);
+document.getElementById('loginBackdrop').addEventListener('click',e=>{if(e.target.id==='loginBackdrop')closeLogin()});
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();if(document.getElementById('loginPassword').value===portalPassword()){closeLogin();enterPrivatePortal()}else document.getElementById('loginError').textContent='Contraseña incorrecta.'});
+document.getElementById('logoutButton').addEventListener('click',exitPrivatePortal);
+document.getElementById('savePasswordButton').addEventListener('click',()=>{const a=document.getElementById('newPortalPassword').value,b=document.getElementById('confirmPortalPassword').value,msg=document.getElementById('passwordMessage');if(a.length<4){msg.textContent='Usa al menos 4 caracteres.';return}if(a!==b){msg.textContent='Las contraseñas no coinciden.';return}localStorage.setItem('redGreenhousePortalPassword',a);document.getElementById('newPortalPassword').value='';document.getElementById('confirmPortalPassword').value='';msg.textContent='Contraseña actualizada.'});
+const driveConfig=JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}');
+document.getElementById('driveFolderId').value=driveConfig.folderId||'1nhz_xAqRz6kcsZdg_zodmaLACmw584sL';
+document.getElementById('driveWebAppUrl').value=driveConfig.webAppUrl||'';
+document.getElementById('saveDriveConfigButton').addEventListener('click',()=>{localStorage.setItem('redGreenhouseDriveConfig',JSON.stringify({folderId:document.getElementById('driveFolderId').value.trim(),webAppUrl:document.getElementById('driveWebAppUrl').value.trim()}));document.getElementById('driveMessage').textContent='Configuración guardada.'});
+if(sessionStorage.getItem('redGreenhousePrivateSession')==='1')enterPrivatePortal();
+
 ensureStructuredDefaults();
 clearDuplicateModule2Values();
 document.getElementById('backButton').addEventListener('click',()=>{if(viewHistory.length)showView(viewHistory.pop(),false)});document.getElementById('homeButton').addEventListener('click',()=>showView('inicio'));document.getElementById('saveMasterDataButton').addEventListener('click',saveMasterData);
