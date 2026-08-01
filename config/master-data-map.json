@@ -11,6 +11,18 @@
     "folioSenasica": {
       "label": "Folio SENASICA",
       "value": ""
+    },
+    "versionDocumento": {
+      "label": "Versión",
+      "value": ""
+    },
+    "fechaEmision": {
+      "label": "Fecha de emisión",
+      "value": ""
+    },
+    "vigenciaDocumento": {
+      "label": "Vigencia",
+      "value": ""
     }
   },
   "responsables": {
@@ -24,6 +36,10 @@
     },
     "auxiliarSRRC": {
       "label": "Auxiliar SRRC",
+      "value": ""
+    },
+    "responsableInocuidad": {
+      "label": "Responsable de inocuidad",
       "value": ""
     }
   },
