@@ -320,7 +320,7 @@ function openModule(m){if(m===2){openModule2();return}const st=moduleStatus(m),d
 function renderAll(){ensureStructuredDefaults();renderDashboard();renderTasks();renderMasterData();renderModules()}
 
 let currentView='inicio',viewHistory=[];
-function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v==='configuracion'?'Administración':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v==='configuracion'?'Administración':v==='galeria'?'Galería pública':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
 
 // Acceso público / privado y configuración básica.
 const DEFAULT_PORTAL_PASSWORD='RED2026';
@@ -335,12 +335,38 @@ document.getElementById('closeLoginButton').addEventListener('click',closeLogin)
 document.getElementById('loginBackdrop').addEventListener('click',e=>{if(e.target.id==='loginBackdrop')closeLogin()});
 document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();if(document.getElementById('loginPassword').value===portalPassword()){closeLogin();enterPrivatePortal()}else document.getElementById('loginError').textContent='Contraseña incorrecta.'});
 document.getElementById('logoutButton').addEventListener('click',exitPrivatePortal);
+document.getElementById('publicSiteButton').addEventListener('click',exitPrivatePortal);
 document.getElementById('savePasswordButton').addEventListener('click',()=>{const a=document.getElementById('newPortalPassword').value,b=document.getElementById('confirmPortalPassword').value,msg=document.getElementById('passwordMessage');if(a.length<4){msg.textContent='Usa al menos 4 caracteres.';return}if(a!==b){msg.textContent='Las contraseñas no coinciden.';return}localStorage.setItem('redGreenhousePortalPassword',a);document.getElementById('newPortalPassword').value='';document.getElementById('confirmPortalPassword').value='';msg.textContent='Contraseña actualizada.'});
 const driveConfig=JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}');
 document.getElementById('driveFolderId').value=driveConfig.folderId||'1nhz_xAqRz6kcsZdg_zodmaLACmw584sL';
-document.getElementById('driveWebAppUrl').value=driveConfig.webAppUrl||'';
+document.getElementById('driveWebAppUrl').value=driveConfig.webAppUrl||'https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec';
 document.getElementById('saveDriveConfigButton').addEventListener('click',()=>{localStorage.setItem('redGreenhouseDriveConfig',JSON.stringify({folderId:document.getElementById('driveFolderId').value.trim(),webAppUrl:document.getElementById('driveWebAppUrl').value.trim()}));document.getElementById('driveMessage').textContent='Configuración guardada.'});
 if(sessionStorage.getItem('redGreenhousePrivateSession')==='1')enterPrivatePortal();
+
+
+const DEFAULT_GALLERY=[{fileId:'local-invernadero',title:'Producción en campo',description:'Trabajo cotidiano dentro del invernadero.',imageUrl:'assets/images/gallery/invernadero-familia.png'}];
+function galleryEndpoint(){return (JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}').webAppUrl||document.getElementById('driveWebAppUrl')?.value||'').trim()}
+function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
+async function loadGallery(){
+  let items=DEFAULT_GALLERY.slice();const url=galleryEndpoint();
+  if(url){try{const r=await fetch(url+'?action=listGallery');const j=await r.json();if(j.ok&&Array.isArray(j.items))items=items.concat(j.items)}catch(e){console.warn('Galería Drive no disponible',e)}}
+  renderGallery(items);
+}
+function renderGallery(items){
+  const publicGrid=document.getElementById('publicGalleryGrid');
+  if(publicGrid)publicGrid.innerHTML=items.map(x=>`<article class="gallery-tile"><img src="${esc(x.imageUrl||x.thumbnailUrl||'')}" alt="${esc(x.title||'Fotografía RED Greenhouse')}"><div><strong>${esc(x.title||'RED Greenhouse')}</strong><span>${esc(x.description||'')}</span></div></article>`).join('');
+  const admin=document.getElementById('galleryAdminGrid');
+  if(admin)admin.innerHTML=items.map(x=>`<article class="card gallery-admin-item"><img src="${esc(x.imageUrl||x.thumbnailUrl||'')}" alt=""><div><strong>${esc(x.title||'Sin título')}</strong><p>${esc(x.description||'')}</p><small>${x.fileId==='local-invernadero'?'Incluida en el portal':'Google Drive · '+esc(x.name||x.fileId||'')}</small></div></article>`).join('');
+}
+async function uploadGalleryPhoto(){
+  const file=document.getElementById('galleryFile').files[0],msg=document.getElementById('galleryMessage'),url=galleryEndpoint();
+  if(!file){msg.textContent='Selecciona una fotografía.';return}if(!url){msg.textContent='Configura primero la URL del Apps Script.';return}
+  msg.textContent='Subiendo fotografía…';
+  try{const payload={action:'uploadGallery',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),title:document.getElementById('galleryTitle').value.trim(),description:document.getElementById('galleryDescription').value.trim()};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');msg.textContent='Fotografía publicada.';document.getElementById('galleryFile').value='';document.getElementById('galleryTitle').value='';document.getElementById('galleryDescription').value='';await loadGallery()}catch(e){msg.textContent='Error: '+e.message}
+}
+document.getElementById('uploadGalleryButton').addEventListener('click',uploadGalleryPhoto);
+document.getElementById('refreshGalleryButton').addEventListener('click',loadGallery);
+loadGallery();
 
 ensureStructuredDefaults();
 clearDuplicateModule2Values();

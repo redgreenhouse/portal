@@ -12,18 +12,19 @@
 <body>
   <section class="public-site" id="publicSite">
     <header class="public-header">
-      <div class="public-brand"><img src="assets/logo-red-greenhouse.png" alt="RED Greenhouse"><div><strong>RED Greenhouse</strong><span>Producción responsable</span></div></div>
-      <nav><a href="#nosotros">Nosotros</a><a href="#productos">Productos</a><a href="#certificaciones">Certificaciones</a><a href="#contacto">Contacto</a></nav>
+      <div class="public-brand"><img src="assets/images/logo-red-greenhouse.png" alt="RED Greenhouse"><div><strong>RED Greenhouse</strong><span>Producción responsable</span></div></div>
+      <nav><a href="#nosotros">Nosotros</a><a href="#productos">Productos</a><a href="#certificaciones">Certificaciones</a><a href="#galeria">Galería</a><a href="#contacto">Contacto</a></nav>
       <button class="portal-access-button" id="openLoginButton">Portal RED →</button>
     </header>
     <main>
       <section class="public-hero">
         <div><span class="public-kicker">AGRICULTURA PROTEGIDA · PUEBLA</span><h1>Alimentos inocuos, cultivados con responsabilidad.</h1><p>RED Greenhouse produce jitomate bajo procesos orientados a la calidad, la trazabilidad y la mejora continua.</p><div class="public-actions"><a class="public-primary" href="#contacto">Contáctanos</a><a class="public-secondary" href="#certificaciones">Conoce nuestro proceso</a></div></div>
-        <div class="hero-tomato"><img src="assets/logo-red-greenhouse.png" alt="RED Greenhouse"></div>
+        <div class="hero-tomato"><img src="assets/images/logo-red-greenhouse.png" alt="RED Greenhouse"></div>
       </section>
       <section class="public-section" id="nosotros"><span class="public-kicker">NOSOTROS</span><h2>Un invernadero construido para crecer bien.</h2><p>Trabajamos para consolidar una operación productiva, ordenada y verificable, donde la inocuidad forme parte del trabajo diario.</p></section>
       <section class="public-cards" id="productos"><article><span>🍅</span><h3>Jitomate</h3><p>Producción en invernadero con seguimiento por variedad y ciclo productivo.</p></article><article><span>🌱</span><h3>Cultivo protegido</h3><p>Infraestructura enfocada en control, rendimiento y cuidado del producto.</p></article><article><span>✓</span><h3>Trazabilidad</h3><p>Procesos documentados para mantener evidencia y facilitar auditorías.</p></article></section>
       <section class="public-cert" id="certificaciones"><div><span class="public-kicker">CERTIFICACIONES</span><h2>SRRC en implementación</h2><p>Estamos preparando nuestro Sistema de Reducción de Riesgos de Contaminación.</p></div><div class="public-status-card"><i></i><strong>Proceso activo</strong><span>Carpeta documental y controles operativos en desarrollo.</span></div></section>
+      <section class="public-gallery" id="galeria"><div class="public-gallery-head"><div><span class="public-kicker">GALERÍA</span><h2>Nuestro invernadero</h2><p>Producción, cultivo y trabajo diario en RED Greenhouse.</p></div></div><div class="public-gallery-grid" id="publicGalleryGrid"><article class="gallery-tile"><img src="assets/images/gallery/invernadero-familia.png" alt="Cultivo de jitomate en invernadero"><div><strong>Producción en campo</strong><span>Trabajo cotidiano dentro del invernadero.</span></div></article></div></section>
       <section class="public-contact" id="contacto"><div><span class="public-kicker">CONTACTO</span><h2>Hablemos.</h2><p>Para información comercial, alianzas o visitas, comunícate con RED Greenhouse.</p></div><div><p><strong>Correo</strong><br>contacto@redgreenhouse.mx</p><p><strong>Ubicación</strong><br>Puebla, México</p></div></section>
     </main>
     <footer class="public-footer">RED Greenhouse · Puebla, México <button id="footerLoginButton">Acceso privado</button></footer>
@@ -58,10 +59,11 @@
       <button class="nav-item" data-view="modulos"><span>▤</span> Módulos SRRC</button>
       <button class="nav-item" data-view="bitacoras"><span>☑</span> Bitácoras</button>
       <button class="nav-item" data-view="vinculacion"><span>⌘</span> Tabla de vinculación</button>
+      <button class="nav-item" data-view="galeria"><span>▧</span> Galería pública</button>
       <button class="nav-item" data-view="reportes"><span>▥</span> Reportes</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · v1.26</div>
+    <div class="sidebar-footer">RED Greenhouse · v1.27</div>
   </aside>
 
   <main class="main">
@@ -72,7 +74,7 @@
         <button class="nav-control home-control" id="homeButton" title="Ir al inicio">⌂ <span>Inicio</span></button>
         <div class="breadcrumb" id="breadcrumb">Inicio</div>
       </div>
-      <div class="topbar-right"><span class="portal-status"><i></i> Portal activo</span><span id="currentDate"></span></div>
+      <div class="topbar-right"><button class="public-return-button" id="publicSiteButton">← Sitio público</button><span class="portal-status"><i></i> Portal activo</span><span id="currentDate"></span></div>
     </header>
 
     <section class="view active" id="view-inicio">
@@ -185,12 +187,26 @@
       <div id="mapApp"></div>
     </section>
 
+    <section class="view" id="view-galeria">
+      <div class="page-heading"><div><h1>Galería pública</h1><p>Sube y administra las fotografías que aparecen en el sitio público.</p></div><button class="ghost-button" id="refreshGalleryButton">Actualizar</button></div>
+      <section class="card gallery-admin-card">
+        <div class="gallery-upload-grid">
+          <label>Fotografía<input type="file" id="galleryFile" accept="image/*"></label>
+          <label>Título<input type="text" id="galleryTitle" placeholder="Ej. Producción en campo"></label>
+          <label>Descripción<input type="text" id="galleryDescription" placeholder="Texto breve para el sitio público"></label>
+          <button class="primary-button" id="uploadGalleryButton">Subir a Google Drive</button>
+        </div>
+        <span class="admin-message" id="galleryMessage"></span>
+      </section>
+      <section class="gallery-admin-grid" id="galleryAdminGrid"></section>
+    </section>
+
     <section class="view" id="view-configuracion">
       <div class="page-heading"><div><h1>Administración</h1><p>Seguridad, almacenamiento y configuración general.</p></div><button class="ghost-button" id="logoutButton">Cerrar sesión</button></div>
       <section class="admin-grid">
         <article class="card admin-card"><h2>Seguridad</h2><p>Cambia la contraseña básica de acceso al portal privado.</p><label>Nueva contraseña<input type="password" id="newPortalPassword" minlength="4" placeholder="Mínimo 4 caracteres"></label><label>Confirmar contraseña<input type="password" id="confirmPortalPassword" minlength="4"></label><button class="primary-button" id="savePasswordButton">Guardar contraseña</button><span class="admin-message" id="passwordMessage"></span></article>
-        <article class="card admin-card"><h2>Google Drive</h2><p>Configuración para almacenar imágenes y recuperarlas al volver al módulo.</p><label>ID carpeta Images<input id="driveFolderId" value="1nhz_xAqRz6kcsZdg_zodmaLACmw584sL"></label><label>URL del Apps Script Web App<input id="driveWebAppUrl" placeholder="Se agregará después de desplegar Apps Script"></label><button class="primary-button" id="saveDriveConfigButton">Guardar configuración</button><span class="admin-message" id="driveMessage"></span></article>
-        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong>v1.26</strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
+        <article class="card admin-card"><h2>Google Drive</h2><p>Configuración para almacenar imágenes y recuperarlas al volver al módulo.</p><label>ID carpeta Images<input id="driveFolderId" value="1nhz_xAqRz6kcsZdg_zodmaLACmw584sL"></label><label>URL del Apps Script Web App<input id="driveWebAppUrl" value="https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec"></label><button class="primary-button" id="saveDriveConfigButton">Guardar configuración</button><span class="admin-message" id="driveMessage"></span></article>
+        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong>v1.27</strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
       </section>
     </section>
 
@@ -202,7 +218,7 @@
   <div class="login-backdrop" id="loginBackdrop" hidden>
     <form class="login-card" id="loginForm">
       <button type="button" class="login-close" id="closeLoginButton">×</button>
-      <img src="assets/logo-red-greenhouse.png" alt="RED Greenhouse">
+      <img src="assets/images/logo-red-greenhouse.png" alt="RED Greenhouse">
       <h2>Portal RED</h2><p>Acceso privado al portal de gestión.</p>
       <label>Contraseña<input type="password" id="loginPassword" autocomplete="current-password" required></label>
       <span class="login-error" id="loginError"></span>

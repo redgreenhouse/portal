@@ -14,3 +14,12 @@ Subir todos los archivos y carpetas respetando la estructura.
 
 ## v1.26
 Página pública, acceso privado, Administración, catálogo maestro depurado y base de Google Drive. Contraseña inicial: RED2026.
+
+
+## v1.27
+- Galería pública administrada desde la intranet.
+- Carga real de fotografías a Google Drive mediante Apps Script.
+- Botón para regresar al sitio público.
+- Folio SENASICA visible en Datos Maestros.
+- Plantillas Excel organizadas en `/templates`.
+- Logo transparente centralizado en `/assets/images`.

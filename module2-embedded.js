@@ -130,7 +130,7 @@ function m2AddImages(root,doc){
   cells.forEach(c=>c.classList.add('m2-image-region'));
   const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'',storedName=typeof stored==='object'?stored.name:stored;
   if(index===0){
-   top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/logo-red-greenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
+   top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-red-greenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
    top.innerHTML=`<label class="embedded-image-input"><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Imagen seleccionada: '+esc(storedName):'＋ Agregar imagen'}</span><small data-m2-ref>${range}</small></label>`;
   }
@@ -274,7 +274,7 @@ async function m2GenerateExcel(){
  const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
  try{
   if(typeof XlsxPopulate==='undefined')throw new Error('No se cargó el motor de Excel. Revisa la conexión y vuelve a intentar.');
-  const response=await fetch('MODULO-2-PLANTILLA.xlsx');if(!response.ok)throw new Error('No se encontró la plantilla Excel del Módulo 2.');
+  const response=await fetch('templates/MODULO-2-PLANTILLA.xlsx');if(!response.ok)throw new Error('No se encontró la plantilla Excel del Módulo 2.');
   const templateBuffer=await response.arrayBuffer();m2Trace('template-loaded',{bytes:templateBuffer.byteLength});
   const workbook=await XlsxPopulate.fromDataAsync(templateBuffer.slice(0));
   Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
