@@ -178,13 +178,11 @@ function m2Bind(root){
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
- root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{
-  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image;
-  m2ImageFiles.set(key,file);
-  m2Trace('image-selected',{key,name:file.name,type:file.type,size:file.size});
-  m2EmbeddedValues[key]={name:file.name,type:file.type||'image/png'};
-  m2Save();
-  el.nextElementSibling.textContent='Imagen lista para enviar al Excel: '+file.name;
+ root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',async()=>{
+  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
+  if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
+  el.disabled=true;el.nextElementSibling.textContent='Subiendo a Google Drive…';
+  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();el.nextElementSibling.textContent='Imagen guardada en Drive: '+file.name;}catch(err){alert(err.message);el.nextElementSibling.textContent='＋ Agregar imagen';}finally{el.disabled=false;}
  }));
 }
 
@@ -283,35 +281,12 @@ async function m2GenerateExcel(){
    const sheet=m2PopulateSheet(workbook,sheetName);if(sheet)sheet.cell(cell).value(value||'');
   });
   m2ApplyHeaders(workbook);
+  Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]),target=m2ImageRange(code,Number(index))?.split(':')[0];if(sheet&&target)sheet.cell(target).formula(`HYPERLINK("${String(value.url).replace(/"/g,'""')}","Abrir evidencia fotográfica")`);});
   const sig=m2SignatureData(),poe=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
   if(poe){poe.cell(m2Reference('M2.SIGN.ELABORO','B66')).value(sig.elaboro.nombre);poe.cell(m2Reference('M2.SIGN.REVISO','E66')).value(sig.reviso.nombre);poe.cell(m2Reference('M2.SIGN.AUTORIZO','H66')).value(sig.autorizo.nombre);}
   let blob=await workbook.outputAsync();
-  if(m2ImageFiles.size){
-   if(typeof ExcelJS==='undefined')throw new Error('No se cargó el motor para insertar imágenes en Excel.');
-   const excelBook=new ExcelJS.Workbook();await excelBook.xlsx.load(await blob.arrayBuffer());
-   for(const [key,file] of m2ImageFiles.entries()){
-    const parts=key.split('|');
-    if(parts.length!==3||parts[1]!=='image'){m2Trace('image-skipped-key',{key});continue;}
-    const code=parts[0],index=Number(parts[2]),range=m2ImageRange(code,index),targetName=M2_SHEET_NAME_BY_CODE[code];
-    m2Trace('image-resolve-start',{key,code,index,range,targetName,file:file.name});
-    if(!range){m2Trace('image-skipped-no-range',{key});continue;}
-    const imageSheet=m2ExcelJsSheet(excelBook,targetName);
-    if(!imageSheet){m2Trace('image-skipped-no-sheet',{key,targetName,available:excelBook.worksheets.map(s=>s.name)});continue;}
-    const dataUrl=await m2FileToDataUrl(file),mime=(file.type||'').toLowerCase();
-    const extension=mime.includes('jpeg')||mime.includes('jpg')?'jpeg':'png';
-    const imageId=excelBook.addImage({base64:dataUrl,extension});
-    const [from,to]=range.split(':');const a=m2ParseCell(from),b=m2ParseCell(to||from);
-    if(!a||!b){m2Trace('image-skipped-invalid-range',{key,range});continue;}
-    imageSheet.addImage(imageId,{tl:{col:a.col-1,row:a.row-1},br:{col:b.col,row:b.row},editAs:'oneCell'});
-    let sheetImages=[];try{sheetImages=typeof imageSheet.getImages==='function'?imageSheet.getImages().map(x=>({imageId:x.imageId,range:x.range||null})):[];}catch(_err){}
-    m2Trace('image-added',{key,imageId,sheet:imageSheet.name,sheetId:imageSheet.id,range,from:a,to:b,sheetImages});
-   }
-   const generatedBuffer=await excelBook.xlsx.writeBuffer();
-   m2Trace('exceljs-written',{bytes:generatedBuffer.byteLength||generatedBuffer.length||0});
-   await m2InspectGeneratedImageLinks(generatedBuffer);
-   const protectedBuffer=await m2RestoreTemplateFormulas(templateBuffer,generatedBuffer);
-   blob=new Blob([protectedBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  }
+  // Las imágenes se guardan en Drive y el Excel recibe un vínculo; no se reconstruye el libro.
+
   if(!m2ImageFiles.size){
    const protectedBuffer=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
    blob=new Blob([protectedBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
