@@ -344,28 +344,87 @@ document.getElementById('saveDriveConfigButton').addEventListener('click',()=>{l
 if(sessionStorage.getItem('redGreenhousePrivateSession')==='1')enterPrivatePortal();
 
 
-const DEFAULT_GALLERY=[{fileId:'local-invernadero',title:'Producción en campo',description:'Trabajo cotidiano dentro del invernadero.',imageUrl:'assets/images/gallery/invernadero-familia.png'}];
+const DEFAULT_GALLERY=[{fileId:'local-invernadero',title:'Producción en campo',description:'Trabajo cotidiano dentro del invernadero.',imageUrl:'assets/images/gallery/invernadero-familia.png',visible:true,local:true}];
 function galleryEndpoint(){return (JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}').webAppUrl||document.getElementById('driveWebAppUrl')?.value||'').trim()}
 function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
+function localGalleryItem(){
+  const saved=JSON.parse(localStorage.getItem('redGreenhouseLocalGalleryItem')||'null');
+  return {...DEFAULT_GALLERY[0],...(saved||{})};
+}
 async function loadGallery(){
-  let items=DEFAULT_GALLERY.slice();const url=galleryEndpoint();
-  if(url){try{const r=await fetch(url+'?action=listGallery');const j=await r.json();if(j.ok&&Array.isArray(j.items))items=items.concat(j.items)}catch(e){console.warn('Galería Drive no disponible',e)}}
+  let items=[localGalleryItem()];const url=galleryEndpoint();
+  if(url){try{const r=await fetch(url+'?action=listGallery&includeHidden=1');const j=await r.json();if(j.ok&&Array.isArray(j.items))items=items.concat(j.items)}catch(e){console.warn('Galería Drive no disponible',e)}}
   renderGallery(items);
 }
+function galleryActionButtons(x){
+  const id=esc(x.fileId||'');
+  const visible=x.visible!==false;
+  return `<div class="gallery-item-actions">
+    <button type="button" class="gallery-action-button" data-gallery-action="edit" data-file-id="${id}">Editar</button>
+    <button type="button" class="gallery-action-button" data-gallery-action="toggle" data-file-id="${id}">${visible?'Ocultar':'Mostrar'}</button>
+    <button type="button" class="gallery-action-button danger" data-gallery-action="delete" data-file-id="${id}">Eliminar</button>
+  </div>`;
+}
 function renderGallery(items){
+  const publicItems=items.filter(x=>x.visible!==false);
   const publicGrid=document.getElementById('publicGalleryGrid');
-  if(publicGrid)publicGrid.innerHTML=items.map(x=>`<article class="gallery-tile"><img src="${esc(x.imageUrl||x.thumbnailUrl||'')}" alt="${esc(x.title||'Fotografía RED Greenhouse')}"><div><strong>${esc(x.title||'RED Greenhouse')}</strong><span>${esc(x.description||'')}</span></div></article>`).join('');
+  if(publicGrid)publicGrid.innerHTML=publicItems.map(x=>`<article class="gallery-tile"><img src="${esc(x.imageUrl||x.thumbnailUrl||'')}" alt="${esc(x.title||'Fotografía RED Greenhouse')}"><div><strong>${esc(x.title||'RED Greenhouse')}</strong><span>${esc(x.description||'')}</span></div></article>`).join('');
   const admin=document.getElementById('galleryAdminGrid');
-  if(admin)admin.innerHTML=items.map(x=>`<article class="card gallery-admin-item"><img src="${esc(x.imageUrl||x.thumbnailUrl||'')}" alt=""><div><strong>${esc(x.title||'Sin título')}</strong><p>${esc(x.description||'')}</p><small>${x.fileId==='local-invernadero'?'Incluida en el portal':'Google Drive · '+esc(x.name||x.fileId||'')}</small></div></article>`).join('');
+  if(admin)admin.innerHTML=items.map(x=>`<article class="card gallery-admin-item ${x.visible===false?'is-hidden':''}" data-file-id="${esc(x.fileId||'')}"><img src="${esc(x.imageUrl||x.thumbnailUrl||'')}" alt=""><div class="gallery-item-body"><div class="gallery-item-status"><strong>${esc(x.title||'Sin título')}</strong><span>${x.visible===false?'Oculta':'Visible'}</span></div><p>${esc(x.description||'')}</p><small>${x.local?'Incluida en el portal':'Google Drive · '+esc(x.name||x.fileId||'')}</small>${galleryActionButtons(x)}</div></article>`).join('');
 }
 async function uploadGalleryPhoto(){
   const file=document.getElementById('galleryFile').files[0],msg=document.getElementById('galleryMessage'),url=galleryEndpoint();
   if(!file){msg.textContent='Selecciona una fotografía.';return}if(!url){msg.textContent='Configura primero la URL del Apps Script.';return}
   msg.textContent='Subiendo fotografía…';
-  try{const payload={action:'uploadGallery',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),title:document.getElementById('galleryTitle').value.trim(),description:document.getElementById('galleryDescription').value.trim()};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');msg.textContent='Fotografía publicada.';document.getElementById('galleryFile').value='';document.getElementById('galleryTitle').value='';document.getElementById('galleryDescription').value='';await loadGallery()}catch(e){msg.textContent='Error: '+e.message}
+  try{const payload={action:'uploadGallery',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),title:document.getElementById('galleryTitle').value.trim(),description:document.getElementById('galleryDescription').value.trim(),visible:true};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');msg.textContent='Fotografía publicada.';document.getElementById('galleryFile').value='';document.getElementById('galleryTitle').value='';document.getElementById('galleryDescription').value='';await loadGallery()}catch(e){msg.textContent='Error: '+e.message}
+}
+async function saveLocalGalleryChange(action,item){
+  if(action==='delete'){
+    const hidden={...item,visible:false,title:item.title||'Producción en campo',description:item.description||''};
+    localStorage.setItem('redGreenhouseLocalGalleryItem',JSON.stringify(hidden));
+    return;
+  }
+  localStorage.setItem('redGreenhouseLocalGalleryItem',JSON.stringify(item));
+}
+async function postGalleryAction(payload){
+  const url=galleryEndpoint();
+  if(!url)throw new Error('Configura primero la URL del Apps Script.');
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+  const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo actualizar la galería');return j;
+}
+async function handleGalleryAction(button){
+  const action=button.dataset.galleryAction,fileId=button.dataset.fileId,msg=document.getElementById('galleryMessage');
+  const isLocal=fileId==='local-invernadero';
+  const currentCard=button.closest('.gallery-admin-item');
+  const currentTitle=currentCard?.querySelector('strong')?.textContent||'';
+  const currentDescription=currentCard?.querySelector('p')?.textContent||'';
+  try{
+    if(action==='edit'){
+      const title=prompt('Título de la fotografía:',currentTitle);if(title===null)return;
+      const description=prompt('Descripción:',currentDescription);if(description===null)return;
+      if(isLocal){const item={...localGalleryItem(),title:title.trim(),description:description.trim()};await saveLocalGalleryChange('edit',item)}
+      else await postGalleryAction({action:'updateGallery',fileId,title:title.trim(),description:description.trim()});
+      msg.textContent='Fotografía actualizada.';
+    }
+    if(action==='toggle'){
+      const currentlyHidden=currentCard?.classList.contains('is-hidden');
+      const visible=currentlyHidden;
+      if(isLocal){const item={...localGalleryItem(),visible};await saveLocalGalleryChange('toggle',item)}
+      else await postGalleryAction({action:'updateGallery',fileId,visible});
+      msg.textContent=visible?'Fotografía visible en el sitio público.':'Fotografía oculta del sitio público.';
+    }
+    if(action==='delete'){
+      if(!confirm(isLocal?'¿Quitar esta fotografía del sitio público?':'¿Eliminar esta fotografía? También se enviará a la papelera de Google Drive.'))return;
+      if(isLocal)await saveLocalGalleryChange('delete',localGalleryItem());
+      else await postGalleryAction({action:'deleteGallery',fileId});
+      msg.textContent='Fotografía eliminada.';
+    }
+    await loadGallery();
+  }catch(e){msg.textContent='Error: '+e.message}
 }
 document.getElementById('uploadGalleryButton').addEventListener('click',uploadGalleryPhoto);
 document.getElementById('refreshGalleryButton').addEventListener('click',loadGallery);
+document.getElementById('galleryAdminGrid').addEventListener('click',e=>{const b=e.target.closest('[data-gallery-action]');if(b)handleGalleryAction(b)});
 loadGallery();
 
 ensureStructuredDefaults();
