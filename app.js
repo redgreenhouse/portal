@@ -146,7 +146,7 @@ function renderTasks(){
   document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();showView(b.dataset.taskView)}));
 }
 
-const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos'};
+const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua'};
 const module2CaptureSpecs={
 'PORTADA':[
  ['Nombre de la unidad de producción','text','Identidad que aparecerá en la carpeta impresa'],['Domicilio de la unidad','textarea','Dirección completa del sitio'],['Folio SENASICA','text','Identificador oficial'],['Fecha de emisión','date','Fecha de publicación'],['Vigencia','date','Fecha límite de vigencia'],['Versión','text','Clave de control documental']
@@ -295,7 +295,7 @@ function renderModule2DocumentContent(doc){
 function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
  const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
- const m2=module2Status(),mods=[2,3,4,5,6,7];
+ const m2=module2Status(),mods=[2,3,4,5,6,7,8,9,10];
  summary.innerHTML=`<article class="summary-card"><span>Hojas visibles del Módulo 2</span><strong>${RED_DATA.module2.length}</strong></article><article class="summary-card"><span>Campos identificados</span><strong>${m2.total}</strong></article><article class="summary-card"><span>Captura Módulo 2</span><strong>${m2.percent}%</strong></article>`;
  grid.innerHTML=mods.map(m=>{const st=m===2?m2:moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${m===2?'Piloto completo':st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${m===2?`${RED_DATA.module2.length} hojas · ${st.total} campos`:`${st.filled} de ${st.total} datos aplicables`}</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">${m===2?'Ver contenido completo del Excel →':'Abrir tabla estructurada →'}</span></article>`}).join('');
  grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
@@ -349,10 +349,11 @@ function galleryEndpoint(){return (JSON.parse(localStorage.getItem('redGreenhous
 function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
 function localGalleryItem(){
   const saved=JSON.parse(localStorage.getItem('redGreenhouseLocalGalleryItem')||'null');
+  if(saved?.deleted)return null;
   return {...DEFAULT_GALLERY[0],...(saved||{})};
 }
 async function loadGallery(){
-  let items=[localGalleryItem()];const url=galleryEndpoint();
+  const local=localGalleryItem();let items=local?[local]:[];const url=galleryEndpoint();
   if(url){try{const r=await fetch(url+'?action=listGallery&includeHidden=1');const j=await r.json();if(j.ok&&Array.isArray(j.items))items=items.concat(j.items)}catch(e){console.warn('Galería Drive no disponible',e)}}
   renderGallery(items);
 }
@@ -380,8 +381,7 @@ async function uploadGalleryPhoto(){
 }
 async function saveLocalGalleryChange(action,item){
   if(action==='delete'){
-    const hidden={...item,visible:false,title:item.title||'Producción en campo',description:item.description||''};
-    localStorage.setItem('redGreenhouseLocalGalleryItem',JSON.stringify(hidden));
+    localStorage.setItem('redGreenhouseLocalGalleryItem',JSON.stringify({deleted:true}));
     return;
   }
   localStorage.setItem('redGreenhouseLocalGalleryItem',JSON.stringify(item));

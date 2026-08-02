@@ -14,3 +14,11 @@ Actualiza el proyecto con `apps-script/Code.gs` y publica una nueva versión del
 La administración de la galería permite editar título y descripción, ocultar/mostrar una foto y eliminarla. Al eliminar una fotografía de Google Drive, el Apps Script la envía a la papelera y elimina su registro de la galería.
 
 Después de copiar el nuevo `apps-script/Code.gs`, publique una **nueva versión del despliegue existente**. La URL `/exec` permanece igual.
+
+
+## v1.30 preliminar
+- Módulos 8, 9 y 10 integrados desde original/coloreado/plantilla.
+- Plantilla dinámica (morado), Código (rosa mexicano), correo y teléfono.
+- Navegación por páginas horizontales en M8 hoja 8.3.
+- Galería: refresco y retiro de tarjeta local al eliminar.
+- Rutas de logo unificadas.

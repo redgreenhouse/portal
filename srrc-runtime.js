@@ -48,10 +48,14 @@
     if (c.type === 'checkbox') return `<label class="srrc-check"><input type="checkbox" data-srrc-check="${esc(c.id)}" ${v === false ? '' : 'checked'}><span>✓</span></label>`;
     if (c.type === 'trafficLight') return `<div class="srrc-traffic" data-srrc-traffic="${esc(c.id)}">${['verde','amarillo','rojo'].map(x => `<button type="button" data-value="${x}" class="${v === x ? 'active' : ''} ${x}"></button>`).join('')}</div>`;
     if (c.type === 'date') return `<input class="srrc-inline-input" type="date" data-srrc-input="${esc(c.id)}" value="${esc(v)}">`;
+    if (c.type === 'email') return `<input class="srrc-inline-input" type="email" data-srrc-input="${esc(c.id)}" value="${esc(v)}" placeholder="nombre@dominio.com">`;
+    if (c.type === 'tel') return `<input class="srrc-inline-input" type="tel" pattern="[0-9+() -]{7,25}" data-srrc-input="${esc(c.id)}" value="${esc(v)}" placeholder="+52 222 000 0000">`;
+    if (c.type === 'code') { const opts=(c.options||[]); return `<select class="srrc-inline-input" data-srrc-input="${esc(c.id)}"><option value="">Seleccionar código…</option>${opts.map(x=>`<option value="${esc(x)}" ${String(v)===String(x)?'selected':''}>${esc(x)}</option>`).join('')}</select>`; }
+    if (c.type === 'dynamicTemplate') return `<textarea class="srrc-inline-textarea srrc-dynamic-template" data-srrc-input="${esc(c.id)}">${esc(v)}</textarea>`;
     const long = String(c.initial || '').length > 80;
     return long ? `<textarea class="srrc-inline-textarea" data-srrc-input="${esc(c.id)}">${esc(v)}</textarea>` : `<input class="srrc-inline-input" data-srrc-input="${esc(c.id)}" value="${esc(v)}">`;
   }
-  function renderSheet(s) {
+  function renderSheet(s, pageIndex) {
     const top = {}, covered = new Set(), controls = {};
     for (const merge of s.merges) {
       const x = parseRange(merge);
@@ -64,12 +68,14 @@
       top[cellRef(x.r1,x.c1)] = {rowspan:x.r2-x.r1+1, colspan:x.c2-x.c1+1};
       for (let r=x.r1;r<=x.r2;r++) for (let cc=x.c1;cc<=x.c2;cc++) if (r!==x.r1 || cc!==x.c1) covered.add(cellRef(r,cc));
     }
+    const page = s.pages && s.pages[pageIndex||0];
+    const cStart=page?page.c1:1,cEnd=page?page.c2:s.maxCol;
     let h = '<div class="srrc-sheet-scroll"><table class="srrc-excel-table"><colgroup>';
-    for (let c=1;c<=s.maxCol;c++) h += `<col style="width:${Math.max(45,Math.min(180,(s.cols[c]||10)*7))}px">`;
+    for (let c=cStart;c<=cEnd;c++) h += `<col style="width:${Math.max(45,Math.min(180,(s.cols[c]||10)*7))}px">`;
     h += '</colgroup><tbody>';
     for (let r=1;r<=s.maxRow;r++) {
       h += `<tr style="height:${Math.max(20,s.rows[r]||20)}px">`;
-      for (let c=1;c<=s.maxCol;c++) {
+      for (let c=cStart;c<=cEnd;c++) {
         const ref = cellRef(r,c);
         if (covered.has(ref)) continue;
         const md = top[ref] || {};
@@ -125,13 +131,14 @@
     const detail = document.getElementById('moduleDetail');
     detail.hidden = false;
     detail.dataset.srrcModule = n;
-    detail.innerHTML = `<div class="module-detail-head"><div><h2>Módulo ${n} · ${esc(m.title)}</h2><p>Documento vivo: contenido original con zonas de captura incrustadas.</p></div><div><button class="primary-button" data-export-module="${n}">Generar Excel</button> <button class="ghost-button" data-close-module>Cerrar</button></div></div><div class="module-document-list">${m.sheets.map((s,i) => `<article class="excel-sheet-card"><button class="excel-sheet-head" data-generic-toggle="${i}"><span class="sheet-index">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(s.name)}</strong><small>${s.controls.length} zonas de captura</small></span><span>⌄</span></button><div class="excel-sheet-body" data-generic-body="${i}" hidden>${renderSheet(s)}</div></article>`).join('')}</div>`;
+    detail.innerHTML = `<div class="module-detail-head"><div><h2>Módulo ${n} · ${esc(m.title)}</h2><p>Documento vivo: contenido original con zonas de captura incrustadas.</p></div><div><button class="primary-button" data-export-module="${n}">Generar Excel</button> <button class="ghost-button" data-close-module>Cerrar</button></div></div><div class="module-document-list">${m.sheets.map((s,i) => `<article class="excel-sheet-card"><button class="excel-sheet-head" data-generic-toggle="${i}"><span class="sheet-index">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(s.name)}</strong><small>${s.controls.length} zonas de captura</small></span><span>⌄</span></button><div class="excel-sheet-body" data-generic-body="${i}" hidden>${s.pages?`<div class="srrc-page-tabs">${s.pages.map((p,pi)=>`<button type="button" data-page-sheet="${i}" data-page-index="${pi}" class="${pi===0?'active':''}">${esc(p.label)}</button>`).join('')}</div><div data-page-host="${i}">${renderSheet(s,0)}</div>`:renderSheet(s)}</div></article>`).join('')}</div>`;
     detail.querySelector('[data-close-module]').onclick = () => detail.hidden = true;
     detail.querySelectorAll('[data-generic-toggle]').forEach((b) => b.onclick = () => {
       const x = detail.querySelector(`[data-generic-body="${b.dataset.genericToggle}"]`);
       x.hidden = !x.hidden;
       if (!x.hidden) bind(x);
     });
+    detail.querySelectorAll('[data-page-sheet]').forEach((b)=>b.onclick=()=>{ const si=Number(b.dataset.pageSheet),pi=Number(b.dataset.pageIndex),s=m.sheets[si],host=detail.querySelector(`[data-page-host="${si}"]`); b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); host.innerHTML=renderSheet(s,pi); bind(host); });
     detail.querySelector('[data-export-module]').onclick = () => exportModule(n);
     detail.scrollIntoView({behavior:'smooth',block:'start'});
   };

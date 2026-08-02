@@ -130,7 +130,7 @@ function m2AddImages(root,doc){
   cells.forEach(c=>c.classList.add('m2-image-region'));
   const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'',storedName=typeof stored==='object'?stored.name:stored;
   if(index===0){
-   top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-red-greenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
+   top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
    top.innerHTML=`<label class="embedded-image-input"><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Imagen seleccionada: '+esc(storedName):'＋ Agregar imagen'}</span><small data-m2-ref>${range}</small></label>`;
   }
