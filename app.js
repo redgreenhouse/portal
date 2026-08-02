@@ -94,9 +94,11 @@ function masterDateInputValue(value){
 function masterImageValue(value){
   return value&&typeof value==='object'?value:null;
 }
+function driveObjectFileId(image){return String(image?.fileId||image?.id||'').trim();}
+function driveObjectViewUrl(image){return String(image?.url||image?.webViewLink||image?.imageUrl||'').trim();}
 function masterImageHtml(key,value){
-  const image=masterImageValue(value),src=image?.imageUrl||image?.thumbnailUrl||'',url=image?.url||src||'',name=image?.name||'';
-  return `<div class="master-image-control" data-master-image-control="${esc(key)}">${src?`<img class="master-image-preview" src="${esc(src)}" alt="${esc(name||'Logo corporativo')}">`:''}<div class="master-image-details"><strong>${name?esc(name):'Sin imagen vinculada'}</strong>${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}<input class="drive-file-input" type="file" accept="image/*" data-master-image-input="${esc(key)}" hidden><div class="master-image-actions"><button type="button" class="drive-upload-button" data-master-image-upload="${esc(key)}">${image?'Reemplazar':'Subir al Drive'}</button>${image?`<button type="button" class="ghost-button master-image-remove" data-master-image-remove="${esc(key)}">Eliminar vínculo</button>`:''}</div><small data-master-image-status="${esc(key)}">${image?'Imagen oficial vinculada a Google Drive.':'La imagen se guardará en la carpeta Images.'}</small></div></div>`;
+  const image=masterImageValue(value),url=driveObjectViewUrl(image),name=image?.name||'',path=name?`Images / MASTER / ${name}`:'Images / MASTER';
+  return `<div class="master-image-control" data-master-image-control="${esc(key)}"><div class="master-image-details"><strong>${name?esc(name):'Sin imagen vinculada'}</strong><span class="drive-path"><b>Ruta:</b> ${esc(path)}</span><input class="drive-file-input" type="file" accept="image/*" data-master-image-input="${esc(key)}" hidden><div class="master-image-actions">${url?`<a class="drive-link-button" href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}<button type="button" class="drive-upload-button" data-master-image-upload="${esc(key)}">${image?'Reemplazar':'Subir al Drive'}</button>${image?`<button type="button" class="ghost-button master-image-remove" data-master-image-remove="${esc(key)}">Eliminar</button>`:''}</div><small data-master-image-status="${esc(key)}">${image?'Imagen oficial vinculada a Google Drive.':'La imagen se guardará en Images / MASTER.'}</small></div></div>`;
 }
 function masterInputHtml(item,key,value,long){
   if(item.inputType==='image')return masterImageHtml(key,value);
@@ -106,21 +108,28 @@ function masterInputHtml(item,key,value,long){
 }
 async function uploadMasterImage(input){
   const file=input.files?.[0];if(!file)return;
-  const key=input.dataset.masterImageInput,url=galleryEndpoint(),status=document.querySelector(`[data-master-image-status="${CSS.escape(key)}"]`),button=document.querySelector(`[data-master-image-upload="${CSS.escape(key)}"]`);
+  const key=input.dataset.masterImageInput,url=galleryEndpoint(),status=document.querySelector(`[data-master-image-status="${CSS.escape(key)}"]`),button=document.querySelector(`[data-master-image-upload="${CSS.escape(key)}"]`),previous=masterImageValue(masterValues[key]);
   if(!url){alert('Configura la URL de Apps Script en Administración.');input.value='';return;}
   if(status)status.textContent='Subiendo a Google Drive…';if(button){button.disabled=true;button.textContent='Subiendo…';}
   try{
     const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/png',base64:await fileToBase64(file),module:'MASTER',field:key};
     const response=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),result=await response.json();
     if(!result.ok)throw new Error(result.error||'No se pudo subir el logo.');
-    masterValues[key]={...result,name:result.name||file.name};localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));renderMasterData();
+    masterValues[key]={...result,name:result.name||file.name};localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));
+    const oldId=driveObjectFileId(previous),newId=driveObjectFileId(result);if(oldId&&oldId!==newId){try{await postGalleryAction({action:'deleteGallery',fileId:oldId});}catch(error){console.warn('El logo anterior no pudo enviarse a la papelera',error);}}
+    renderMasterData();
   }catch(error){if(status)status.textContent='Error: '+error.message;alert(error.message);}
-  finally{input.value='';if(button){button.disabled=false;button.textContent='Subir al Drive';}}
+  finally{input.value='';if(button){button.disabled=false;button.textContent=previous?'Reemplazar':'Subir al Drive';}}
+}
+async function removeMasterImage(key){
+  const image=masterImageValue(masterValues[key]);if(!image)return;
+  if(!confirm('¿Eliminar el logo oficial? El archivo se enviará a la papelera de Google Drive.'))return;
+  const fileId=driveObjectFileId(image);try{if(fileId)await postGalleryAction({action:'deleteGallery',fileId});delete masterValues[key];localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));renderMasterData();}catch(error){alert('No se pudo eliminar el logo: '+error.message);}
 }
 function bindMasterImageControls(){
   document.querySelectorAll('[data-master-image-upload]').forEach(button=>button.addEventListener('click',()=>document.querySelector(`[data-master-image-input="${CSS.escape(button.dataset.masterImageUpload)}"]`)?.click()));
   document.querySelectorAll('[data-master-image-input]').forEach(input=>input.addEventListener('change',()=>uploadMasterImage(input)));
-  document.querySelectorAll('[data-master-image-remove]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.masterImageRemove;if(!confirm('¿Quitar esta imagen como logo oficial? El archivo permanecerá en Google Drive.'))return;delete masterValues[key];localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));renderMasterData();}));
+  document.querySelectorAll('[data-master-image-remove]').forEach(button=>button.addEventListener('click',()=>removeMasterImage(button.dataset.masterImageRemove)));
 }
 
 function renderMasterData(){
