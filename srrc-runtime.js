@@ -42,7 +42,7 @@
     }
     if (c.type === 'image') {
       const obj = typeof v === 'object' ? v : null;
-      return `<div class="srrc-image-control">${obj?.imageUrl ? `<img src="${esc(obj.imageUrl)}"><a href="${esc(obj.url)}" target="_blank">Abrir evidencia</a>` : ''}<label><input type="file" accept="image/*" data-srrc-image="${esc(c.id)}"><span>${obj ? 'Cambiar imagen' : 'Subir imagen a Drive'}</span></label><small>${esc(c.range)}</small></div>`;
+      return `<div class="srrc-image-control">${obj?.imageUrl ? `<img src="${esc(obj.imageUrl)}"><a href="${esc(obj.url)}" target="_blank">Abrir evidencia</a>` : ''}<div class="srrc-image-upload-row"><label><input type="file" accept="image/*" data-srrc-image="${esc(c.id)}"><span>${obj ? 'Elegir otra imagen' : 'Elegir imagen'}</span></label><button type="button" class="primary-button" data-srrc-upload="${esc(c.id)}" disabled>Subir a Google Drive</button></div><small>${esc(c.range)}</small></div>`;
     }
     if (c.type === 'status') return `<button class="srrc-state" data-srrc-cycle="${esc(c.id)}" data-options="✓|✗|NL|" type="button">${esc(v)}</button>`;
     if (c.type === 'checkbox') return `<label class="srrc-check"><input type="checkbox" data-srrc-check="${esc(c.id)}" ${v === false ? '' : 'checked'}><span>✓</span></label>`;
@@ -104,26 +104,13 @@
       values[p.dataset.srrcTraffic] = b.dataset.value;
       save();
     });
-    root.querySelectorAll('[data-srrc-image]').forEach((e) => e.onchange = async () => {
-      const f = e.files[0];
-      if (!f) return;
-      const url = galleryEndpoint();
-      if (!url) return alert('Configura la URL de Apps Script en Administración.');
-      e.disabled = true;
-      try {
-        const payload = { action:'uploadImage', fileName:f.name, mimeType:f.type || 'image/jpeg', base64:await fileToBase64(f), module:e.dataset.srrcImage.split('.')[0], field:e.dataset.srrcImage };
-        const response = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
-        const result = await response.json();
-        if (!result.ok) throw new Error(result.error || 'No se pudo subir');
-        values[e.dataset.srrcImage] = result;
-        save();
-        const container = root.closest('[data-srrc-module]');
-        openStructuredModule(Number(container.dataset.srrcModule));
-      } catch (err) {
-        alert(err.message);
-      } finally {
-        e.disabled = false;
-      }
+    const pendingImages = new Map();
+    root.querySelectorAll('[data-srrc-image]').forEach((e) => e.onchange = () => {
+      const f=e.files[0],button=root.querySelector(`[data-srrc-upload="${CSS.escape(e.dataset.srrcImage)}"]`);if(!f){pendingImages.delete(e.dataset.srrcImage);if(button)button.disabled=true;return;}pendingImages.set(e.dataset.srrcImage,f);if(button)button.disabled=false;
+    });
+    root.querySelectorAll('[data-srrc-upload]').forEach((button)=>button.onclick=async()=>{
+      const id=button.dataset.srrcUpload,f=pendingImages.get(id);if(!f)return alert('Primero selecciona una imagen.');const url=galleryEndpoint();if(!url)return alert('Configura la URL de Apps Script en Administración.');button.disabled=true;button.textContent='Subiendo…';
+      try{const payload={action:'uploadImage',fileName:f.name,mimeType:f.type||'image/jpeg',base64:await fileToBase64(f),module:id.split('.')[0],field:id};const response=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const result=await response.json();if(!result.ok)throw new Error(result.error||'No se pudo subir');values[id]=result;save();const container=root.closest('[data-srrc-module]');openStructuredModule(Number(container.dataset.srrcModule));}catch(err){alert(err.message);}finally{button.disabled=false;button.textContent='Subir a Google Drive';}
     });
   }
   window.openStructuredModule = function(n) {
@@ -131,8 +118,8 @@
     const detail = document.getElementById('moduleDetail');
     detail.hidden = false;
     detail.dataset.srrcModule = n;
-    detail.innerHTML = `<div class="module-detail-head"><div><h2>Módulo ${n} · ${esc(m.title)}</h2><p>Documento vivo: contenido original con zonas de captura incrustadas.</p></div><div><button class="primary-button" data-export-module="${n}">Generar Excel</button> <button class="ghost-button" data-close-module>Cerrar</button></div></div><div class="module-document-list">${m.sheets.map((s,i) => `<article class="excel-sheet-card"><button class="excel-sheet-head" data-generic-toggle="${i}"><span class="sheet-index">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(s.name)}</strong><small>${s.controls.length} zonas de captura</small></span><span>⌄</span></button><div class="excel-sheet-body" data-generic-body="${i}" hidden>${s.pages?`<div class="srrc-page-tabs">${s.pages.map((p,pi)=>`<button type="button" data-page-sheet="${i}" data-page-index="${pi}" class="${pi===0?'active':''}">${esc(p.label)}</button>`).join('')}</div><div data-page-host="${i}">${renderSheet(s,0)}</div>`:renderSheet(s)}</div></article>`).join('')}</div>`;
-    detail.querySelector('[data-close-module]').onclick = () => detail.hidden = true;
+    detail.innerHTML = `<div class="module-detail-head"><div><h2>Módulo ${n} · ${esc(m.title)}</h2><p>Documento vivo: contenido original con zonas de captura incrustadas.</p></div><div><button class="primary-button" data-export-module="${n}">Generar Excel</button> <button class="ghost-button" data-close-module>Cerrar</button></div></div><div class="module-document-list">${m.sheets.map((s,i) => `<article class="excel-sheet-card"><button class="excel-sheet-head" data-generic-toggle="${i}"><span class="sheet-index">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(s.name)}</strong><small>${s.controls.length} zonas de captura</small></span><span class="sheet-head-actions">${typeof releaseControl==='function'?releaseControl(n,s.name):''}<span>⌄</span></span></button><div class="excel-sheet-body" data-generic-body="${i}" hidden>${s.pages?`<div class="srrc-page-tabs">${s.pages.map((p,pi)=>`<button type="button" data-page-sheet="${i}" data-page-index="${pi}" class="${pi===0?'active':''}">${esc(p.label)}</button>`).join('')}</div><div data-page-host="${i}">${renderSheet(s,0)}</div>`:renderSheet(s)}</div></article>`).join('')}</div>`;
+    detail.querySelector('[data-close-module]').onclick = () => detail.hidden = true;if(typeof bindDirectorRelease==='function')bindDirectorRelease(detail);
     detail.querySelectorAll('[data-generic-toggle]').forEach((b) => b.onclick = () => {
       const x = detail.querySelector(`[data-generic-body="${b.dataset.genericToggle}"]`);
       x.hidden = !x.hidden;

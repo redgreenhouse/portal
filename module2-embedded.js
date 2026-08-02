@@ -133,7 +133,7 @@ function m2AddImages(root,doc){
    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
    const storedObj=stored&&typeof stored==='object'?stored:null;
-   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<label><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Cambiar y subir imagen':'Seleccionar y subir a Google Drive'}</span></label><small data-m2-ref>${range}</small></div>`;
+   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><div class="m2-image-links"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a><button type="button" class="m2-delete-image" data-m2-delete-image="${esc(key)}">Eliminar</button></div>`:''}<div class="m2-image-upload-row"><label><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Elegir otra imagen':'Elegir imagen'}</span></label><button type="button" class="primary-button m2-upload-image" data-m2-upload-image="${esc(key)}" disabled>Subir a Google Drive</button></div><span class="m2-image-status" data-m2-image-status="${esc(key)}">${storedName?'Imagen guardada: '+esc(storedName):'Selecciona una imagen para subirla.'}</span><small data-m2-ref>${range}</small></div>`;
   }
  });
 }
@@ -179,11 +179,22 @@ function m2Bind(root){
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
- root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',async()=>{
-  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
-  if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
-  el.disabled=true;el.nextElementSibling.textContent='Subiendo a Google Drive…';
-  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();el.nextElementSibling.textContent='Imagen guardada en Drive: '+file.name;}catch(err){alert(err.message);el.nextElementSibling.textContent='＋ Agregar imagen';}finally{el.disabled=false;}
+ root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',()=>{
+  const file=el.files[0],key=el.dataset.m2Image,button=root.querySelector(`[data-m2-upload-image="${CSS.escape(key)}"]`),status=root.querySelector(`[data-m2-image-status="${CSS.escape(key)}"]`);
+  if(!file){m2ImageFiles.delete(key);if(button)button.disabled=true;return;}
+  m2ImageFiles.set(key,file);if(button)button.disabled=false;if(status)status.textContent='Lista para subir: '+file.name;
+ }));
+ root.querySelectorAll('[data-m2-upload-image]').forEach(button=>button.addEventListener('click',async()=>{
+  const key=button.dataset.m2UploadImage,file=m2ImageFiles.get(key),url=galleryEndpoint(),status=root.querySelector(`[data-m2-image-status="${CSS.escape(key)}"]`);
+  if(!file)return alert('Primero selecciona una imagen.');if(!url)return alert('Configura la URL de Apps Script en Administración.');
+  button.disabled=true;if(status)status.textContent='Subiendo a Google Drive…';
+  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();m2ImageFiles.delete(key);if(status)status.textContent='Imagen guardada en Drive: '+file.name;const docCode=root.dataset.m2Code,doc=RED_DATA.module2.find(d=>d.code===docCode);openModule2();if(doc){const body=document.getElementById('sheet-'+doc.id);if(body){body.hidden=false;body.scrollIntoView({behavior:'smooth',block:'center'});}}}
+  catch(err){if(status)status.textContent='Error: '+err.message;alert(err.message);}finally{button.disabled=!m2ImageFiles.has(key);}
+ }));
+ root.querySelectorAll('[data-m2-delete-image]').forEach(button=>button.addEventListener('click',async()=>{
+  const key=button.dataset.m2DeleteImage,obj=m2EmbeddedValues[key],url=galleryEndpoint();if(!confirm('¿Eliminar esta imagen guardada?'))return;
+  try{if(obj?.fileId&&url){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deleteImage',fileId:obj.fileId})});const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo eliminar');}delete m2EmbeddedValues[key];m2Save();button.closest('.embedded-image-input').querySelector('.m2-drive-preview')?.remove();button.closest('.m2-image-links')?.remove();}
+  catch(err){alert(err.message);}
  }));
 }
 
@@ -205,7 +216,7 @@ function m2AddMasterSignatures(root,doc){
  });
 }
 const M2_HEADER_CELLS={
- 'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
+ 'PORTADA':{empresa:'D1',domicilio:'D3',folio:'H2',emision:'I4',version:'I5',vigencia:'I6'},
  'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'J3',version:'J4',vigencia:'J5'},
  'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2',emision:'AV3',vigencia:'AV4',version:'AV5'},
  'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2',emision:'AC3',vigencia:'AC4',version:'AC5'},
@@ -307,6 +318,48 @@ async function m2RestoreTemplateDrawings(templateBuffer,generatedBuffer){
  }
  return generatedZip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
 }
+
+function m2CellAnchor(range){
+ const [a,b=a]=String(range).split(':'),pa=m2ParseCell(a),pb=m2ParseCell(b);if(!pa||!pb)return null;
+ return {c1:pa.col-1,r1:pa.row-1,c2:pb.col,r2:pb.row};
+}
+function m2NormalizeZipPath(base,target){
+ const parts=(base.replace(/[^/]+$/,'')+target).split('/'),out=[];for(const x of parts){if(!x||x==='.')continue;if(x==='..')out.pop();else out.push(x);}return out.join('/');
+}
+async function m2InjectCorporateLogos(buffer){
+ if(typeof JSZip==='undefined')return buffer;
+ const [zip,logoResponse]=await Promise.all([JSZip.loadAsync(buffer),fetch('assets/images/logo-redgreenhouse.png')]);
+ if(!logoResponse.ok)throw new Error('No se pudo cargar el logotipo corporativo.');
+ const logoBytes=new Uint8Array(await logoResponse.arrayBuffer()),mediaPath='xl/media/red-greenhouse-logo.png';zip.file(mediaPath,logoBytes);
+ const parser=new DOMParser(),serializer=new XMLSerializer(),RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships',PNS='http://schemas.openxmlformats.org/package/2006/relationships';
+ const wbDoc=parser.parseFromString(await zip.file('xl/workbook.xml').async('string'),'application/xml'),wrDoc=parser.parseFromString(await zip.file('xl/_rels/workbook.xml.rels').async('string'),'application/xml');
+ const wbRels={};[...wrDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').forEach(n=>wbRels[n.getAttribute('Id')]=n.getAttribute('Target'));
+ const sheetPaths={};[...wbDoc.getElementsByTagName('*')].filter(n=>n.localName==='sheet').forEach(n=>{const rid=n.getAttributeNS(RNS,'id')||n.getAttribute('r:id');sheetPaths[String(n.getAttribute('name')).trim()]=m2NormalizeZipPath('xl/workbook.xml',wbRels[rid]);});
+ let drawingSeq=Math.max(0,...Object.keys(zip.files).map(x=>(/xl\/drawings\/drawing(\d+)\.xml$/.exec(x)||[])[1]||0).map(Number));
+ for(const [code,ranges] of Object.entries(M2_IMAGE_RANGES)){
+  const sheetName=String(M2_SHEET_NAME_BY_CODE[code]||'').trim(),sheetPath=sheetPaths[sheetName];if(!sheetPath)continue;
+  const anchor=m2CellAnchor(ranges[0]);if(!anchor)continue;
+  const sheetDoc=parser.parseFromString(await zip.file(sheetPath).async('string'),'application/xml'),sheetRelPath=sheetPath.replace('/worksheets/','/worksheets/_rels/')+'.rels';
+  let sheetRelDoc=zip.file(sheetRelPath)?parser.parseFromString(await zip.file(sheetRelPath).async('string'),'application/xml'):parser.parseFromString(`<Relationships xmlns="${PNS}"/>`,'application/xml');
+  let drawingNode=[...sheetDoc.getElementsByTagName('*')].find(n=>n.localName==='drawing'),drawingPath,drawingRid;
+  if(drawingNode){drawingRid=drawingNode.getAttributeNS(RNS,'id')||drawingNode.getAttribute('r:id');const rel=[...sheetRelDoc.getElementsByTagName('*')].find(n=>n.localName==='Relationship'&&n.getAttribute('Id')===drawingRid);if(rel)drawingPath=m2NormalizeZipPath(sheetRelPath,rel.getAttribute('Target'));}
+  if(!drawingPath){drawingPath=`xl/drawings/drawing${++drawingSeq}.xml`;drawingRid='rIdLogoDrawing';const used=new Set([...sheetRelDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));let k=1;while(used.has(drawingRid))drawingRid='rIdLogoDrawing'+k++;
+   const rel=sheetRelDoc.createElementNS(PNS,'Relationship');rel.setAttribute('Id',drawingRid);rel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing');rel.setAttribute('Target','../drawings/'+drawingPath.split('/').pop());sheetRelDoc.documentElement.appendChild(rel);
+   drawingNode=sheetDoc.createElementNS('http://schemas.openxmlformats.org/spreadsheetml/2006/main','drawing');drawingNode.setAttributeNS(RNS,'r:id',drawingRid);sheetDoc.documentElement.appendChild(drawingNode);
+   zip.file(drawingPath,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="${RNS}"/>`);
+  }
+  const drawingRelPath=drawingPath.replace('/drawings/','/drawings/_rels/')+'.rels',drawingDoc=parser.parseFromString(await zip.file(drawingPath).async('string'),'application/xml');
+  let drawingRelDoc=zip.file(drawingRelPath)?parser.parseFromString(await zip.file(drawingRelPath).async('string'),'application/xml'):parser.parseFromString(`<Relationships xmlns="${PNS}"/>`,'application/xml');
+  const usedRels=new Set([...drawingRelDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));let imgRid='rIdLogo',k=1;while(usedRels.has(imgRid))imgRid='rIdLogo'+k++;
+  const imgRel=drawingRelDoc.createElementNS(PNS,'Relationship');imgRel.setAttribute('Id',imgRid);imgRel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/image');imgRel.setAttribute('Target','../media/red-greenhouse-logo.png');drawingRelDoc.documentElement.appendChild(imgRel);
+  const ids=[...drawingDoc.getElementsByTagName('*')].filter(n=>n.localName==='cNvPr').map(n=>Number(n.getAttribute('id'))||0);const picId=Math.max(1,...ids)+1;
+  const frag=parser.parseFromString(`<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="${RNS}"><xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>${anchor.c1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${anchor.r1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${anchor.c2}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${anchor.r2}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${picId}" name="RED Greenhouse Logo"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="${imgRid}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm/><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:ln><a:noFill/></a:ln></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>`,'application/xml');drawingDoc.documentElement.appendChild(drawingDoc.importNode(frag.documentElement.firstElementChild,true));
+  zip.file(sheetPath,serializer.serializeToString(sheetDoc));zip.file(sheetRelPath,serializer.serializeToString(sheetRelDoc));zip.file(drawingPath,serializer.serializeToString(drawingDoc));zip.file(drawingRelPath,serializer.serializeToString(drawingRelDoc));
+ }
+ const ctPath='[Content_Types].xml',ctDoc=parser.parseFromString(await zip.file(ctPath).async('string'),'application/xml');if(![...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Default'&&n.getAttribute('Extension')==='png')){const d=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Default');d.setAttribute('Extension','png');d.setAttribute('ContentType','image/png');ctDoc.documentElement.appendChild(d);}for(let i=1;i<=drawingSeq;i++){const part='/xl/drawings/drawing'+i+'.xml';if(zip.file(part.slice(1))&&![...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Override'&&n.getAttribute('PartName')===part)){const o=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Override');o.setAttribute('PartName',part);o.setAttribute('ContentType','application/vnd.openxmlformats-officedocument.drawing+xml');ctDoc.documentElement.appendChild(o);}}
+ zip.file(ctPath,serializer.serializeToString(ctDoc));return zip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
+}
+
 function m2FileToDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('No se pudo leer '+file.name));reader.readAsDataURL(file);});}
 async function m2GenerateExcel(){
  m2ImageTrace=[];m2Trace('generation-start',{imageCount:m2ImageFiles.size});
@@ -329,7 +382,8 @@ async function m2GenerateExcel(){
   // Las evidencias se guardan en Drive. Después restauramos fórmulas y dibujos originales (incluido el logo).
   const formulaProtected=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
   const visuallyProtected=await m2RestoreTemplateDrawings(templateBuffer,formulaProtected);
-  blob=new Blob([visuallyProtected],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const withCorporateLogos=await m2InjectCorporateLogos(visuallyProtected);
+  blob=new Blob([withCorporateLogos],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){m2Trace('generation-error',{message:err.message,stack:err.stack||''});m2DownloadTrace();alert('No se pudo generar el Excel: '+err.message);}
  finally{buttons.forEach(b=>{b.disabled=false;b.textContent='Generar Excel listo para imprimir'});}
