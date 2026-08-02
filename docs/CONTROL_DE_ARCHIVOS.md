@@ -1,20 +1,24 @@
-# Control de archivos — V1.39 contra portal-main_after_v38
+# CONTROL DE ARCHIVOS
+
+Comparación: `portal-main_after39.zip` → V1.40
 
 | Carpeta | Archivo | Versión vieja | Versión nueva | Acción |
 |---|---|---|---|---|
-| `/` | `index.html` | 1.38 | 1.39 | Sustituir |
-| `/` | `app.js` | Sin calendario efectivo | Modificado | Sustituir |
-| `/` | `module2-embedded.js` | Cabecera/logo/enlace anteriores | Modificado | Sustituir |
-| `/docs` | `CONTROL_DE_CAMBIOS.md` | 1.38 | 1.39 | Sustituir |
-| `/docs` | `CONTROL_DE_ARCHIVOS.md` | 1.38 | 1.39 | Sustituir |
-| `/docs` | `MANIFIESTO.json` | 1.38 | 1.39 | Sustituir |
+| `/` | `index.html` | 1.39 | Modificado | Sustituir |
+| `/` | `app.js` | 1.39 | Modificado | Sustituir |
+| `/` | `module2-embedded.js` | 1.39 | Modificado | Sustituir |
+| `/` | `styles.css` | 1.39 | Modificado | Sustituir |
+| `/config` | `master-data-map.json` | Existente | Modificado | Sustituir |
+| `/docs` | `CONTROL_DE_CAMBIOS.md` | Existente | Modificado | Sustituir |
+| `/docs` | `CONTROL_DE_ARCHIVOS.md` | Existente | Modificado | Sustituir |
+| `/docs` | `MANIFIESTO.json` | Existente | Modificado | Sustituir |
 
 ## Eliminar
 
 | Carpeta | Archivo | Acción |
 |---|---|---|
-| — | Ninguno | No borrar archivos en esta actualización |
+| — | Ninguno | No borrar archivos |
 
 ## Sin cambios
 
-Apps Script, plantillas Excel, `field-map.json`, estilos y los demás archivos JavaScript.
+`Apps Script`, `templates`, `field-map.json` y los demás archivos del portal.

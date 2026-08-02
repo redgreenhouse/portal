@@ -1,10 +1,13 @@
-# Control de cambios — V1.39
+# CONTROL DE CAMBIOS
 
-| Cambio | Archivo | Dónde buscar | Cómo verificar |
+## Versión 1.40
+
+| Cambio | Archivo | Cómo verificar | Estado |
 |---|---|---|---|
-| Fecha de emisión con calendario | `app.js` | `masterDateInputValue()`, `masterInputHtml()` | En Datos Maestros > Control documental, Fecha de emisión debe mostrar selector de calendario. |
-| Fechas documentales legibles | `module2-embedded.js` | `m2DisplayDate()`, `m2HeaderMasterValues()` | Una fecha guardada como AAAA-MM-DD debe mostrarse como DD/MM/AAAA en las cabeceras del M2. |
-| Eliminación del logotipo flotante duplicado | `module2-embedded.js` | `m2ApplyLiveHeader()` | En las hojas 01–03 no debe aparecer un logotipo adicional por encima de la cuadrícula. |
-| Un solo logotipo en cabeceras alternativas | `module2-embedded.js` | `m2AddImages()` | Mapas y croquis con cabecera resumida no deben duplicar el logotipo. |
-| Evidencia de Drive como hipervínculo real en Excel | `module2-embedded.js` | `m2GenerateExcel()` | La celda destino debe decir “Abrir evidencia fotográfica” y abrir la URL de Drive. |
-| Versión y caché | `index.html` | `V1.39`, `?v=1.39` | Portal público y privado deben mostrar 1.39. |
+| Campo maestro **Vigencia** tipo fecha | `app.js` | Datos Maestros → Control documental | Implementado |
+| Campo maestro **Logo corporativo** tipo imagen | `app.js` | Datos Maestros → Identidad | Implementado |
+| Subida del logo mediante el endpoint existente de Drive | `app.js` | Subir imagen y volver a abrir Datos Maestros | Implementado; requiere Apps Script ya desplegado |
+| Nombre y vínculo de la imagen maestra | `app.js` | Debe aparecer nombre y enlace **Ver imagen** | Implementado |
+| Logo maestro en cabeceras visibles del M2 | `module2-embedded.js` | Abrir hojas 1–12 del M2 | Implementado con fallback al logo local |
+| Número de versión 1.40 y caché de recursos | `index.html` | Público y privado deben mostrar 1.40 | Implementado |
+| Logo de Drive incrustado físicamente en el Excel | — | Descargar Excel | Pendiente; no se declara implementado |
