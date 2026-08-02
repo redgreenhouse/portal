@@ -95,7 +95,13 @@ function m2Save(){
 }
 function m2Replica(doc){return (typeof MODULE2_REPLICAS!=='undefined'&&MODULE2_REPLICAS[doc.code])||'';}
 function m2MasterValue(field){
- const key=masterKey(field); return String(masterValues[key]||'').trim();
+ const key=masterKey(field),value=masterValues[key];return value&&typeof value==='object'?'':String(value||'').trim();
+}
+function m2MasterImage(field){
+ const value=masterValues[masterKey(field)];return value&&typeof value==='object'?value:null;
+}
+function m2LogoSource(){
+ const logo=m2MasterImage('Logo corporativo');return {src:logo?.imageUrl||logo?.thumbnailUrl||'assets/images/logo-redgreenhouse.png',url:logo?.url||logo?.imageUrl||'',name:logo?.name||'Logo RED Greenhouse'};
 }
 function m2RenderDocument(doc){
  const replica=m2Replica(doc);
@@ -133,7 +139,7 @@ function m2AddImages(root,doc){
    if(root.querySelector('.m2-live-header-summary')){
     top.innerHTML='';
    }else{
-    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
+    const logo=m2LogoSource();top.innerHTML=`<div class="embedded-logo-slot">${logo.url?`<a href="${esc(logo.url)}" target="_blank" rel="noopener">`:''}<img src="${esc(logo.src)}" alt="${esc(logo.name)}">${logo.url?'</a>':''}<small data-m2-ref>${range}</small></div>`;
    }
   }else{
    const storedObj=stored&&typeof stored==='object'?stored:null;
@@ -256,7 +262,8 @@ function m2HeaderMasterValues(){
  };
 }
 function m2HeaderSummaryHtml(values){
- return `<section class="m2-live-header-summary" aria-label="Cabecera vinculada a Datos Maestros"><div class="m2-live-header-logo"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"></div><div class="m2-live-header-company"><strong>${esc(values.empresa)}</strong><span>${esc(values.domicilio)}</span></div><dl><div><dt>Folio SENASICA</dt><dd>${esc(values.folio)}</dd></div><div><dt>Emisión</dt><dd>${esc(values.emision)}</dd></div><div><dt>Vigencia</dt><dd>${esc(values.vigencia)}</dd></div><div><dt>Versión</dt><dd>${esc(values.version)}</dd></div></dl></section>`;
+ const logo=m2LogoSource();
+ return `<section class="m2-live-header-summary" aria-label="Cabecera vinculada a Datos Maestros"><div class="m2-live-header-logo">${logo.url?`<a href="${esc(logo.url)}" target="_blank" rel="noopener">`:''}<img src="${esc(logo.src)}" alt="${esc(logo.name)}">${logo.url?'</a>':''}</div><div class="m2-live-header-company"><strong>${esc(values.empresa)}</strong><span>${esc(values.domicilio)}</span></div><dl><div><dt>Folio SENASICA</dt><dd>${esc(values.folio)}</dd></div><div><dt>Emisión</dt><dd>${esc(values.emision)}</dd></div><div><dt>Vigencia</dt><dd>${esc(values.vigencia)}</dd></div><div><dt>Versión</dt><dd>${esc(values.version)}</dd></div></dl></section>`;
 }
 function m2ApplyLiveHeader(root,doc){
  const values=m2HeaderMasterValues(),cells=M2_HTML_HEADER_CELLS[doc.code]||null;

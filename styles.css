@@ -222,3 +222,6 @@
 .m2-live-header-summary dt{text-transform:uppercase}.m2-live-header-summary dd{font-weight:700;text-align:center;background:#eff8f1}
 .m2-live-logo-fallback{display:flex;justify-content:center;padding:8px;margin-bottom:8px}
 @media(max-width:800px){.m2-live-header-summary{grid-template-columns:90px 1fr}.m2-live-header-summary dl{grid-column:1/-1}.m2-live-header-company{border-right:0}}
+
+/* V1.40 · Dato Maestro de imagen */
+.master-image-control{display:flex;gap:16px;align-items:center;padding:12px;border:1px solid #c8ded3;border-radius:12px;background:#fff}.master-image-preview{width:110px;height:90px;object-fit:contain;border:1px solid #dbe8e1;border-radius:8px;background:#f7faf8}.master-image-details{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:7px}.master-image-details>a{color:#0d6b4d;font-weight:700}.master-image-actions{display:flex;gap:8px;flex-wrap:wrap}.master-image-remove{padding:8px 12px}.m2-live-header-logo a,.embedded-logo-slot a{display:flex;align-items:center;justify-content:center;width:100%;height:100%}

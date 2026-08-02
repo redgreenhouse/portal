@@ -2,6 +2,7 @@
 
 const masterData = [
   {category:'Identidad', field:'Nombre de la unidad de producción', detail:'Nombre oficial usado en encabezados, portadas y registros.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Identidad', field:'Logo corporativo', detail:'Imagen oficial usada en el portal y en las cabeceras documentales.', inputType:'image', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
   {category:'Identidad', field:'Folio SENASICA', detail:'Folio puntual que se mostrará en las hojas oficiales.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
   {category:'Identidad', field:'Razón social / propietario', detail:'Identidad legal o responsable de la unidad productiva.', source:'Por confirmar', modules:{2:'p',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
   {category:'Ubicación', field:'Domicilio de la unidad', detail:'Dirección utilizada en las cabeceras de los documentos.', source:'M2–M14', modules:{2:'c',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
@@ -11,7 +12,8 @@ const masterData = [
   {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
   {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos estables para los pies de aprobación.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
   {category:'Control documental', field:'Versión', detail:'Versión vigente del documento.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Control documental', field:'Fecha de emisión', detail:'Fecha de emisión del documento oficial.', inputType:'date', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
+  {category:'Control documental', field:'Fecha de emisión', detail:'Fecha de emisión del documento oficial.', inputType:'date', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
+  {category:'Control documental', field:'Vigencia', detail:'Fecha límite de vigencia del documento oficial.', inputType:'date', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
 ];
 
 
@@ -89,10 +91,36 @@ function masterDateInputValue(value){
   return '';
 }
 
+function masterImageValue(value){
+  return value&&typeof value==='object'?value:null;
+}
+function masterImageHtml(key,value){
+  const image=masterImageValue(value),src=image?.imageUrl||image?.thumbnailUrl||'',url=image?.url||src||'',name=image?.name||'';
+  return `<div class="master-image-control" data-master-image-control="${esc(key)}">${src?`<img class="master-image-preview" src="${esc(src)}" alt="${esc(name||'Logo corporativo')}">`:''}<div class="master-image-details"><strong>${name?esc(name):'Sin imagen vinculada'}</strong>${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}<input class="drive-file-input" type="file" accept="image/*" data-master-image-input="${esc(key)}" hidden><div class="master-image-actions"><button type="button" class="drive-upload-button" data-master-image-upload="${esc(key)}">${image?'Reemplazar':'Subir al Drive'}</button>${image?`<button type="button" class="ghost-button master-image-remove" data-master-image-remove="${esc(key)}">Eliminar vínculo</button>`:''}</div><small data-master-image-status="${esc(key)}">${image?'Imagen oficial vinculada a Google Drive.':'La imagen se guardará en la carpeta Images.'}</small></div></div>`;
+}
 function masterInputHtml(item,key,value,long){
+  if(item.inputType==='image')return masterImageHtml(key,value);
   if(item.inputType==='date')return `<input class="master-input" type="date" data-master-input="${key}" value="${esc(masterDateInputValue(value))}">`;
   if(long)return `<textarea class="master-textarea" data-master-input="${key}">${esc(String(value||''))}</textarea>`;
   return `<input class="master-input" type="${item.inputType||'text'}" data-master-input="${key}" value="${esc(String(value||''))}">`;
+}
+async function uploadMasterImage(input){
+  const file=input.files?.[0];if(!file)return;
+  const key=input.dataset.masterImageInput,url=galleryEndpoint(),status=document.querySelector(`[data-master-image-status="${CSS.escape(key)}"]`),button=document.querySelector(`[data-master-image-upload="${CSS.escape(key)}"]`);
+  if(!url){alert('Configura la URL de Apps Script en Administración.');input.value='';return;}
+  if(status)status.textContent='Subiendo a Google Drive…';if(button){button.disabled=true;button.textContent='Subiendo…';}
+  try{
+    const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/png',base64:await fileToBase64(file),module:'MASTER',field:key};
+    const response=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),result=await response.json();
+    if(!result.ok)throw new Error(result.error||'No se pudo subir el logo.');
+    masterValues[key]={...result,name:result.name||file.name};localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));renderMasterData();
+  }catch(error){if(status)status.textContent='Error: '+error.message;alert(error.message);}
+  finally{input.value='';if(button){button.disabled=false;button.textContent='Subir al Drive';}}
+}
+function bindMasterImageControls(){
+  document.querySelectorAll('[data-master-image-upload]').forEach(button=>button.addEventListener('click',()=>document.querySelector(`[data-master-image-input="${CSS.escape(button.dataset.masterImageUpload)}"]`)?.click()));
+  document.querySelectorAll('[data-master-image-input]').forEach(input=>input.addEventListener('change',()=>uploadMasterImage(input)));
+  document.querySelectorAll('[data-master-image-remove]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.masterImageRemove;if(!confirm('¿Quitar esta imagen como logo oficial? El archivo permanecerá en Google Drive.'))return;delete masterValues[key];localStorage.setItem('redGreenhouseMasterData',JSON.stringify(masterValues));renderMasterData();}));
 }
 
 function renderMasterData(){
@@ -116,6 +144,7 @@ function renderMasterData(){
     </section>`).join('');
   document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{input.closest('.master-field').classList.toggle('has-value',!!input.value.trim())}));
   document.querySelectorAll('[data-structured-field]').forEach(input=>input.addEventListener('input',()=>input.closest('.master-field').classList.add('has-value')));
+  bindMasterImageControls();
 
   document.getElementById('masterFieldCount').textContent=masterData.length;
   document.getElementById('masterCategoryCount').textContent=new Set(masterData.map(x=>x.category)).size;
