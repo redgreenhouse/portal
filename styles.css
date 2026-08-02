@@ -210,3 +210,15 @@
 .map-table-wrap{overflow:auto}.map-field-id{display:block;margin-top:4px;color:#7b8c85;font-size:10px;font-weight:400}
 .excel-reference-input{min-width:130px;width:100%;padding:8px 10px;border:1px solid #bfd2c9;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase}
 @media(max-width:760px){.mapping-toolbar{grid-template-columns:1fr}.mapping-toolbar span{padding:0}}
+
+/* V1.38: cabecera viva M2 vinculada a Datos Maestros */
+.m2-live-header-summary{display:grid;grid-template-columns:110px minmax(280px,1fr) minmax(300px,.8fr);align-items:stretch;border:1px solid #008080;background:#fff;margin:0 0 14px;min-height:112px}
+.m2-live-header-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #008080;padding:10px}
+.m2-live-header-logo img,.m2-live-logo-fallback img{max-width:82px;max-height:82px;object-fit:contain}
+.m2-live-header-company{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-right:1px solid #008080;padding:10px;gap:6px}
+.m2-live-header-company strong{font-size:16px;color:#004d40}.m2-live-header-company span{font-size:12px}
+.m2-live-header-summary dl{display:grid;grid-template-columns:1fr 1fr;margin:0}
+.m2-live-header-summary dl div{display:contents}.m2-live-header-summary dt,.m2-live-header-summary dd{margin:0;padding:6px 8px;border-bottom:1px solid #008080}
+.m2-live-header-summary dt{text-transform:uppercase}.m2-live-header-summary dd{font-weight:700;text-align:center;background:#eff8f1}
+.m2-live-logo-fallback{display:flex;justify-content:center;padding:8px;margin-bottom:8px}
+@media(max-width:800px){.m2-live-header-summary{grid-template-columns:90px 1fr}.m2-live-header-summary dl{grid-column:1/-1}.m2-live-header-company{border-right:0}}

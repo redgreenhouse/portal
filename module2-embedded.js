@@ -1,9 +1,9 @@
 /* Módulo 2: documento HTML vivo. Conserva la transcripción del Excel e incrusta controles sólo en las celdas marcadas. */
 const M2_SHEET_NAME_BY_CODE={
-  'PORTADA':'PORTADA','POE MTTO INFRAESTR':'POE MTTO INFRAESTR','ANÁLISIS DESCRIPTIVO':'ANALISIS DE PELIGRO DESCRIP',
+  'PORTADA':'PORTADA','POE MTTO INFRAESTR':'POE MTTO INFRAESTR','ANÁLISIS DESCRIPTIVO':'ANALISIS DE PELIGRO DESCRIP  ',
   'PLAN DE ACCIÓN':'ANALISIS DE PEL ACCIO','MAPA 2.1':'MAPAS GEOREFERENCIACION 2.1','MAPA 2.1.1':'MAPAS GEOREFERENCIACION 2.1.1.',
-  'MAPA 2.1.2':'MAPA POLIONOS  2.1.2.','CROQUIS 2.2':'CROQUIS DE INSTALACIONES 2.2','DOC-2.3 FRENTE':'BITACORA 2.3 FRENTE.',
-  'DOC-2.3 REVERSO':'BITACORA 2.3 ATRAS','DOC-2.4':'ORGANIGRAMA 2.4','DOC-2.5':'PERFIL DE PUESTOS 2.5'
+  'MAPA 2.1.2':'MAPA POLIGONOS  2.1.2.','CROQUIS 2.2':'CROQUIS DE INSTALACIONES 2.2','DOC-2.3 FRENTE':'BITACORA 2.3 FRENTE.',
+  'DOC-2.3 REVERSO':'BITACORA 2.3 ATRAS ','DOC-2.4':'ORGANIGRAMA 2.4','DOC-2.5':'PERFIL DE PUESTOS 2.5'
 };
 const M2_IMAGE_RANGES={
  'PORTADA':['A1:C7'],'POE MTTO INFRAESTR':['A1:C7'],'ANÁLISIS DESCRIPTIVO':['A1:G5'],'PLAN DE ACCIÓN':['A1:C5'],
@@ -215,7 +215,7 @@ function m2AddMasterSignatures(root,doc){
 }
 const M2_HEADER_CELLS={
  'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
- 'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'J3',version:'J4',vigencia:'J5'},
+ 'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
  'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2',emision:'AV3',vigencia:'AV4',version:'AV5'},
  'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2',emision:'AC3',vigencia:'AC4',version:'AC5'},
  'MAPA 2.1':{empresa:'H2',domicilio:'H3',folio:'AP3',emision:'AT4',vigencia:'AT5',version:'AT6'},
@@ -227,20 +227,53 @@ const M2_HEADER_CELLS={
  'DOC-2.4':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
  'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2',emision:'AH3',vigencia:'AH4',version:'AH5'}
 };
+const M2_HTML_HEADER_CELLS={
+ 'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H1',emision:'I4',version:'I5',vigencia:'I6'},
+ 'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H1',emision:'I4',version:'I5',vigencia:'I6'},
+ 'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2',emision:'AV3',vigencia:'AV4',version:'AV5'},
+ 'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2',emision:'AC3',vigencia:'AC4',version:'AC5'},
+ 'DOC-2.3 FRENTE':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
+ 'DOC-2.3 REVERSO':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
+ 'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2',emision:'AH3',vigencia:'AH4',version:'AH5'}
+};
+function m2HeaderMasterValues(){
+ return {
+  empresa:m2CurrentMaster('Nombre de la unidad de producción','unidadProduccion','RED Greenhouse'),
+  domicilio:m2CurrentMaster('Domicilio de la unidad','domicilio','Domicilio pendiente'),
+  folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente'),
+  emision:m2CurrentMaster('Fecha de emisión','fechaEmision','Pendiente'),
+  vigencia:m2CurrentMaster('Vigencia','vigenciaDocumento','Pendiente'),
+  version:m2CurrentMaster('Versión','versionDocumento','Pendiente')
+ };
+}
+function m2HeaderSummaryHtml(values){
+ return `<section class="m2-live-header-summary" aria-label="Cabecera vinculada a Datos Maestros"><div class="m2-live-header-logo"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"></div><div class="m2-live-header-company"><strong>${esc(values.empresa)}</strong><span>${esc(values.domicilio)}</span></div><dl><div><dt>Folio SENASICA</dt><dd>${esc(values.folio)}</dd></div><div><dt>Emisión</dt><dd>${esc(values.emision)}</dd></div><div><dt>Vigencia</dt><dd>${esc(values.vigencia)}</dd></div><div><dt>Versión</dt><dd>${esc(values.version)}</dd></div></dl></section>`;
+}
+function m2ApplyLiveHeader(root,doc){
+ const values=m2HeaderMasterValues(),cells=M2_HTML_HEADER_CELLS[doc.code]||null;
+ let applied=0;
+ if(cells){
+  Object.entries(cells).forEach(([concept,cell])=>{
+   const el=m2TopCell(root,cell);if(!el)return;
+   el.innerHTML=`<span class="embedded-master" title="Dato Maestro: ${esc(concept)}">${esc(values[concept])}</span>`;
+   el.dataset.m2Header=concept;el.classList.add('m2-master-cell');applied++;
+  });
+ }
+ // Algunas réplicas (mapas, croquis y organigrama) son imágenes/tablas sin celdas HTML de cabecera.
+ // En esos casos se muestra una cabecera vinculada, alimentada por los mismos Datos Maestros del Excel.
+ if(applied<6){root.insertAdjacentHTML('afterbegin',m2HeaderSummaryHtml(values));}
+ // Si la réplica no contiene un área de logo, la cabecera vinculada lo aporta sin depender de coordenadas antiguas.
+ if(!root.querySelector('.embedded-logo-slot img,.m2-live-header-logo img')&&applied>=6){
+  root.insertAdjacentHTML('afterbegin',`<div class="m2-live-logo-fallback"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"></div>`);
+ }
+}
 function m2CurrentMaster(field,captureKey,fallback=''){
  const direct=m2MasterValue(field);if(direct)return direct;
  try{const capture=JSON.parse(localStorage.getItem('red_srrc_capture_v119')||'{}');const value=capture['master.'+captureKey];if(String(value||'').trim())return String(value).trim();}catch(_err){}
  return fallback;
 }
 function m2ApplyHeaders(workbook){
- const values={
-  empresa:m2CurrentMaster('Nombre de la unidad de producción','unidadProduccion','RED Greenhouse'),
-  domicilio:m2CurrentMaster('Domicilio de la unidad','domicilio',''),
-  folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente'),
-  emision:m2CurrentMaster('Fecha de emisión','fechaEmision',''),
-  vigencia:m2CurrentMaster('Vigencia','vigenciaDocumento',''),
-  version:m2CurrentMaster('Versión','versionDocumento','')
- };
+ const values=m2HeaderMasterValues();
  Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{
   const sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
   Object.entries(cells).forEach(([key,cell])=>sheet.cell(cell).value(values[key]||''));
@@ -358,6 +391,6 @@ async function m2GenerateExcel(){
 }
 function m2EnhanceOpenDocument(detail,doc){
  const root=detail.querySelector(`.living-document[data-m2-code="${CSS.escape(doc.code)}"]`);if(!root)return;
- m2ReplaceMasterText(root);m2AddImages(root,doc);m2AddControls(root,doc);m2AddMasterSignatures(root,doc);m2UpgradeLegacyFileInputs(root,doc);m2Bind(root);
+ m2ReplaceMasterText(root);m2ApplyLiveHeader(root,doc);m2AddImages(root,doc);m2AddControls(root,doc);m2AddMasterSignatures(root,doc);m2UpgradeLegacyFileInputs(root,doc);m2Bind(root);
  detail.querySelectorAll('.m2-export-excel').forEach(btn=>{if(!btn.dataset.bound){btn.dataset.bound='1';btn.addEventListener('click',m2GenerateExcel);}});
 }
