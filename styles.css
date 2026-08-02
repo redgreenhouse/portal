@@ -184,7 +184,5 @@
 
 .srrc-page-tabs{display:flex;gap:8px;padding:10px 0 14px;position:sticky;left:0}.srrc-page-tabs button{border:1px solid #bfd1c5;background:#fff;color:#155c39;border-radius:8px;padding:8px 12px;font-weight:700}.srrc-page-tabs button.active{background:#176c48;color:#fff}.srrc-dynamic-template{min-height:150px;line-height:1.5}.srrc-inline-input:invalid{border-color:#c94141;background:#fff6f6}
 .m2-drive-preview{display:block;max-width:220px;max-height:150px;object-fit:contain;margin:0 auto 8px;border-radius:8px;border:1px solid #cfe0d7;background:#fff}.embedded-image-input>a{display:inline-block;margin:4px 0 8px;color:#086b45;font-weight:700}.embedded-image-input label{display:block;cursor:pointer}.embedded-image-input label input{display:none}
-
-
-/* Controles de evidencia y liberación */
-.m2-image-upload-row,.srrc-image-upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.m2-image-upload-row label,.srrc-image-upload-row label{display:inline-flex;align-items:center}.m2-image-upload-row input,.srrc-image-upload-row input{max-width:260px}.m2-image-status{display:block;font-size:12px;color:#587267;margin-top:6px}.m2-image-links{display:flex;gap:10px;align-items:center;margin:6px 0}.m2-delete-image{border:1px solid #e5b9b9;background:#fff;color:#a53d3d;border-radius:8px;padding:5px 9px}.director-release{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#315f4d;white-space:nowrap;background:#eef7f2;border:1px solid #cfe4d9;border-radius:999px;padding:6px 10px}.director-release input{accent-color:#19734e}.sheet-head-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.m2-upload-drive{margin-left:10px;padding:9px 14px;font-size:13px}
+.m2-upload-drive:disabled{opacity:.55;cursor:not-allowed}
