@@ -198,3 +198,15 @@
 
 /* v1.35: selector nativo oculto; sólo se muestra el botón explícito de Drive */
 .drive-file-input{display:none!important}.drive-upload-button{border:0;font:inherit}.portal-status i{display:none}.portal-status{padding-left:14px}
+
+/* V1.37 · Mapeo agrupado y búsqueda */
+.mapping-toolbar{display:grid;grid-template-columns:minmax(280px,1fr) 220px auto;gap:14px;align-items:end;padding:16px;margin-bottom:16px}
+.mapping-toolbar label{display:grid;gap:6px;font-weight:700;color:#173f32}
+.mapping-toolbar input,.mapping-toolbar select{width:100%;border:1px solid #cbdad3;border-radius:10px;padding:11px 12px;background:#fff;font:inherit}
+.mapping-toolbar span{padding:11px 0;color:#60756c;font-weight:700;white-space:nowrap}
+.map-module-group{padding:0;margin-bottom:18px;overflow:hidden}
+.map-module-heading{padding:16px 18px;background:#f3f8f5;border-bottom:1px solid #dce9e2}
+.map-module-heading h2{margin:0;font-size:19px;color:#063e2d}.map-module-heading p{margin:4px 0 0;color:#6b7e76}
+.map-table-wrap{overflow:auto}.map-field-id{display:block;margin-top:4px;color:#7b8c85;font-size:10px;font-weight:400}
+.excel-reference-input{min-width:130px;width:100%;padding:8px 10px;border:1px solid #bfd2c9;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase}
+@media(max-width:760px){.mapping-toolbar{grid-template-columns:1fr}.mapping-toolbar span{padding:0}}
