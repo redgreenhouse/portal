@@ -46,7 +46,7 @@
     }
     if (c.type === 'image') {
       const obj = typeof v === 'object' ? v : null;
-      return `<div class="srrc-image-control">${obj?.imageUrl ? `<img src="${esc(obj.imageUrl)}"><a href="${esc(obj.url)}" target="_blank">Abrir evidencia</a>` : ''}<label><input type="file" accept="image/*" data-srrc-image="${esc(c.id)}"><span class="drive-upload-button">${obj ? 'Cambiar imagen en Drive' : 'Subir al Drive'}</span></label><small>${esc(c.range)}</small></div>`;
+      return `<div class="srrc-image-control">${obj?.imageUrl ? `<img src="${esc(obj.imageUrl)}"><a href="${esc(obj.url)}" target="_blank">Abrir evidencia</a>` : ''}<input class="drive-file-input" type="file" accept="image/*" data-srrc-image="${esc(c.id)}" hidden><button class="drive-upload-button" type="button" data-srrc-upload-trigger="${esc(c.id)}">${obj ? 'Cambiar imagen en Drive' : 'Subir al Drive'}</button><small>${esc(c.range)}</small></div>`;
     }
     if (c.type === 'status') return `<button class="srrc-state" data-srrc-cycle="${esc(c.id)}" data-options="✓|✗|NL|" type="button">${esc(v)}</button>`;
     if (c.type === 'checkbox') return `<label class="srrc-check"><input type="checkbox" data-srrc-check="${esc(c.id)}" ${v === false ? '' : 'checked'}><span>✓</span></label>`;
@@ -108,6 +108,7 @@
       values[p.dataset.srrcTraffic] = b.dataset.value;
       save();
     });
+    root.querySelectorAll('[data-srrc-upload-trigger]').forEach(btn=>btn.addEventListener('click',()=>{const input=root.querySelector(`[data-srrc-image="${CSS.escape(btn.dataset.srrcUploadTrigger)}"]`);if(input)input.click();}));
     root.querySelectorAll('[data-srrc-image]').forEach((e) => e.onchange = async () => {
       const f = e.files[0];
       if (!f) return;

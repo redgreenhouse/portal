@@ -195,3 +195,6 @@
 .drive-upload-button:hover{background:#0f684a}
 .drive-file-name{display:block;margin-top:6px;font-size:11px;font-style:normal;color:#527064;font-weight:500}
 @media(max-width:760px){.excel-sheet-row{display:block}.director-release{padding:10px 16px;border-left:0;border-top:1px solid #d9e5de}}
+
+/* v1.35: selector nativo oculto; sólo se muestra el botón explícito de Drive */
+.drive-file-input{display:none!important}.drive-upload-button{border:0;font:inherit}.portal-status i{display:none}.portal-status{padding-left:14px}

@@ -1,3 +1,5 @@
+Versión actual: 1.35
+
 # RED Greenhouse Portal v1.29
 
 Incluye sitio público, intranet, galería en Drive y documentos vivos para los módulos 2 a 7.

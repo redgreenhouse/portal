@@ -133,7 +133,7 @@ function m2AddImages(root,doc){
    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
    const storedObj=stored&&typeof stored==='object'?stored:null;
-   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<label><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span class="drive-upload-button">${storedName?'Cambiar imagen en Drive':'Subir al Drive'}</span>${storedName?`<em class="drive-file-name">${esc(storedName)}</em>`:''}</label><small data-m2-ref>${range}</small></div>`;
+   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<input class="drive-file-input" type="file" accept="image/*" data-m2-image="${esc(key)}" hidden><button class="drive-upload-button" type="button" data-m2-upload-trigger="${esc(key)}">${storedName?'Cambiar imagen en Drive':'Subir al Drive'}</button>${storedName?`<em class="drive-file-name">${esc(storedName)}</em>`:''}<small data-m2-ref>${range}</small></div>`;
   }
  });
 }
@@ -173,7 +173,16 @@ function m2AddControls(root,doc){
   }
  });
 }
+function m2UpgradeLegacyFileInputs(root,doc){
+ root.querySelectorAll('input[type="file"]:not([data-m2-image])').forEach((input,index)=>{
+  const key=`${doc.code}|legacy-image|${index}`;
+  input.classList.add('drive-file-input');input.hidden=true;input.dataset.m2Image=key;input.removeAttribute('data-module2-file');
+  const button=document.createElement('button');button.type='button';button.className='drive-upload-button';button.dataset.m2UploadTrigger=key;button.textContent='Subir al Drive';
+  input.insertAdjacentElement('afterend',button);
+ });
+}
 function m2Bind(root){
+ root.querySelectorAll('[data-m2-upload-trigger]').forEach(btn=>btn.addEventListener('click',()=>{const input=root.querySelector(`[data-m2-image="${CSS.escape(btn.dataset.m2UploadTrigger)}"]`);if(input)input.click();}));
  root.querySelectorAll('[data-m2-input]').forEach(el=>el.addEventListener('input',()=>{m2EmbeddedValues[el.dataset.m2Input]=el.value;m2Save();}));
  root.querySelectorAll('[data-m2-status]').forEach(btn=>btn.addEventListener('click',()=>{
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
@@ -182,8 +191,8 @@ function m2Bind(root){
  root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',async()=>{
   const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
   if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
-  el.disabled=true;el.nextElementSibling.textContent='Subiendo a Google Drive…';
-  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();el.nextElementSibling.textContent='Imagen guardada en Drive: '+file.name;}catch(err){alert(err.message);el.nextElementSibling.textContent='＋ Agregar imagen';}finally{el.disabled=false;}
+  const trigger=root.querySelector(`[data-m2-upload-trigger="${CSS.escape(key)}"]`);el.disabled=true;if(trigger){trigger.disabled=true;trigger.textContent='Subiendo a Google Drive…';}
+  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();if(trigger)trigger.textContent='Imagen guardada en Drive';}catch(err){alert(err.message);if(trigger)trigger.textContent='Subir al Drive';}finally{el.disabled=false;if(trigger)trigger.disabled=false;}
  }));
 }
 
@@ -336,6 +345,6 @@ async function m2GenerateExcel(){
 }
 function m2EnhanceOpenDocument(detail,doc){
  const root=detail.querySelector(`.living-document[data-m2-code="${CSS.escape(doc.code)}"]`);if(!root)return;
- m2ReplaceMasterText(root);m2AddImages(root,doc);m2AddControls(root,doc);m2AddMasterSignatures(root,doc);m2Bind(root);
+ m2ReplaceMasterText(root);m2AddImages(root,doc);m2AddControls(root,doc);m2AddMasterSignatures(root,doc);m2UpgradeLegacyFileInputs(root,doc);m2Bind(root);
  detail.querySelectorAll('.m2-export-excel').forEach(btn=>{if(!btn.dataset.bound){btn.dataset.bound='1';btn.addEventListener('click',m2GenerateExcel);}});
 }
