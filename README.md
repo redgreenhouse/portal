@@ -22,3 +22,10 @@ Después de copiar el nuevo `apps-script/Code.gs`, publique una **nueva versión
 - Navegación por páginas horizontales en M8 hoja 8.3.
 - Galería: refresco y retiro de tarjeta local al eliminar.
 - Rutas de logo unificadas.
+
+
+## v1.31
+- Módulo 2: selección de imagen sube directamente a Google Drive y muestra miniatura persistente.
+- Excel M2: restaura logos/dibujos originales de la plantilla.
+- Excel M2: llena Folio SENASICA, emisión, vigencia y versión en todas las cabeceras mapeadas.
+- Evidencias: se exportan como hipervínculo Abrir evidencia fotográfica.

@@ -49,8 +49,8 @@ function m2DownloadTrace(){
  const url=URL.createObjectURL(blob),a=document.createElement('a');
  a.href=url;a.download=M2_TRACE_FILE;document.body.appendChild(a);a.click();a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),1500);
-  m2Trace('generation-finished',{traceRows:m2ImageTrace.length});m2DownloadTrace();
 }
+
 async function m2InspectGeneratedImageLinks(buffer){
  if(typeof JSZip==='undefined')return;
  const zip=await JSZip.loadAsync(buffer);
@@ -132,7 +132,8 @@ function m2AddImages(root,doc){
   if(index===0){
    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
-   top.innerHTML=`<label class="embedded-image-input"><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Imagen seleccionada: '+esc(storedName):'＋ Agregar imagen'}</span><small data-m2-ref>${range}</small></label>`;
+   const storedObj=stored&&typeof stored==='object'?stored:null;
+   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<label><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span>${storedName?'Cambiar y subir imagen':'Seleccionar y subir a Google Drive'}</span></label><small data-m2-ref>${range}</small></div>`;
   }
  });
 }
@@ -204,18 +205,18 @@ function m2AddMasterSignatures(root,doc){
  });
 }
 const M2_HEADER_CELLS={
- 'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H2'},
- 'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2'},
- 'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2'},
- 'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2'},
- 'MAPA 2.1':{empresa:'H2',domicilio:'H3',folio:'AP3'},
- 'MAPA 2.1.1':{empresa:'H2',domicilio:'H3',folio:'AP3'},
- 'MAPA 2.1.2':{empresa:'C2',domicilio:'C3',folio:'R3'},
- 'CROQUIS 2.2':{empresa:'I2',domicilio:'I3',folio:'AQ3'},
- 'DOC-2.3 FRENTE':{empresa:'H1',domicilio:'H2',folio:'AP2'},
- 'DOC-2.3 REVERSO':{empresa:'H1',domicilio:'H2',folio:'AP2'},
- 'DOC-2.4':{empresa:'H1',domicilio:'H2',folio:'AP2'},
- 'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2'}
+ 'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
+ 'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'J3',version:'J4',vigencia:'J5'},
+ 'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2',emision:'AV3',vigencia:'AV4',version:'AV5'},
+ 'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2',emision:'AC3',vigencia:'AC4',version:'AC5'},
+ 'MAPA 2.1':{empresa:'H2',domicilio:'H3',folio:'AP3',emision:'AT4',vigencia:'AT5',version:'AT6'},
+ 'MAPA 2.1.1':{empresa:'H2',domicilio:'H3',folio:'AP3',emision:'AT4',vigencia:'AT5',version:'AT6'},
+ 'MAPA 2.1.2':{empresa:'C2',domicilio:'C3',folio:'R3',emision:'S4',vigencia:'S5',version:'S6'},
+ 'CROQUIS 2.2':{empresa:'I2',domicilio:'I3',folio:'AQ3',emision:'AU4',vigencia:'AU5',version:'AU6'},
+ 'DOC-2.3 FRENTE':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
+ 'DOC-2.3 REVERSO':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
+ 'DOC-2.4':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
+ 'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2',emision:'AH3',vigencia:'AH4',version:'AH5'}
 };
 function m2CurrentMaster(field,captureKey,fallback=''){
  const direct=m2MasterValue(field);if(direct)return direct;
@@ -226,7 +227,10 @@ function m2ApplyHeaders(workbook){
  const values={
   empresa:m2CurrentMaster('Nombre de la unidad de producción','unidadProduccion','RED Greenhouse'),
   domicilio:m2CurrentMaster('Domicilio de la unidad','domicilio',''),
-  folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente')
+  folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente'),
+  emision:m2CurrentMaster('Fecha de emisión','fechaEmision',''),
+  vigencia:m2CurrentMaster('Vigencia','vigenciaDocumento',''),
+  version:m2CurrentMaster('Versión','versionDocumento','')
  };
  Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{
   const sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
@@ -266,6 +270,43 @@ async function m2RestoreTemplateFormulas(templateBuffer,generatedBuffer){
  }
  return generatedZip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
 }
+async function m2RestoreTemplateDrawings(templateBuffer,generatedBuffer){
+ if(typeof JSZip==='undefined')throw new Error('No se cargó el protector visual de Excel.');
+ const [templateZip,generatedZip]=await Promise.all([JSZip.loadAsync(templateBuffer),JSZip.loadAsync(generatedBuffer)]);
+ const parser=new DOMParser(),serializer=new XMLSerializer();
+ // Conserva imágenes y dibujos originales de la plantilla (incluido el logo) sin reconstruir el libro.
+ for(const path of Object.keys(templateZip.files)){
+  if(/^xl\/(media|drawings)\//.test(path))generatedZip.file(path,await templateZip.file(path).async('uint8array'));
+ }
+ const ct=templateZip.file('[Content_Types].xml');if(ct)generatedZip.file('[Content_Types].xml',await ct.async('string'));
+ const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));
+ for(const path of sheetPaths){
+  const tf=templateZip.file(path),gf=generatedZip.file(path);if(!tf||!gf)continue;
+  const [tx,gx]=await Promise.all([tf.async('string'),gf.async('string')]);
+  const td=parser.parseFromString(tx,'application/xml'),gd=parser.parseFromString(gx,'application/xml');
+  const tDrawing=[...td.getElementsByTagName('*')].find(n=>n.localName==='drawing');
+  if(!tDrawing)continue;
+  const tRid=tDrawing.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||tDrawing.getAttribute('r:id');
+  const relPath=path.replace('/worksheets/','/worksheets/_rels/')+'.rels';
+  const trf=templateZip.file(relPath);if(!trf)continue;
+  const trd=parser.parseFromString(await trf.async('string'),'application/xml');
+  const tRel=[...trd.getElementsByTagName('*')].find(n=>n.localName==='Relationship'&&n.getAttribute('Id')===tRid);
+  if(!tRel)continue;
+  let grd,relsRoot;
+  const grf=generatedZip.file(relPath);
+  if(grf){grd=parser.parseFromString(await grf.async('string'),'application/xml');relsRoot=grd.documentElement;}
+  else{grd=parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>','application/xml');relsRoot=grd.documentElement;}
+  const used=new Set([...grd.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));
+  let newRid=tRid,seq=1;while(used.has(newRid))newRid='rIdDrawing'+(seq++);
+  const rel=grd.createElementNS(relsRoot.namespaceURI,'Relationship');
+  rel.setAttribute('Id',newRid);rel.setAttribute('Type',tRel.getAttribute('Type'));rel.setAttribute('Target',tRel.getAttribute('Target'));relsRoot.appendChild(rel);
+  [...gd.getElementsByTagName('*')].filter(n=>n.localName==='drawing').forEach(n=>n.remove());
+  const drawing=gd.importNode(tDrawing,true);drawing.setAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','r:id',newRid);
+  const root=gd.documentElement,ext=[...root.children].find(n=>n.localName==='extLst');root.insertBefore(drawing,ext||null);
+  generatedZip.file(path,serializer.serializeToString(gd));generatedZip.file(relPath,serializer.serializeToString(grd));
+ }
+ return generatedZip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
+}
 function m2FileToDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('No se pudo leer '+file.name));reader.readAsDataURL(file);});}
 async function m2GenerateExcel(){
  m2ImageTrace=[];m2Trace('generation-start',{imageCount:m2ImageFiles.size});
@@ -285,12 +326,10 @@ async function m2GenerateExcel(){
   const sig=m2SignatureData(),poe=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
   if(poe){poe.cell(m2Reference('M2.SIGN.ELABORO','B66')).value(sig.elaboro.nombre);poe.cell(m2Reference('M2.SIGN.REVISO','E66')).value(sig.reviso.nombre);poe.cell(m2Reference('M2.SIGN.AUTORIZO','H66')).value(sig.autorizo.nombre);}
   let blob=await workbook.outputAsync();
-  // Las imágenes se guardan en Drive y el Excel recibe un vínculo; no se reconstruye el libro.
-
-  if(!m2ImageFiles.size){
-   const protectedBuffer=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
-   blob=new Blob([protectedBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  }
+  // Las evidencias se guardan en Drive. Después restauramos fórmulas y dibujos originales (incluido el logo).
+  const formulaProtected=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
+  const visuallyProtected=await m2RestoreTemplateDrawings(templateBuffer,formulaProtected);
+  blob=new Blob([visuallyProtected],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){m2Trace('generation-error',{message:err.message,stack:err.stack||''});m2DownloadTrace();alert('No se pudo generar el Excel: '+err.message);}
  finally{buttons.forEach(b=>{b.disabled=false;b.textContent='Generar Excel listo para imprimir'});}
