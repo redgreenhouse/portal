@@ -1,0 +1,18 @@
+RED Greenhouse Portal V1.34
+
+Cambios puntuales:
+1) Liberación por Director por hoja
+   - app.js: constantes y funciones DIRECTOR_RELEASE_KEY, directorReleaseState, isDirectorReleased, setDirectorReleased.
+   - app.js: función openModule2(), atributo data-director-release.
+   - srrc-runtime.js: mismas funciones y openStructuredModule() para módulos 3–10.
+   - styles.css: clases .excel-sheet-row y .director-release.
+
+2) Sustitución visual de “Elegir archivo” por “Subir al Drive”
+   - module2-embedded.js: función m2AddImages(), clase .drive-upload-button.
+   - module2-embedded.js: función m2Bind() conserva la subida real al Apps Script.
+   - srrc-runtime.js: función controlHtml() para módulos estructurados.
+   - styles.css: clase .drive-upload-button.
+
+3) Identificación de versión y control de caché
+   - index.html: botón “Acceso Portal V1.34”.
+   - index.html: ?v=1.34 en CSS y JavaScript locales para forzar actualización de archivos.

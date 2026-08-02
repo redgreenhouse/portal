@@ -184,5 +184,14 @@
 
 .srrc-page-tabs{display:flex;gap:8px;padding:10px 0 14px;position:sticky;left:0}.srrc-page-tabs button{border:1px solid #bfd1c5;background:#fff;color:#155c39;border-radius:8px;padding:8px 12px;font-weight:700}.srrc-page-tabs button.active{background:#176c48;color:#fff}.srrc-dynamic-template{min-height:150px;line-height:1.5}.srrc-inline-input:invalid{border-color:#c94141;background:#fff6f6}
 .m2-drive-preview{display:block;max-width:220px;max-height:150px;object-fit:contain;margin:0 auto 8px;border-radius:8px;border:1px solid #cfe0d7;background:#fff}.embedded-image-input>a{display:inline-block;margin:4px 0 8px;color:#086b45;font-weight:700}.embedded-image-input label{display:block;cursor:pointer}.embedded-image-input label input{display:none}
-.m2-upload-drive{margin-left:10px;padding:9px 14px;font-size:13px}
-.m2-upload-drive:disabled{opacity:.55;cursor:not-allowed}
+
+
+/* v1.34: liberación por hoja y carga de imágenes a Drive */
+.excel-sheet-row{display:flex;align-items:stretch;background:#f5f9f7}
+.excel-sheet-row .excel-sheet-head{flex:1;min-width:0}
+.director-release{display:flex;align-items:center;gap:8px;padding:0 16px;border-left:1px solid #d9e5de;white-space:nowrap;font-size:12px;font-weight:700;color:#245d45;cursor:pointer}
+.director-release input{width:18px;height:18px;accent-color:#17805b}
+.drive-upload-button{display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;border-radius:8px;background:#167a58;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 4px 10px rgba(22,122,88,.18)}
+.drive-upload-button:hover{background:#0f684a}
+.drive-file-name{display:block;margin-top:6px;font-size:11px;font-style:normal;color:#527064;font-weight:500}
+@media(max-width:760px){.excel-sheet-row{display:block}.director-release{padding:10px 16px;border-left:0;border-top:1px solid #d9e5de}}

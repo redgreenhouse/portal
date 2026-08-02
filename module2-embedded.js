@@ -133,7 +133,7 @@ function m2AddImages(root,doc){
    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
   }else{
    const storedObj=stored&&typeof stored==='object'?stored:null;
-   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<label><input type="file" accept="image/*" data-m2-image-file="${esc(key)}"><span data-m2-file-name>${storedName?'Cambiar imagen':'Elegir imagen'}</span></label><button type="button" class="primary-button m2-upload-drive" data-m2-upload="${esc(key)}" disabled>Subir a Google Drive</button><small data-m2-ref>${range}</small></div>`;
+   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<label><input type="file" accept="image/*" data-m2-image="${esc(key)}"><span class="drive-upload-button">${storedName?'Cambiar imagen en Drive':'Subir al Drive'}</span>${storedName?`<em class="drive-file-name">${esc(storedName)}</em>`:''}</label><small data-m2-ref>${range}</small></div>`;
   }
  });
 }
@@ -179,16 +179,11 @@ function m2Bind(root){
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
- root.querySelectorAll('[data-m2-image-file]').forEach(el=>el.addEventListener('change',()=>{
-  const file=el.files[0],key=el.dataset.m2ImageFile,wrap=el.closest('.embedded-image-input'),button=wrap?.querySelector('[data-m2-upload]'),name=wrap?.querySelector('[data-m2-file-name]');
-  if(file){m2ImageFiles.set(key,file);if(name)name.textContent=file.name;if(button)button.disabled=false;}
- }));
- root.querySelectorAll('[data-m2-upload]').forEach(button=>button.addEventListener('click',async()=>{
-  const key=button.dataset.m2Upload,file=m2ImageFiles.get(key),url=galleryEndpoint();
-  if(!file)return alert('Primero selecciona una imagen.');
-  if(!url)return alert('Configura la URL de Apps Script en Administración.');
-  button.disabled=true;button.textContent='Subiendo…';
-  try{const payload={action:'uploadImage',folderId:imagesFolderId(),fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();m2ImageFiles.delete(key);button.textContent='Imagen guardada';setTimeout(()=>openModule2(),350);}catch(err){alert(err.message);button.disabled=false;button.textContent='Subir a Google Drive';}
+ root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',async()=>{
+  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
+  if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
+  el.disabled=true;el.nextElementSibling.textContent='Subiendo a Google Drive…';
+  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();el.nextElementSibling.textContent='Imagen guardada en Drive: '+file.name;}catch(err){alert(err.message);el.nextElementSibling.textContent='＋ Agregar imagen';}finally{el.disabled=false;}
  }));
 }
 
@@ -281,7 +276,7 @@ async function m2RestoreTemplateDrawings(templateBuffer,generatedBuffer){
  const parser=new DOMParser(),serializer=new XMLSerializer();
  // Conserva imágenes y dibujos originales de la plantilla (incluido el logo) sin reconstruir el libro.
  for(const path of Object.keys(templateZip.files)){
-  if(/^xl\/(media|drawings)\//.test(path)){const source=templateZip.file(path);if(source)generatedZip.file(path,await source.async('uint8array'));}
+  if(/^xl\/(media|drawings)\//.test(path))generatedZip.file(path,await templateZip.file(path).async('uint8array'));
  }
  const ct=templateZip.file('[Content_Types].xml');if(ct)generatedZip.file('[Content_Types].xml',await ct.async('string'));
  const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));

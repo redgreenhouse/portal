@@ -306,8 +306,13 @@ function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${
  else if(type==='list')control=`<select data-module2-input="${key}"><option value="">Seleccionar…</option>${['Baja','Media','Alta','No aplica'].map(x=>`<option ${value===x?'selected':''}>${x}</option>`).join('')}</select>`;
  else control=`<input data-module2-input="${key}" type="${type==='date'?'date':type==='datetime'?'datetime-local':type==='number'?'number':'text'}" value="${value}" placeholder="Capturar información…">`;
  return `<div class="module-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type">${typeLabels[type]||type}</span><p>${hint}</p></div><div class="module-field-control">${control}</div></div>`}
-function openModule2(){const detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo 2 · Mantenimiento de infraestructura</h2><p>Las 12 hojas se muestran como documentos vivos. Los controles aparecen dentro del formato y conservan el contexto original.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><div class="module-document-list">${RED_DATA.module2.map((doc,index)=>`<article class="excel-sheet-card"><button class="excel-sheet-head" data-sheet-toggle="${doc.id}"><span class="sheet-index">${String(index+1).padStart(2,'0')}</span><span><strong>${doc.title}</strong><small>Hoja: ${doc.code} · ${doc.type}</small></span><span class="sheet-chevron">⌄</span></button><div class="excel-sheet-body" id="sheet-${doc.id}" hidden><p class="sheet-description">${doc.description}</p><div class="sheet-action"><b>Acción para la carpeta:</b> ${doc.action} · <b>Frecuencia:</b> ${doc.frequency}</div>${renderModule2DocumentContent(doc)}</div></article>`).join('')}</div>`;
+const DIRECTOR_RELEASE_KEY='redGreenhouseDirectorRelease';
+function directorReleaseState(){try{return JSON.parse(localStorage.getItem(DIRECTOR_RELEASE_KEY)||'{}')}catch(_e){return {}}}
+function isDirectorReleased(key){return !!directorReleaseState()[key]}
+function setDirectorReleased(key,value){const state=directorReleaseState();state[key]=!!value;localStorage.setItem(DIRECTOR_RELEASE_KEY,JSON.stringify(state));}
+function openModule2(){const detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo 2 · Mantenimiento de infraestructura</h2><p>Las 12 hojas se muestran como documentos vivos. Los controles aparecen dentro del formato y conservan el contexto original.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><div class="module-document-list">${RED_DATA.module2.map((doc,index)=>`<article class="excel-sheet-card"><div class="excel-sheet-row"><button class="excel-sheet-head" data-sheet-toggle="${doc.id}"><span class="sheet-index">${String(index+1).padStart(2,'0')}</span><span><strong>${doc.title}</strong><small>Hoja: ${doc.code} · ${doc.type}</small></span><span class="sheet-chevron">⌄</span></button><label class="director-release"><input type="checkbox" data-director-release="M2|${doc.code}" ${isDirectorReleased(`M2|${doc.code}`)?'checked':''}><span>Liberado por Director</span></label></div><div class="excel-sheet-body" id="sheet-${doc.id}" hidden><p class="sheet-description">${doc.description}</p><div class="sheet-action"><b>Acción para la carpeta:</b> ${doc.action} · <b>Frecuencia:</b> ${doc.frequency}</div>${renderModule2DocumentContent(doc)}</div></article>`).join('')}</div>`;
  detail.querySelector('[data-close-module]').addEventListener('click',()=>detail.hidden=true);
+ detail.querySelectorAll('[data-director-release]').forEach(c=>c.addEventListener('change',()=>setDirectorReleased(c.dataset.directorRelease,c.checked)));
  detail.querySelectorAll('[data-sheet-toggle]').forEach(b=>b.addEventListener('click',()=>{const body=detail.querySelector(`#sheet-${b.dataset.sheetToggle}`);body.hidden=!body.hidden}));
  detail.querySelectorAll('[data-module2-input]').forEach(el=>el.addEventListener('input',()=>{module2Values[el.dataset.module2Input]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));renderModules()}));
  detail.querySelectorAll('[data-risk-key]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.riskKey]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
@@ -338,18 +343,14 @@ document.getElementById('logoutButton').addEventListener('click',exitPrivatePort
 document.getElementById('publicSiteButton').addEventListener('click',exitPrivatePortal);
 document.getElementById('savePasswordButton').addEventListener('click',()=>{const a=document.getElementById('newPortalPassword').value,b=document.getElementById('confirmPortalPassword').value,msg=document.getElementById('passwordMessage');if(a.length<4){msg.textContent='Usa al menos 4 caracteres.';return}if(a!==b){msg.textContent='Las contraseñas no coinciden.';return}localStorage.setItem('redGreenhousePortalPassword',a);document.getElementById('newPortalPassword').value='';document.getElementById('confirmPortalPassword').value='';msg.textContent='Contraseña actualizada.'});
 const driveConfig=JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}');
-document.getElementById('driveImagesFolderId').value=driveConfig.imagesFolderId||driveConfig.folderId||'1nhz_xAqRz6kcsZdg_zodmaLACmw584sL';
-document.getElementById('driveTemplatesFolderId').value=driveConfig.templatesFolderId||'';
+document.getElementById('driveFolderId').value=driveConfig.folderId||'1nhz_xAqRz6kcsZdg_zodmaLACmw584sL';
 document.getElementById('driveWebAppUrl').value=driveConfig.webAppUrl||'https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec';
-document.getElementById('saveDriveConfigButton').addEventListener('click',()=>{localStorage.setItem('redGreenhouseDriveConfig',JSON.stringify({imagesFolderId:document.getElementById('driveImagesFolderId').value.trim(),templatesFolderId:document.getElementById('driveTemplatesFolderId').value.trim(),webAppUrl:document.getElementById('driveWebAppUrl').value.trim()}));document.getElementById('driveMessage').textContent='Configuración guardada.'});
+document.getElementById('saveDriveConfigButton').addEventListener('click',()=>{localStorage.setItem('redGreenhouseDriveConfig',JSON.stringify({folderId:document.getElementById('driveFolderId').value.trim(),webAppUrl:document.getElementById('driveWebAppUrl').value.trim()}));document.getElementById('driveMessage').textContent='Configuración guardada.'});
 if(sessionStorage.getItem('redGreenhousePrivateSession')==='1')enterPrivatePortal();
 
 
 const DEFAULT_GALLERY=[{fileId:'local-invernadero',title:'Producción en campo',description:'Trabajo cotidiano dentro del invernadero.',imageUrl:'assets/images/gallery/invernadero-familia.png',visible:true,local:true}];
-function driveSettings(){try{return JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}')}catch(_e){return {}}}
-function galleryEndpoint(){return (driveSettings().webAppUrl||document.getElementById('driveWebAppUrl')?.value||'').trim()}
-function imagesFolderId(){const c=driveSettings();return (c.imagesFolderId||c.folderId||document.getElementById('driveImagesFolderId')?.value||'').trim()}
-function templatesFolderId(){const c=driveSettings();return (c.templatesFolderId||document.getElementById('driveTemplatesFolderId')?.value||'').trim()}
+function galleryEndpoint(){return (JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}').webAppUrl||document.getElementById('driveWebAppUrl')?.value||'').trim()}
 function fileToBase64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(file)})}
 function localGalleryItem(){
   const saved=JSON.parse(localStorage.getItem('redGreenhouseLocalGalleryItem')||'null');
@@ -358,7 +359,7 @@ function localGalleryItem(){
 }
 async function loadGallery(){
   const local=localGalleryItem();let items=local?[local]:[];const url=galleryEndpoint();
-  if(url){try{const r=await fetch(url+'?action=listGallery&includeHidden=1&folderId='+encodeURIComponent(imagesFolderId()));const j=await r.json();if(j.ok&&Array.isArray(j.items))items=items.concat(j.items)}catch(e){console.warn('Galería Drive no disponible',e)}}
+  if(url){try{const r=await fetch(url+'?action=listGallery&includeHidden=1');const j=await r.json();if(j.ok&&Array.isArray(j.items))items=items.concat(j.items)}catch(e){console.warn('Galería Drive no disponible',e)}}
   renderGallery(items);
 }
 function galleryActionButtons(x){
@@ -381,7 +382,7 @@ async function uploadGalleryPhoto(){
   const file=document.getElementById('galleryFile').files[0],msg=document.getElementById('galleryMessage'),url=galleryEndpoint();
   if(!file){msg.textContent='Selecciona una fotografía.';return}if(!url){msg.textContent='Configura primero la URL del Apps Script.';return}
   msg.textContent='Subiendo fotografía…';
-  try{const payload={action:'uploadGallery',folderId:imagesFolderId(),fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),title:document.getElementById('galleryTitle').value.trim(),description:document.getElementById('galleryDescription').value.trim(),visible:true};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');msg.textContent='Fotografía publicada.';document.getElementById('galleryFile').value='';document.getElementById('galleryTitle').value='';document.getElementById('galleryDescription').value='';await loadGallery()}catch(e){msg.textContent='Error: '+e.message}
+  try{const payload={action:'uploadGallery',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),title:document.getElementById('galleryTitle').value.trim(),description:document.getElementById('galleryDescription').value.trim(),visible:true};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');msg.textContent='Fotografía publicada.';document.getElementById('galleryFile').value='';document.getElementById('galleryTitle').value='';document.getElementById('galleryDescription').value='';await loadGallery()}catch(e){msg.textContent='Error: '+e.message}
 }
 async function saveLocalGalleryChange(action,item){
   if(action==='delete'){
