@@ -4,6 +4,11 @@
       "label": "Nombre de la unidad de producción",
       "value": "RED Greenhouse"
     },
+    "logoCorporativo": {
+      "label": "Logo corporativo",
+      "type": "image",
+      "value": null
+    },
     "domicilio": {
       "label": "Domicilio",
       "value": ""
