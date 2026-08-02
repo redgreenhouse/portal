@@ -130,7 +130,11 @@ function m2AddImages(root,doc){
   cells.forEach(c=>c.classList.add('m2-image-region'));
   const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'',storedName=typeof stored==='object'?stored.name:stored;
   if(index===0){
-   top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
+   if(root.querySelector('.m2-live-header-summary')){
+    top.innerHTML='';
+   }else{
+    top.innerHTML=`<div class="embedded-logo-slot"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><small data-m2-ref>${range}</small></div>`;
+   }
   }else{
    const storedObj=stored&&typeof stored==='object'?stored:null;
    top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<input class="drive-file-input" type="file" accept="image/*" data-m2-image="${esc(key)}" hidden><button class="drive-upload-button" type="button" data-m2-upload-trigger="${esc(key)}">${storedName?'Cambiar imagen en Drive':'Subir al Drive'}</button>${storedName?`<em class="drive-file-name">${esc(storedName)}</em>`:''}<small data-m2-ref>${range}</small></div>`;
@@ -236,13 +240,18 @@ const M2_HTML_HEADER_CELLS={
  'DOC-2.3 REVERSO':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
  'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2',emision:'AH3',vigencia:'AH4',version:'AH5'}
 };
+function m2DisplayDate(value){
+ const raw=String(value||'').trim();if(!raw)return 'Pendiente';
+ const iso=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(iso)return `${iso[3]}/${iso[2]}/${iso[1]}`;
+ return raw;
+}
 function m2HeaderMasterValues(){
  return {
   empresa:m2CurrentMaster('Nombre de la unidad de producción','unidadProduccion','RED Greenhouse'),
   domicilio:m2CurrentMaster('Domicilio de la unidad','domicilio','Domicilio pendiente'),
   folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente'),
-  emision:m2CurrentMaster('Fecha de emisión','fechaEmision','Pendiente'),
-  vigencia:m2CurrentMaster('Vigencia','vigenciaDocumento','Pendiente'),
+  emision:m2DisplayDate(m2CurrentMaster('Fecha de emisión','fechaEmision','')),
+  vigencia:m2DisplayDate(m2CurrentMaster('Vigencia','vigenciaDocumento','')),
   version:m2CurrentMaster('Versión','versionDocumento','Pendiente')
  };
 }
@@ -262,10 +271,6 @@ function m2ApplyLiveHeader(root,doc){
  // Algunas réplicas (mapas, croquis y organigrama) son imágenes/tablas sin celdas HTML de cabecera.
  // En esos casos se muestra una cabecera vinculada, alimentada por los mismos Datos Maestros del Excel.
  if(applied<6){root.insertAdjacentHTML('afterbegin',m2HeaderSummaryHtml(values));}
- // Si la réplica no contiene un área de logo, la cabecera vinculada lo aporta sin depender de coordenadas antiguas.
- if(!root.querySelector('.embedded-logo-slot img,.m2-live-header-logo img')&&applied>=6){
-  root.insertAdjacentHTML('afterbegin',`<div class="m2-live-logo-fallback"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"></div>`);
- }
 }
 function m2CurrentMaster(field,captureKey,fallback=''){
  const direct=m2MasterValue(field);if(direct)return direct;
@@ -377,7 +382,7 @@ async function m2GenerateExcel(){
    const sheet=m2PopulateSheet(workbook,sheetName);if(sheet)sheet.cell(cell).value(value||'');
   });
   m2ApplyHeaders(workbook);
-  Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]),target=m2ImageRange(code,Number(index))?.split(':')[0];if(sheet&&target)sheet.cell(target).formula(`HYPERLINK("${String(value.url).replace(/"/g,'""')}","Abrir evidencia fotográfica")`);});
+  Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]),target=m2ImageRange(code,Number(index))?.split(':')[0];if(sheet&&target){const cell=sheet.cell(target);cell.value('Abrir evidencia fotográfica');cell.hyperlink(String(value.url));cell.style({fontColor:'0563C1',underline:true});}});
   const sig=m2SignatureData(),poe=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
   if(poe){poe.cell(m2Reference('M2.SIGN.ELABORO','B66')).value(sig.elaboro.nombre);poe.cell(m2Reference('M2.SIGN.REVISO','E66')).value(sig.reviso.nombre);poe.cell(m2Reference('M2.SIGN.AUTORIZO','H66')).value(sig.autorizo.nombre);}
   let blob=await workbook.outputAsync();

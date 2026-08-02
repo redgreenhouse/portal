@@ -75,6 +75,26 @@ function saveMasterData(){
   const msg=document.getElementById('masterSaveMessage');if(msg){msg.textContent=`Guardado · ${c.filled} de ${c.total}`;setTimeout(()=>{msg.textContent=''},2500)}
 }
 
+function masterDateInputValue(value){
+  const raw=String(value||'').trim();
+  if(!raw)return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+  const dmY=raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(dmY){const [,d,m,y]=dmY;return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;}
+  const parsed=new Date(raw);
+  if(!Number.isNaN(parsed.getTime())){
+    const y=parsed.getFullYear(),m=String(parsed.getMonth()+1).padStart(2,'0'),d=String(parsed.getDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+  }
+  return '';
+}
+
+function masterInputHtml(item,key,value,long){
+  if(item.inputType==='date')return `<input class="master-input" type="date" data-master-input="${key}" value="${esc(masterDateInputValue(value))}">`;
+  if(long)return `<textarea class="master-textarea" data-master-input="${key}">${esc(String(value||''))}</textarea>`;
+  return `<input class="master-input" type="${item.inputType||'text'}" data-master-input="${key}" value="${esc(String(value||''))}">`;
+}
+
 function renderMasterData(){
   const categories=['Todas',...new Set(masterData.map(x=>x.category))];
   const filters=document.getElementById('masterFilters');
@@ -90,7 +110,7 @@ function renderMasterData(){
       ${shown.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),value=esc(String(masterValues[key]||'')),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);const certainty=x.source==='Por confirmar'?'probable':'confirmed';const confirmedCount=Object.values(x.modules).filter(v=>v==='c').length;const probableCount=Object.values(x.modules).filter(v=>v==='p').length;const impactText=certainty==='confirmed'?`Impacto real: ${confirmedCount} módulo${confirmedCount===1?'':'s'}`:`Impacto probable: ${probableCount} módulo${probableCount===1?'':'s'}`;return `
         <div class="master-field">
           <span class="field-certainty ${certainty}" title="${certainty==='confirmed'?'Confirmado en Excel recibidos':'Probable; pendiente de validar'}"></span>
-          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p><div class="field-meta"><span class="certainty-label ${certainty}">${certainty==='confirmed'?'Confirmado':'Probable'}</span><span class="impact-chip">${impactText}</span></div>${structuredDefinitions[x.field]?renderStructuredCapture(x):(long?`<textarea class="master-textarea" data-master-input="${key}">${value}</textarea>`:`<input class="master-input" data-master-input="${key}" value="${value}">`)}</div>
+          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p><div class="field-meta"><span class="certainty-label ${certainty}">${certainty==='confirmed'?'Confirmado':'Probable'}</span><span class="impact-chip">${impactText}</span></div>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
           <span class="source-chip">${x.source}</span>
         </div>`}).join('')}
     </section>`).join('');
