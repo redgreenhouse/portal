@@ -100,16 +100,8 @@ function m2MasterValue(field){
 function m2MasterImage(field){
  const value=masterValues[masterKey(field)];return value&&typeof value==='object'?value:null;
 }
-function m2DriveFileId(image){return String(image?.fileId||image?.id||'').trim();}
-function m2DriveViewUrl(image){return String(image?.url||image?.webViewLink||image?.imageUrl||'').trim();}
-function m2DriveImageUrl(image){const id=m2DriveFileId(image),endpoint=typeof galleryEndpoint==='function'?galleryEndpoint():'';return id&&endpoint?`${endpoint}${endpoint.includes('?')?'&':'?'}id=${encodeURIComponent(id)}`:'';}
 function m2LogoSource(){
- const logo=m2MasterImage('Logo corporativo'),direct=m2DriveImageUrl(logo);return {src:direct||'assets/images/logo-redgreenhouse.png',url:m2DriveViewUrl(logo),name:logo?.name||'Logo RED Greenhouse'};
-}
-function m2EvidencePath(name){return `Images / M2${name?' / '+name:''}`;}
-function m2EvidenceHtml(key,range,value){
- const image=value&&typeof value==='object'?value:null,name=image?.name||'',url=m2DriveViewUrl(image);
- return `<div class="embedded-image-input m2-evidence-control" data-m2-evidence="${esc(key)}"><div class="m2-evidence-info"><strong>${name?esc(name):'Sin imagen vinculada'}</strong><span class="drive-path"><b>Ruta:</b> ${esc(m2EvidencePath(name))}</span></div><input class="drive-file-input" type="file" accept="image/*" data-m2-image="${esc(key)}" hidden><div class="m2-evidence-actions">${url?`<a class="drive-link-button" href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}<button class="drive-upload-button" type="button" data-m2-upload-trigger="${esc(key)}">${image?'Reemplazar':'Subir al Drive'}</button>${image?`<button class="ghost-button" type="button" data-m2-image-remove="${esc(key)}">Eliminar</button>`:''}</div><small data-m2-ref>${range}</small></div>`;
+ const logo=m2MasterImage('Logo corporativo');return {src:logo?.dataUrl||'assets/images/logo-redgreenhouse.png',url:logo?.url||logo?.imageUrl||'',name:logo?.name||'Logo RED Greenhouse'};
 }
 function m2RenderDocument(doc){
  const replica=m2Replica(doc);
@@ -144,14 +136,10 @@ function m2AddImages(root,doc){
   cells.forEach(c=>c.classList.add('m2-image-region'));
   const key=`${doc.code}|image|${index}`,stored=m2EmbeddedValues[key]||'',storedName=typeof stored==='object'?stored.name:stored;
   if(index===0){
-   if(root.querySelector('.m2-live-header-summary')){
-    top.innerHTML='';
-   }else{
-    const logo=m2LogoSource();top.innerHTML=`<div class="embedded-logo-slot">${logo.url?`<a href="${esc(logo.url)}" target="_blank" rel="noopener">`:''}<img src="${esc(logo.src)}" alt="${esc(logo.name)}">${logo.url?'</a>':''}<small data-m2-ref>${range}</small></div>`;
-   }
+   return;
   }else{
    const storedObj=stored&&typeof stored==='object'?stored:null;
-   top.innerHTML=m2EvidenceHtml(key,range,storedObj);
+   top.innerHTML=`<div class="embedded-image-input">${storedObj?.imageUrl?`<img class="m2-drive-preview" src="${esc(storedObj.imageUrl)}" alt="${esc(storedName||'Evidencia')}"><a href="${esc(storedObj.url||storedObj.imageUrl)}" target="_blank" rel="noopener">Ver imagen guardada</a>`:''}<input class="drive-file-input" type="file" accept="image/*" data-m2-image="${esc(key)}" hidden><button class="drive-upload-button" type="button" data-m2-upload-trigger="${esc(key)}">${storedName?'Cambiar imagen en Drive':'Subir al Drive'}</button>${storedName?`<em class="drive-file-name">${esc(storedName)}</em>`:''}<small data-m2-ref>${range}</small></div>`;
   }
  });
 }
@@ -199,29 +187,20 @@ function m2UpgradeLegacyFileInputs(root,doc){
   input.insertAdjacentElement('afterend',button);
  });
 }
-function m2RefreshEvidenceControl(root,key){
- const current=root.querySelector(`[data-m2-evidence="${CSS.escape(key)}"]`);if(!current)return;
- const range=current.querySelector('[data-m2-ref]')?.textContent||'';current.outerHTML=m2EvidenceHtml(key,range,m2EmbeddedValues[key]);m2BindEvidenceControls(root);
-}
-function m2BindEvidenceControls(root){
- root.querySelectorAll('[data-m2-upload-trigger]:not([data-bound])').forEach(btn=>{btn.dataset.bound='1';btn.addEventListener('click',()=>{const input=root.querySelector(`[data-m2-image="${CSS.escape(btn.dataset.m2UploadTrigger)}"]`);if(input)input.click();});});
- root.querySelectorAll('[data-m2-image]:not([data-bound])').forEach(el=>{el.dataset.bound='1';el.addEventListener('change',async()=>{
-  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint(),previous=m2EmbeddedValues[key]&&typeof m2EmbeddedValues[key]==='object'?m2EmbeddedValues[key]:null;
-  if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
-  const trigger=root.querySelector(`[data-m2-upload-trigger="${CSS.escape(key)}"]`);el.disabled=true;if(trigger){trigger.disabled=true;trigger.textContent='Subiendo…';}
-  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]={...j,name:j.name||file.name};m2Save();const oldId=m2DriveFileId(previous),newId=m2DriveFileId(j);if(oldId&&oldId!==newId){try{await postGalleryAction({action:'deleteGallery',fileId:oldId});}catch(error){console.warn('La imagen anterior no pudo enviarse a la papelera',error);}}m2RefreshEvidenceControl(root,key);}catch(err){alert(err.message);if(trigger)trigger.textContent=previous?'Reemplazar':'Subir al Drive';}finally{el.value='';el.disabled=false;if(trigger)trigger.disabled=false;}
- });});
- root.querySelectorAll('[data-m2-image-remove]:not([data-bound])').forEach(btn=>{btn.dataset.bound='1';btn.addEventListener('click',async()=>{const key=btn.dataset.m2ImageRemove,image=m2EmbeddedValues[key];if(!image||typeof image!=='object')return;if(!confirm('¿Eliminar esta imagen? El archivo se enviará a la papelera de Google Drive.'))return;try{const id=m2DriveFileId(image);if(id)await postGalleryAction({action:'deleteGallery',fileId:id});delete m2EmbeddedValues[key];m2Save();m2RefreshEvidenceControl(root,key);}catch(error){alert('No se pudo eliminar la imagen: '+error.message);}});});
-}
 function m2Bind(root){
- m2BindEvidenceControls(root);
- root.querySelectorAll('[data-m2-input]:not([data-bound])').forEach(el=>{el.dataset.bound='1';el.addEventListener('input',()=>{m2EmbeddedValues[el.dataset.m2Input]=el.value;m2Save();});});
- root.querySelectorAll('[data-m2-status]:not([data-bound])').forEach(btn=>{btn.dataset.bound='1';btn.addEventListener('click',()=>{
+ root.querySelectorAll('[data-m2-upload-trigger]').forEach(btn=>btn.addEventListener('click',()=>{const input=root.querySelector(`[data-m2-image="${CSS.escape(btn.dataset.m2UploadTrigger)}"]`);if(input)input.click();}));
+ root.querySelectorAll('[data-m2-input]').forEach(el=>el.addEventListener('input',()=>{m2EmbeddedValues[el.dataset.m2Input]=el.value;m2Save();}));
+ root.querySelectorAll('[data-m2-status]').forEach(btn=>btn.addEventListener('click',()=>{
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
- });});
+ }));
+ root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',async()=>{
+  const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
+  if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
+  const trigger=root.querySelector(`[data-m2-upload-trigger="${CSS.escape(key)}"]`);el.disabled=true;if(trigger){trigger.disabled=true;trigger.textContent='Subiendo a Google Drive…';}
+  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();if(trigger)trigger.textContent='Imagen guardada en Drive';}catch(err){alert(err.message);if(trigger)trigger.textContent='Subir al Drive';}finally{el.disabled=false;if(trigger)trigger.disabled=false;}
+ }));
 }
-
 
 function m2SignatureData(){
  const sig=structuredValues[masterKey('Firmas de elaboración, revisión y autorización')]||{};
@@ -259,8 +238,13 @@ const M2_HTML_HEADER_CELLS={
  'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H1',emision:'I4',version:'I5',vigencia:'I6'},
  'ANÁLISIS DESCRIPTIVO':{empresa:'H1',domicilio:'H2',folio:'AQ2',emision:'AV3',vigencia:'AV4',version:'AV5'},
  'PLAN DE ACCIÓN':{empresa:'D1',domicilio:'D2',folio:'AA2',emision:'AC3',vigencia:'AC4',version:'AC5'},
+ 'MAPA 2.1':{empresa:'H2',domicilio:'H3',folio:'AP3',emision:'AT4',vigencia:'AT5',version:'AT6'},
+ 'MAPA 2.1.1':{empresa:'H2',domicilio:'H3',folio:'AP3',emision:'AT4',vigencia:'AT5',version:'AT6'},
+ 'MAPA 2.1.2':{empresa:'C2',domicilio:'C3',folio:'R3',emision:'S4',vigencia:'S5',version:'S6'},
+ 'CROQUIS 2.2':{empresa:'I2',domicilio:'I3',folio:'AQ3',emision:'AU4',vigencia:'AU5',version:'AU6'},
  'DOC-2.3 FRENTE':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
  'DOC-2.3 REVERSO':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
+ 'DOC-2.4':{empresa:'H1',domicilio:'H2',folio:'AP2',emision:'AT3',vigencia:'AT4',version:'AT5'},
  'DOC-2.5':{empresa:'H1',domicilio:'H2',folio:'AD2',emision:'AH3',vigencia:'AH4',version:'AH5'}
 };
 function m2DisplayDate(value){
@@ -268,8 +252,9 @@ function m2DisplayDate(value){
  const iso=raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(iso)return `${iso[3]}/${iso[2]}/${iso[1]}`;
  return raw;
 }
-function m2HeaderMasterValues(){
+function m2GetMasterHeader(){
  return {
+  logo:m2LogoSource(),
   empresa:m2CurrentMaster('Nombre de la unidad de producción','unidadProduccion','RED Greenhouse'),
   domicilio:m2CurrentMaster('Domicilio de la unidad','domicilio','Domicilio pendiente'),
   folio:m2CurrentMaster('Folio SENASICA','folioSenasica','Folio pendiente'),
@@ -279,11 +264,23 @@ function m2HeaderMasterValues(){
  };
 }
 function m2HeaderSummaryHtml(values){
- const logo=m2LogoSource();
+ const logo=values.logo;
  return `<section class="m2-live-header-summary" aria-label="Cabecera vinculada a Datos Maestros"><div class="m2-live-header-logo">${logo.url?`<a href="${esc(logo.url)}" target="_blank" rel="noopener">`:''}<img src="${esc(logo.src)}" alt="${esc(logo.name)}">${logo.url?'</a>':''}</div><div class="m2-live-header-company"><strong>${esc(values.empresa)}</strong><span>${esc(values.domicilio)}</span></div><dl><div><dt>Folio SENASICA</dt><dd>${esc(values.folio)}</dd></div><div><dt>Emisión</dt><dd>${esc(values.emision)}</dd></div><div><dt>Vigencia</dt><dd>${esc(values.vigencia)}</dd></div><div><dt>Versión</dt><dd>${esc(values.version)}</dd></div></dl></section>`;
 }
+function m2ApplyMasterLogo(root,doc,header){
+ root.querySelectorAll('.m2-master-logo-in-grid,.m2-image-replica-header').forEach(el=>el.remove());
+ const imageReplica=root.querySelector('.replica-image-drop-wrap');
+ if(imageReplica){
+  imageReplica.insertAdjacentHTML('afterbegin',`<div class="m2-image-replica-header">${m2HeaderSummaryHtml(header)}</div>`);
+  return;
+ }
+ const paper=root.querySelector('.excel-paper');
+ if(!paper)return;
+ const logo=header.logo;
+ paper.insertAdjacentHTML('afterbegin',`<div class="m2-master-logo-in-grid">${logo.url?`<a href="${esc(logo.url)}" target="_blank" rel="noopener">`:''}<img src="${esc(logo.src)}" alt="${esc(logo.name)}">${logo.url?'</a>':''}</div>`);
+}
 function m2ApplyLiveHeader(root,doc){
- const values=m2HeaderMasterValues(),cells=M2_HTML_HEADER_CELLS[doc.code]||null;
+ const values=m2GetMasterHeader(),cells=M2_HTML_HEADER_CELLS[doc.code]||null;
  let applied=0;
  if(cells){
   Object.entries(cells).forEach(([concept,cell])=>{
@@ -292,9 +289,8 @@ function m2ApplyLiveHeader(root,doc){
    el.dataset.m2Header=concept;el.classList.add('m2-master-cell');applied++;
   });
  }
- // Algunas réplicas (mapas, croquis y organigrama) son imágenes/tablas sin celdas HTML de cabecera.
- // En esos casos se muestra una cabecera vinculada, alimentada por los mismos Datos Maestros del Excel.
- if(applied<6){root.insertAdjacentHTML('afterbegin',m2HeaderSummaryHtml(values));}
+ m2ApplyMasterLogo(root,doc,values);
+ if(!root.querySelector('.image-replica')&&applied<6)console.warn('[M2] Cabecera incompleta en Live Page',{code:doc.code,applied});
 }
 function m2CurrentMaster(field,captureKey,fallback=''){
  const direct=m2MasterValue(field);if(direct)return direct;
@@ -302,7 +298,7 @@ function m2CurrentMaster(field,captureKey,fallback=''){
  return fallback;
 }
 function m2ApplyHeaders(workbook){
- const values=m2HeaderMasterValues();
+ const values=m2GetMasterHeader();
  Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{
   const sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
   Object.entries(cells).forEach(([key,cell])=>sheet.cell(cell).value(values[key]||''));
