@@ -388,6 +388,66 @@ async function m2RestoreTemplateDrawings(templateBuffer,generatedBuffer){
  return generatedZip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
 }
 function m2FileToDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('No se pudo leer '+file.name));reader.readAsDataURL(file);});}
+
+async function m2GetDriveImage(fileId){
+ const endpoint=galleryEndpoint();
+ if(!endpoint)throw new Error('Configura la URL de Apps Script.');
+ const response=await fetch(endpoint+'?action=getImage&fileId='+encodeURIComponent(fileId));
+ const data=await response.json();
+ if(!data.ok)throw new Error(data.error||'No se pudo obtener la imagen de Drive.');
+ return data;
+}
+function m2Base64Bytes(base64){
+ const binary=atob(base64),bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+ return bytes;
+}
+function m2CellPoint(cell){
+ const match=String(cell||'A1').toUpperCase().match(/^([A-Z]+)(\d+)$/);if(!match)throw new Error('Celda inválida: '+cell);
+ let col=0;for(const ch of match[1])col=col*26+(ch.charCodeAt(0)-64);
+ return {col:col-1,row:Number(match[2])-1};
+}
+async function m2InsertSingleImage(generatedBuffer,sheetName,range,image){
+ if(typeof JSZip==='undefined')throw new Error('No se cargó JSZip.');
+ const zip=await JSZip.loadAsync(generatedBuffer),parser=new DOMParser(),serializer=new XMLSerializer();
+ const workbookDoc=parser.parseFromString(await zip.file('xl/workbook.xml').async('string'),'application/xml');
+ const workbookRels=parser.parseFromString(await zip.file('xl/_rels/workbook.xml.rels').async('string'),'application/xml');
+ const relTargets=new Map([...workbookRels.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>[n.getAttribute('Id'),n.getAttribute('Target')]));
+ let sheetPath='';
+ [...workbookDoc.getElementsByTagName('*')].filter(n=>n.localName==='sheet').forEach(n=>{
+  if(String(n.getAttribute('name')||'').trim()!==String(sheetName||'').trim())return;
+  const rid=n.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||n.getAttribute('r:id');
+  const target=relTargets.get(rid);if(target)sheetPath='xl/'+target.replace(/^\/?xl\//,'').replace(/^\//,'');
+ });
+ if(!sheetPath||!zip.file(sheetPath))throw new Error('No se encontró la hoja '+sheetName+'.');
+ const [fromCell,toCell]=String(range).split(':'),from=m2CellPoint(fromCell),to=m2CellPoint(toCell||fromCell);
+ const ext=(image.mimeType==='image/png')?'png':'jpeg';
+ const mediaName='m2-poligonos.'+ext,drawingName='drawing-m2-poligonos.xml';
+ zip.file('xl/media/'+mediaName,m2Base64Bytes(image.base64));
+ const drawingXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>${from.col}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${from.row}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${to.col+1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${to.row+1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="1" name="Polígonos"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>`;
+ const drawingRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/${mediaName}"/></Relationships>`;
+ zip.file('xl/drawings/'+drawingName,drawingXml);zip.file('xl/drawings/_rels/'+drawingName+'.rels',drawingRels);
+ const sheetDoc=parser.parseFromString(await zip.file(sheetPath).async('string'),'application/xml');
+ const relPath=sheetPath.replace('/worksheets/','/worksheets/_rels/')+'.rels';
+ let relDoc;
+ if(zip.file(relPath))relDoc=parser.parseFromString(await zip.file(relPath).async('string'),'application/xml');
+ else relDoc=parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>','application/xml');
+ const used=new Set([...relDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));let rid='rIdM2Image',i=1;while(used.has(rid))rid='rIdM2Image'+(i++);
+ const rel=relDoc.createElementNS(relDoc.documentElement.namespaceURI,'Relationship');rel.setAttribute('Id',rid);rel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing');rel.setAttribute('Target','../drawings/'+drawingName);relDoc.documentElement.appendChild(rel);
+ [...sheetDoc.getElementsByTagName('*')].filter(n=>n.localName==='drawing').forEach(n=>n.remove());
+ const drawing=sheetDoc.createElementNS(sheetDoc.documentElement.namespaceURI,'drawing');drawing.setAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','r:id',rid);sheetDoc.documentElement.appendChild(drawing);
+ zip.file(sheetPath,serializer.serializeToString(sheetDoc));zip.file(relPath,serializer.serializeToString(relDoc));
+ const ctDoc=parser.parseFromString(await zip.file('[Content_Types].xml').async('string'),'application/xml');
+ const hasExt=[...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Default'&&n.getAttribute('Extension')===ext);
+ if(!hasExt){const d=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Default');d.setAttribute('Extension',ext);d.setAttribute('ContentType',ext==='png'?'image/png':'image/jpeg');ctDoc.documentElement.appendChild(d);}
+ const part='/xl/drawings/'+drawingName;
+ const hasDrawing=[...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Override'&&n.getAttribute('PartName')===part);
+ if(!hasDrawing){const o=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Override');o.setAttribute('PartName',part);o.setAttribute('ContentType','application/vnd.openxmlformats-officedocument.drawing+xml');ctDoc.documentElement.appendChild(o);}
+ zip.file('[Content_Types].xml',serializer.serializeToString(ctDoc));
+ return zip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
+}
+
 async function m2GenerateExcel(){
  m2ImageTrace=[];m2Trace('generation-start',{imageCount:m2ImageFiles.size});
  const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
@@ -409,7 +469,13 @@ async function m2GenerateExcel(){
   // Las evidencias se guardan en Drive. Después restauramos fórmulas y dibujos originales (incluido el logo).
   const formulaProtected=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
   const visuallyProtected=await m2RestoreTemplateDrawings(templateBuffer,formulaProtected);
-  blob=new Blob([visuallyProtected],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  let finalBuffer=visuallyProtected;
+  const polygonImage=m2EmbeddedValues['MAPA 2.1.2|image|1'];
+  if(polygonImage&&polygonImage.fileId){
+   const driveImage=await m2GetDriveImage(polygonImage.fileId);
+   finalBuffer=await m2InsertSingleImage(finalBuffer,M2_SHEET_NAME_BY_CODE['MAPA 2.1.2'],m2ImageRange('MAPA 2.1.2',1),driveImage);
+  }
+  blob=new Blob([finalBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){m2Trace('generation-error',{message:err.message,stack:err.stack||''});m2DownloadTrace();alert('No se pudo generar el Excel: '+err.message);}
  finally{buttons.forEach(b=>{b.disabled=false;b.textContent='Generar Excel listo para imprimir'});}
