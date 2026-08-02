@@ -39,6 +39,78 @@
     };
     return (typeof masterValues !== 'undefined' && typeof masterKey !== 'undefined') ? (masterValues[masterKey(map[field] || field)] || '') : '';
   }
+
+  const GENERIC_HEADER_MAP = {
+    3: {
+      'PORTADA':{folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
+      'POES HIGIENE':{folio:'H2',emision:'J3',version:'J4',vigencia:'J5'},
+      'POES PREPARACION MEZCLAS':{folio:'H2',emision:'J3',version:'J4',vigencia:'J5'},
+      'FRENTE DOC 3.3 ':{folio:'AQ2',emision:'AU3',vigencia:'AU4',version:'AU5'},
+      'ATRAS DOC  DOC 3.3':{folio:'AQ2',emision:'AU3',vigencia:'AU4',version:'AU5'},
+      'ANALISIS DE PELIGRO FRENTE 3.0':{folio:'AQ2',emision:'AQ3',vigencia:'AQ4',version:'AQ5'},
+      'ANALISIS DE PEL ATRAS 3.0':{folio:'AA2',emision:'AA3',vigencia:'AA4',version:'AA5'},
+      'PLAN DE HIGIENE 3.1.':{folio:'AP2',emision:'AP3',vigencia:'AP4',version:'AP5'},
+      'HIGIENE COMEDOR 3.1.':{folio:'AP2',emision:'AP3',vigencia:'AP4',version:'AP5'},
+      'HIIGIENE CISTERNA Y TINACO 3.1':{folio:'AP2',emision:'AP3',vigencia:'AP4',version:'AP5'},
+      'HIIGIENE ALAMCEN 3.1.':{folio:'AP2',emision:'AP3',vigencia:'AP4',version:'AP5'},
+      'HIGIENE SANITARIOS 3.1.':{folio:'AP2',emision:'AP3',vigencia:'AP4',version:'AP5'},
+      'HIGIENE  UNID PRODUCCIOIN 3.1':{folio:'AP2',emision:'AP3',vigencia:'AP4',version:'AP5'},
+      'BIT HIGIENE DE INST B 06 FRENTE':{folio:'AS2',emision:'AW3',vigencia:'AW4',version:'AW5'},
+      'BIT HIIENE INST B 06 ATRAS ':{folio:'AS2',emision:'AW3',vigencia:'AW4',version:'AW5'},
+      'REV DE PERSONAL FRENTE BIT 08':{folio:'AR2',emision:'AU3',vigencia:'AU4',version:'AU5'},
+      'REV PERSONAL ATRAS BIT 08':{folio:'AG2',emision:'AJ3',vigencia:'AJ4',version:'AJ5'},
+      'REGLAMENTO INOCUIDAD 3.6 ':{folio:'AL2',emision:'AL3',vigencia:'AL4',version:'AL5'},
+      'REGISTRO DE VISITANTES 3.8 ':{folio:'AA2',emision:'AA3',vigencia:'AA4',version:'AA5'}
+    },
+    4: {
+      'PORTADA':{folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
+      'POE  FAUNA ':{folio:'I2',emision:'K3',version:'K4',vigencia:'K5'},
+      'ANALISIS DE PELIGRO DESCRIP  ':{folio:'AQ2',emision:'AQ3',vigencia:'AQ4',version:'AQ5'},
+      'ANALISIS DE PEL ACCIO':{folio:'R2',emision:'R3',vigencia:'R4',version:'R5'},
+      'PROTOCOLO DE FAUNA ':{folio:'AV2',emision:'AV3',vigencia:'AV4',version:'AV5'}
+    },
+    5: {
+      'PORTADA':{folio:'H1',emision:'I4',version:'I5',vigencia:'I6'},
+      'POE  CAPACITACION ':{folio:'I1',emision:'J4',version:'J5',vigencia:'J6'},
+      'PROGRAMA DE CAPACITACION ':{folio:'AQ2',emision:'AQ3',vigencia:'AQ4',version:'AQ5'},
+      'FORMATO CAPACITACION ':{folio:'Q2',emision:'Q3',vigencia:'Q4',version:'Q5'}
+    },
+    6: {
+      'PORTADA':{folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
+      'POE AUDITORIA ':{folio:'I2',emision:'K3',version:'K4',vigencia:'K5'},
+      'PROGRAMA DE AUDITORIAS FRENTE  ':{folio:'AN2',emision:'AN3',vigencia:'AN4',version:'AN5'},
+      'ACCIONES CORRECTIVAS ATRAS ':{folio:'S2',emision:'S3',vigencia:'S4',version:'S5'}
+    },
+    7: {
+      'PORTADA':{folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
+      'POE VALIDACION DE PROC':{folio:'I2',emision:'K3',version:'K4',vigencia:'K5'},
+      'PLAN DE VALIDACION FRENTE ':{folio:'AL2',emision:'AL3',vigencia:'AL4',version:'AL5'},
+      'REGISTRO DE TOMA DE MUESTRA ':{folio:'U2',emision:'U3',vigencia:'U4',version:'U5'}
+    }
+  };
+  function headerValues(){ return { folio:master('folioSenasica')||'Folio pendiente', emision:master('fechaEmision')||'', vigencia:master('vigenciaDocumento')||'', version:master('versionDocumento')||'' }; }
+  function resolveHeaderFormula(text){
+    const f=String(text||''); if(!f.startsWith('='))return text;
+    if(/CI\$?2/i.test(f))return master('unidadProduccion')||'RED Greenhouse';
+    if(/CI\$?3/i.test(f))return master('domicilio')||'';
+    if(/CI\$?4/i.test(f))return master('fechaEmision')||'';
+    if(/CI\$?5/i.test(f))return master('vigenciaDocumento')||'';
+    if(/CI\$?6/i.test(f))return master('versionDocumento')||'';
+    const row=(f.match(/\$?[A-Z]+\$?(\d+)\s*$/i)||[])[1];
+    if(row==='1'||row==='2')return master('folioSenasica')||'Folio pendiente';
+    if(row==='3')return master('fechaEmision')||'';
+    if(row==='4')return master('vigenciaDocumento')||'';
+    if(row==='5')return master('versionDocumento')||'';
+    return text;
+  }
+  function applyGenericHeaders(wb,n){
+    const values=headerValues(), map=GENERIC_HEADER_MAP[n]||{};
+    Object.entries(map).forEach(([sheetName,cells])=>{
+      const sh=wb.sheet(sheetName)||wb.sheets().find(x=>String(x.name()).trim()===String(sheetName).trim()); if(!sh)return;
+      Object.entries(cells).forEach(([key,cell])=>sh.cell(cell).value(values[key]||''));
+    });
+  }
+
   function controlHtml(c) {
     const v = values[c.id] ?? c.initial ?? '';
     if (c.type === 'masterData') {
@@ -85,7 +157,7 @@
         const md = top[ref] || {};
         const d = s.cells[ref] || ['',0];
         const css = s.styles[d[1]] || '';
-        h += `<td data-cell="${ref}" rowspan="${md.rowspan||1}" colspan="${md.colspan||1}" style="${css}">${controls[ref] ? controlHtml(controls[ref]) : esc(d[0])}</td>`;
+        h += `<td data-cell="${ref}" rowspan="${md.rowspan||1}" colspan="${md.colspan||1}" style="${css}">${controls[ref] ? controlHtml(controls[ref]) : esc(resolveHeaderFormula(d[0]))}</td>`;
       }
       h += '</tr>';
     }
@@ -154,6 +226,7 @@
     const response = await fetch(m.template);
     if (!response.ok) return alert('No se encontró la plantilla.');
     const wb = await XlsxPopulate.fromDataAsync(await response.arrayBuffer());
+    applyGenericHeaders(wb,n);
     for (const s of m.sheets) {
       const sh = wb.sheet(s.name) || wb.sheets().find(x => String(x.name()).trim() === String(s.name).trim());
       if (!sh) continue;

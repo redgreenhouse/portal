@@ -250,8 +250,17 @@ function m2ApplyHeaders(workbook){
 async function m2RestoreTemplateFormulas(templateBuffer,generatedBuffer){
  if(typeof JSZip==='undefined')throw new Error('No se cargó el protector de fórmulas de Excel.');
  const [templateZip,generatedZip]=await Promise.all([JSZip.loadAsync(templateBuffer),JSZip.loadAsync(generatedBuffer)]);
+ const protectedBySheet={};
+ Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{const name=M2_SHEET_NAME_BY_CODE[code];if(!name)return;protectedBySheet[name]=protectedBySheet[name]||new Set();Object.values(cells).forEach(cell=>protectedBySheet[name].add(cell));});
+ const poeName=M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR'];protectedBySheet[poeName]=protectedBySheet[poeName]||new Set();['B66','E66','H66'].forEach(cell=>protectedBySheet[poeName].add(cell));
+ Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),name=M2_SHEET_NAME_BY_CODE[code],target=m2ImageRange(code,Number(index))?.split(':')[0];if(name&&target){protectedBySheet[name]=protectedBySheet[name]||new Set();protectedBySheet[name].add(target);}});
  const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));
  const parser=new DOMParser(),serializer=new XMLSerializer();
+ const workbookDoc=parser.parseFromString(await templateZip.file('xl/workbook.xml').async('string'),'application/xml');
+ const relsDoc=parser.parseFromString(await templateZip.file('xl/_rels/workbook.xml.rels').async('string'),'application/xml');
+ const relTargets=new Map([...relsDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>[n.getAttribute('Id'),n.getAttribute('Target')]));
+ const sheetNameByPath={};
+ [...workbookDoc.getElementsByTagName('*')].filter(n=>n.localName==='sheet').forEach(n=>{const rid=n.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||n.getAttribute('r:id'),target=relTargets.get(rid);if(target)sheetNameByPath['xl/'+target.replace(/^\/?xl\//,'').replace(/^\//,'')]=n.getAttribute('name');});
  for(const path of sheetPaths){
   const templateFile=templateZip.file(path),generatedFile=generatedZip.file(path);if(!templateFile||!generatedFile)continue;
   const [templateXml,generatedXml]=await Promise.all([templateFile.async('string'),generatedFile.async('string')]);
@@ -259,7 +268,9 @@ async function m2RestoreTemplateFormulas(templateBuffer,generatedBuffer){
   const generatedDoc=parser.parseFromString(generatedXml,'application/xml');
   if(templateDoc.querySelector('parsererror')||generatedDoc.querySelector('parsererror'))throw new Error('No se pudo proteger las fórmulas de '+path+'.');
   const generatedCells=new Map([...generatedDoc.getElementsByTagName('c')].map(cell=>[cell.getAttribute('r'),cell]));
+  const protectedCells=protectedBySheet[sheetNameByPath[path]]||new Set();
   [...templateDoc.getElementsByTagName('c')].forEach(sourceCell=>{
+   if(protectedCells.has(sourceCell.getAttribute('r')))return;
    const sourceFormula=[...sourceCell.children].find(node=>node.localName==='f');if(!sourceFormula)return;
    const targetCell=generatedCells.get(sourceCell.getAttribute('r'));if(!targetCell)return;
    [...targetCell.children].filter(node=>node.localName==='f').forEach(node=>node.remove());
@@ -285,7 +296,9 @@ async function m2RestoreTemplateDrawings(templateBuffer,generatedBuffer){
  const parser=new DOMParser(),serializer=new XMLSerializer();
  // Conserva imágenes y dibujos originales de la plantilla (incluido el logo) sin reconstruir el libro.
  for(const path of Object.keys(templateZip.files)){
-  if(/^xl\/(media|drawings)\//.test(path))generatedZip.file(path,await templateZip.file(path).async('uint8array'));
+  if(!/^xl\/(media|drawings)\//.test(path))continue;
+  const sourceFile=templateZip.file(path);if(!sourceFile)continue;
+  generatedZip.file(path,await sourceFile.async('uint8array'));
  }
  const ct=templateZip.file('[Content_Types].xml');if(ct)generatedZip.file('[Content_Types].xml',await ct.async('string'));
  const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));
