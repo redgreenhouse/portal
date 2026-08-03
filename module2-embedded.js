@@ -179,12 +179,21 @@ function m2AddControls(root,doc){
   }
  });
 }
+function m2StoredImageInfoHtml(value){
+ if(!value||typeof value!=='object'||!value.fileId)return '';
+ const name=String(value.name||'Imagen guardada');
+ const url=String(value.url||value.imageUrl||'');
+ return `<span class="m2-drive-file-info" data-m2-file-info><strong>${esc(name)}</strong><small>Ruta: Images / M2 / ${esc(name)}</small>${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}</span>`;
+}
 function m2UpgradeLegacyFileInputs(root,doc){
  root.querySelectorAll('input[type="file"]:not([data-m2-image])').forEach((input,index)=>{
-  const key=`${doc.code}|legacy-image|${index}`;
+  // Polígonos debe usar la referencia oficial de la imagen grande, no una clave legacy.
+  const key=doc.code==='MAPA 2.1.2'&&index===0?`${doc.code}|image|1`:`${doc.code}|legacy-image|${index}`;
+  const stored=m2EmbeddedValues[key];
   input.classList.add('drive-file-input');input.hidden=true;input.dataset.m2Image=key;input.removeAttribute('data-module2-file');
-  const button=document.createElement('button');button.type='button';button.className='drive-upload-button';button.dataset.m2UploadTrigger=key;button.textContent='Subir al Drive';
+  const button=document.createElement('button');button.type='button';button.className='drive-upload-button';button.dataset.m2UploadTrigger=key;button.textContent=stored&&typeof stored==='object'&&stored.fileId?'Cambiar imagen':'Subir al Drive';
   input.insertAdjacentElement('afterend',button);
+  if(doc.code==='MAPA 2.1.2')button.insertAdjacentHTML('afterend',m2StoredImageInfoHtml(stored));
  });
 }
 function m2Bind(root){
@@ -198,7 +207,18 @@ function m2Bind(root){
   const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
   if(!url){alert('Configura la URL de Apps Script en Administración.');return;}
   const trigger=root.querySelector(`[data-m2-upload-trigger="${CSS.escape(key)}"]`);el.disabled=true;if(trigger){trigger.disabled=true;trigger.textContent='Subiendo a Google Drive…';}
-  try{const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();if(!j.ok)throw new Error(j.error||'No se pudo subir');m2EmbeddedValues[key]=j;m2Save();if(trigger)trigger.textContent='Imagen guardada en Drive';}catch(err){alert(err.message);if(trigger)trigger.textContent='Subir al Drive';}finally{el.disabled=false;if(trigger)trigger.disabled=false;}
+  try{
+   const payload={action:'uploadImage',fileName:file.name,mimeType:file.type||'image/jpeg',base64:await fileToBase64(file),module:'M2',field:key};
+   const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}),j=await r.json();
+   if(!j.ok)throw new Error(j.error||'No se pudo subir');
+   m2EmbeddedValues[key]=j;m2Save();
+   if(trigger){
+    trigger.textContent='Cambiar imagen';
+    const oldInfo=trigger.parentElement?.querySelector('[data-m2-file-info]')||trigger.nextElementSibling?.matches?.('[data-m2-file-info]')&&trigger.nextElementSibling;
+    if(oldInfo)oldInfo.remove();
+    trigger.insertAdjacentHTML('afterend',m2StoredImageInfoHtml(j));
+   }
+  }catch(err){alert(err.message);if(trigger)trigger.textContent='Subir al Drive';}finally{el.disabled=false;if(trigger)trigger.disabled=false;}
  }));
 }
 
