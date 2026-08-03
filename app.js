@@ -175,17 +175,29 @@ const defaultTasks=[
 let tasks=JSON.parse(localStorage.getItem('redGreenhouseTasks')||'null')||defaultTasks;let activeFilter='all';
 const statusLabels={pending:'Pendiente',doing:'En proceso',done:'Completada'};const priorityLabels={critical:'Crítica',high:'Alta',medium:'Media'};
 function saveTasks(){localStorage.setItem('redGreenhouseTasks',JSON.stringify(tasks))}
-function setDate(){document.getElementById('currentDate').textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());document.getElementById('daysRemaining').textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
+function setDate(){const d=document.getElementById('currentDate');if(d)d.textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());const r=document.getElementById('daysRemaining');if(r)r.textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
 function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,t)=>s+(t.status==='done'?1:t.status==='doing'?.5:0),0)/tasks.length*100)}
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
 function renderDashboard(){
-  const p=progress(),c=masterCompletion();
-  document.getElementById('progressValue').textContent=`${p}%`;
-  document.getElementById('progressFill').style.width=`${p}%`;
-  const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
-  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
-  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
+  const totals={2:12,3:19,4:5,5:4,6:4,7:4,8:5,9:4,10:5,11:3,12:10,13:3,14:3,15:2};
+  const totalSheets=Object.values(totals).reduce((s,n)=>s+n,0);
+  const releases=directorReleaseState();
+  const releasedByModule={};
+  Object.keys(totals).forEach(m=>releasedByModule[m]=Object.keys(releases).filter(k=>k.startsWith(`M${m}|`)&&releases[k]).length);
+  const released=Object.values(releasedByModule).reduce((s,n)=>s+n,0);
+  const releasePercent=totalSheets?Math.round(released/totalSheets*100):0;
+  const c=masterCompletion();
+  const overall=Math.round((releasePercent+c.percent)/2);
+  const setText=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  setText('releasedSheetsValue',released);setText('releasedSheetsDetail',`${released} de ${totalSheets}`);
+  setText('progressValue',`${overall}%`);setText('releasePercent',`${releasePercent}%`);
+  setText('releasedLegend',released);setText('pendingLegend',totalSheets-released);
+  setText('dashboardMasterProgress',`${c.percent}%`);setText('capturedFieldsDetail',`${c.filled} de ${c.total}`);
+  const fill=document.getElementById('progressFill');if(fill)fill.style.width=`${c.percent}%`;
+  const donut=document.getElementById('releaseDonut');if(donut)donut.style.setProperty('--release-percent',`${releasePercent*3.6}deg`);
+  const bars=document.getElementById('moduleProgressBars');
+  if(bars)bars.innerHTML=Object.keys(totals).map(m=>{const pct=Math.round(releasedByModule[m]/totals[m]*100);return `<div class="module-progress-row"><span>M${m}</span><div><i style="width:${pct}%"></i></div><strong>${pct}%</strong></div>`}).join('');
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
