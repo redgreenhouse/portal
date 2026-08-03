@@ -101,7 +101,12 @@ function m2MasterImage(field){
  const value=masterValues[masterKey(field)];return value&&typeof value==='object'?value:null;
 }
 function m2LogoSource(){
- const logo=m2MasterImage('Logo corporativo');return {src:logo?.dataUrl||'assets/images/logo-redgreenhouse.png',url:logo?.url||logo?.imageUrl||'',name:logo?.name||'Logo RED Greenhouse'};
+ const logo=m2MasterImage('Logo corporativo');return {
+  src:logo?.dataUrl||'assets/images/logo-redgreenhouse.png',
+  url:logo?.url||logo?.imageUrl||'',
+  name:logo?.name||'Logo RED Greenhouse',
+  fileId:logo?.fileId||''
+ };
 }
 function m2RenderDocument(doc){
  const replica=m2Replica(doc);
@@ -186,14 +191,16 @@ function m2StoredImageInfoHtml(value){
  return `<span class="m2-drive-file-info" data-m2-file-info><strong>${esc(name)}</strong><small>Ruta: Images / M2 / ${esc(name)}</small>${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}</span>`;
 }
 function m2UpgradeLegacyFileInputs(root,doc){
+ const evidenceRanges=Math.max(0,(M2_IMAGE_RANGES[doc.code]||[]).length-1);
  root.querySelectorAll('input[type="file"]:not([data-m2-image])').forEach((input,index)=>{
-  // Polígonos debe usar la referencia oficial de la imagen grande, no una clave legacy.
-  const key=doc.code==='MAPA 2.1.2'&&index===0?`${doc.code}|image|1`:`${doc.code}|legacy-image|${index}`;
+  // Cuando la hoja tiene áreas de evidencia, cada selector legacy se vincula al rango oficial posterior al logo.
+  const imageIndex=index<evidenceRanges?index+1:null;
+  const key=imageIndex!==null?`${doc.code}|image|${imageIndex}`:`${doc.code}|legacy-image|${index}`;
   const stored=m2EmbeddedValues[key];
   input.classList.add('drive-file-input');input.hidden=true;input.dataset.m2Image=key;input.removeAttribute('data-module2-file');
   const button=document.createElement('button');button.type='button';button.className='drive-upload-button';button.dataset.m2UploadTrigger=key;button.textContent=stored&&typeof stored==='object'&&stored.fileId?'Cambiar imagen':'Subir al Drive';
   input.insertAdjacentElement('afterend',button);
-  if(doc.code==='MAPA 2.1.2')button.insertAdjacentHTML('afterend',m2StoredImageInfoHtml(stored));
+  if(imageIndex!==null)button.insertAdjacentHTML('afterend',m2StoredImageInfoHtml(stored));
  });
 }
 function m2Bind(root){
@@ -520,6 +527,16 @@ async function m2GenerateExcel(){
    key.includes('|image|')&&value&&typeof value==='object'&&value.fileId
   );
   const insertions=[];
+  // Inserta el logo maestro en la primera zona gráfica de las 12 hojas.
+  const masterLogo=m2GetMasterHeader().logo;
+  if(masterLogo?.fileId){
+   m2Trace('excel-logo-fetch',{fileId:masterLogo.fileId});
+   const logoImage=await m2GetDriveImage(masterLogo.fileId);
+   Object.keys(M2_SHEET_NAME_BY_CODE).forEach(code=>{
+    const sheetName=M2_SHEET_NAME_BY_CODE[code],logoRange=m2ImageRange(code,0);
+    if(sheetName&&logoRange)insertions.push({sheetName,range:logoRange,image:logoImage,name:masterLogo.name||'Logo RED Greenhouse'});
+   });
+  }else m2Trace('excel-logo-skipped',{reason:'Logo maestro sin fileId'});
   for(const [imageKey,imageRef] of imageEntries){
    const [code,_image,indexText]=imageKey.split('|'),imageIndex=Number(indexText);
    const sheetName=M2_SHEET_NAME_BY_CODE[code],targetRange=m2ImageRange(code,imageIndex);
