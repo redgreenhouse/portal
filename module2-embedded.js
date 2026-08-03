@@ -470,10 +470,25 @@ async function m2GenerateExcel(){
   const formulaProtected=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
   const visuallyProtected=await m2RestoreTemplateDrawings(templateBuffer,formulaProtected);
   let finalBuffer=visuallyProtected;
-  const polygonImage=m2EmbeddedValues['MAPA 2.1.2|image|1'];
-  if(polygonImage&&polygonImage.fileId){
-   const driveImage=await m2GetDriveImage(polygonImage.fileId);
-   finalBuffer=await m2InsertSingleImage(finalBuffer,M2_SHEET_NAME_BY_CODE['MAPA 2.1.2'],m2ImageRange('MAPA 2.1.2',1),driveImage);
+  // Prueba controlada: insertar la primera imagen persistida de la última hoja (DOC-2.5).
+  const lastSheetEntry=Object.entries(m2EmbeddedValues).find(([key,value])=>
+   key.startsWith('DOC-2.5|image|')&&value&&typeof value==='object'&&value.fileId
+  );
+  if(lastSheetEntry){
+   const [imageKey,imageRef]=lastSheetEntry;
+   const imageIndex=Number(imageKey.split('|')[2]);
+   const targetRange=m2ImageRange('DOC-2.5',imageIndex);
+   if(!targetRange)throw new Error('No existe rango destino para '+imageKey+'.');
+   m2Trace('excel-image-test',{imageKey,fileId:imageRef.fileId,targetRange});
+   const driveImage=await m2GetDriveImage(imageRef.fileId);
+   finalBuffer=await m2InsertSingleImage(
+    finalBuffer,
+    M2_SHEET_NAME_BY_CODE['DOC-2.5'],
+    targetRange,
+    driveImage
+   );
+  }else{
+   m2Trace('excel-image-test-skipped',{reason:'No hay imagen persistida en DOC-2.5'});
   }
   blob=new Blob([finalBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
