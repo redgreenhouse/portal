@@ -180,29 +180,12 @@ function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
 function renderDashboard(){
-  const modules=Array.from({length:14},(_,i)=>i+2);
-  const structured=Array.isArray(window.SRRC_MODULES)?window.SRRC_MODULES:[];
-  const sheetCounts={2:(window.RED_DATA&&RED_DATA.module2?RED_DATA.module2.length:12)};
-  structured.forEach(m=>sheetCounts[m.module]=Array.isArray(m.sheets)?m.sheets.length:0);
-  const knownTotal=modules.reduce((sum,m)=>sum+(sheetCounts[m]||0),0);
-  const totalSheets=knownTotal||83;
-  const releasedState=directorReleaseState();
-  const releasedKeys=Object.keys(releasedState).filter(k=>releasedState[k]);
-  const releasedByModule={};
-  releasedKeys.forEach(k=>{const match=/^M(\d+)\|/.exec(k);if(match)releasedByModule[Number(match[1])]=(releasedByModule[Number(match[1])]||0)+1});
-  const released=releasedKeys.length;
-  const master=masterCompletion();
-  const releasePct=totalSheets?Math.round(released/totalSheets*100):0;
-  const overall=Math.round((releasePct+master.percent)/2);
-  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
-  set('dashModuleCount','14');set('dashSheetCount',totalSheets);set('dashReleasedCount',released);set('dashReleasedCaption',`${releasePct}% del total`);
-  set('dashOverallProgress',`${overall}%`);set('dashMasterFilled',master.filled);set('dashMasterTotal',master.total);set('dashMasterPercent',`${master.percent}%`);
-  set('dashDonutTotal',totalSheets);set('dashLegendReleased',released);set('dashLegendPending',Math.max(0,totalSheets-released));
-  const overallFill=document.getElementById('dashOverallFill');if(overallFill)overallFill.style.width=`${overall}%`;
-  const masterFill=document.getElementById('dashMasterFill');if(masterFill)masterFill.style.width=`${master.percent}%`;
-  const ring=document.getElementById('dashOverallRing');if(ring){ring.style.setProperty('--pct',overall);const sp=ring.querySelector('span');if(sp)sp.textContent=`${overall}%`;}
-  const donut=document.getElementById('dashSheetDonut');if(donut)donut.style.setProperty('--pct',releasePct);
-  const bars=document.getElementById('dashModuleBars');if(bars)bars.innerHTML=modules.map(m=>{const total=sheetCounts[m]||0;const done=releasedByModule[m]||0;const pct=total?Math.round(done/total*100):0;return `<div class="module-bar"><div class="module-bar-track"><div style="height:${Math.max(pct,2)}%"></div><span>${pct}%</span></div><b>M${m}</b></div>`}).join('');
+  const p=progress(),c=masterCompletion();
+  document.getElementById('progressValue').textContent=`${p}%`;
+  document.getElementById('progressFill').style.width=`${p}%`;
+  const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
+  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
+  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
