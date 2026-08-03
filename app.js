@@ -175,29 +175,34 @@ const defaultTasks=[
 let tasks=JSON.parse(localStorage.getItem('redGreenhouseTasks')||'null')||defaultTasks;let activeFilter='all';
 const statusLabels={pending:'Pendiente',doing:'En proceso',done:'Completada'};const priorityLabels={critical:'Crítica',high:'Alta',medium:'Media'};
 function saveTasks(){localStorage.setItem('redGreenhouseTasks',JSON.stringify(tasks))}
-function setDate(){const d=document.getElementById('currentDate');if(d)d.textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());const r=document.getElementById('daysRemaining');if(r)r.textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
+function setDate(){document.getElementById('currentDate').textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());document.getElementById('daysRemaining').textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
 function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,t)=>s+(t.status==='done'?1:t.status==='doing'?.5:0),0)/tasks.length*100)}
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
 function renderDashboard(){
-  const totals={2:12,3:19,4:5,5:4,6:4,7:4,8:5,9:4,10:5,11:3,12:10,13:3,14:3,15:2};
-  const totalSheets=Object.values(totals).reduce((s,n)=>s+n,0);
-  const releases=directorReleaseState();
+  const modules=Array.from({length:14},(_,i)=>i+2);
+  const structured=Array.isArray(window.SRRC_MODULES)?window.SRRC_MODULES:[];
+  const sheetCounts={2:(window.RED_DATA&&RED_DATA.module2?RED_DATA.module2.length:12)};
+  structured.forEach(m=>sheetCounts[m.module]=Array.isArray(m.sheets)?m.sheets.length:0);
+  const knownTotal=modules.reduce((sum,m)=>sum+(sheetCounts[m]||0),0);
+  const totalSheets=knownTotal||83;
+  const releasedState=directorReleaseState();
+  const releasedKeys=Object.keys(releasedState).filter(k=>releasedState[k]);
   const releasedByModule={};
-  Object.keys(totals).forEach(m=>releasedByModule[m]=Object.keys(releases).filter(k=>k.startsWith(`M${m}|`)&&releases[k]).length);
-  const released=Object.values(releasedByModule).reduce((s,n)=>s+n,0);
-  const releasePercent=totalSheets?Math.round(released/totalSheets*100):0;
-  const c=masterCompletion();
-  const overall=Math.round((releasePercent+c.percent)/2);
-  const setText=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-  setText('releasedSheetsValue',released);setText('releasedSheetsDetail',`${released} de ${totalSheets}`);
-  setText('progressValue',`${overall}%`);setText('releasePercent',`${releasePercent}%`);
-  setText('releasedLegend',released);setText('pendingLegend',totalSheets-released);
-  setText('dashboardMasterProgress',`${c.percent}%`);setText('capturedFieldsDetail',`${c.filled} de ${c.total}`);
-  const fill=document.getElementById('progressFill');if(fill)fill.style.width=`${c.percent}%`;
-  const donut=document.getElementById('releaseDonut');if(donut)donut.style.setProperty('--release-percent',`${releasePercent*3.6}deg`);
-  const bars=document.getElementById('moduleProgressBars');
-  if(bars)bars.innerHTML=Object.keys(totals).map(m=>{const pct=Math.round(releasedByModule[m]/totals[m]*100);return `<div class="module-progress-row"><span>M${m}</span><div><i style="width:${pct}%"></i></div><strong>${pct}%</strong></div>`}).join('');
+  releasedKeys.forEach(k=>{const match=/^M(\d+)\|/.exec(k);if(match)releasedByModule[Number(match[1])]=(releasedByModule[Number(match[1])]||0)+1});
+  const released=releasedKeys.length;
+  const master=masterCompletion();
+  const releasePct=totalSheets?Math.round(released/totalSheets*100):0;
+  const overall=Math.round((releasePct+master.percent)/2);
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val};
+  set('dashModuleCount','14');set('dashSheetCount',totalSheets);set('dashReleasedCount',released);set('dashReleasedCaption',`${releasePct}% del total`);
+  set('dashOverallProgress',`${overall}%`);set('dashMasterFilled',master.filled);set('dashMasterTotal',master.total);set('dashMasterPercent',`${master.percent}%`);
+  set('dashDonutTotal',totalSheets);set('dashLegendReleased',released);set('dashLegendPending',Math.max(0,totalSheets-released));
+  const overallFill=document.getElementById('dashOverallFill');if(overallFill)overallFill.style.width=`${overall}%`;
+  const masterFill=document.getElementById('dashMasterFill');if(masterFill)masterFill.style.width=`${master.percent}%`;
+  const ring=document.getElementById('dashOverallRing');if(ring){ring.style.setProperty('--pct',overall);const sp=ring.querySelector('span');if(sp)sp.textContent=`${overall}%`;}
+  const donut=document.getElementById('dashSheetDonut');if(donut)donut.style.setProperty('--pct',releasePct);
+  const bars=document.getElementById('dashModuleBars');if(bars)bars.innerHTML=modules.map(m=>{const total=sheetCounts[m]||0;const done=releasedByModule[m]||0;const pct=total?Math.round(done/total*100):0;return `<div class="module-bar"><div class="module-bar-track"><div style="height:${Math.max(pct,2)}%"></div><span>${pct}%</span></div><b>M${m}</b></div>`}).join('');
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));

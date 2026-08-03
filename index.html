@@ -14,7 +14,7 @@
     <header class="public-header">
       <div class="public-brand"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><div><strong>RED Greenhouse</strong><span>Producción responsable</span></div></div>
       <nav><a href="#nosotros">Nosotros</a><a href="#productos">Productos</a><a href="#certificaciones">Certificaciones</a><a href="#galeria">Galería</a><a href="#contacto">Contacto</a></nav>
-      <button class="portal-access-button" id="openLoginButton">Acceso Portal V1.48 →</button>
+      <button class="portal-access-button" id="openLoginButton">Acceso Portal V1.42 →</button>
     </header>
     <main>
       <section class="public-hero">
@@ -32,18 +32,12 @@
 
   <div class="private-app" id="privateApp" hidden>
   <aside class="sidebar" id="sidebar">
-    <div class="brand brand-clean">
-      <img class="sidebar-logo" src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse">
+    <div class="brand dashboard-brand">
+      <img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse" class="sidebar-logo">
       <div class="brand-copy"><strong>RED Greenhouse</strong><span>Portal de Gestión</span></div>
     </div>
-    <section class="project-card project-card-light">
-      <div class="project-title">Certificación SRRC</div>
-      <div class="project-row"><span>Estado</span><strong class="status-dot"><i></i> En implementación</strong></div>
-      <div class="project-row"><span>Unidad</span><strong>5,000 m² · Puebla</strong></div>
-    </section>
-    <nav class="nav nav-clean">
+    <nav class="nav">
       <button class="nav-item active" data-view="inicio"><span>⌂</span> Inicio</button>
-      <button class="nav-item" data-view="certificaciones"><span>◇</span> Certificaciones</button>
       <button class="nav-item" data-view="datos"><span>◆</span> Datos Maestros</button>
       <button class="nav-item" data-view="modulos"><span>▤</span> Módulos SRRC</button>
       <button class="nav-item" data-view="bitacoras"><span>☑</span> Bitácoras</button>
@@ -66,44 +60,28 @@
     </header>
 
     <section class="view active" id="view-inicio">
-      <div class="dashboard-hero">
+      <div class="dashboard-heading">
         <div><span class="dashboard-kicker">CERTIFICACIÓN SRRC</span><h1>Dashboard</h1><p>Estado general del expediente documental de RED Greenhouse.</p></div>
-        <div class="dashboard-state"><i></i><span>En implementación</span></div>
+        <span class="dashboard-state"><i></i> En implementación</span>
       </div>
 
-      <section class="executive-kpis">
-        <article class="executive-kpi"><span>Módulos</span><strong>14</strong><small>Módulos 2 al 15</small></article>
-        <article class="executive-kpi"><span>Hojas totales</span><strong>83</strong><small>Plantillas recibidas</small></article>
-        <article class="executive-kpi"><span>Hojas liberadas</span><strong id="releasedSheetsValue">0</strong><small id="releasedSheetsDetail">0 de 83</small></article>
-        <article class="executive-kpi emphasis"><span>Avance general</span><strong id="progressValue">0%</strong><small>Liberación y captura</small></article>
+      <section class="dashboard-kpis">
+        <article class="dashboard-kpi"><span class="kpi-icon green-soft">▦</span><div><small>Módulos SRRC</small><strong id="dashModuleCount">14</strong><p>Módulos 2 al 15</p></div></article>
+        <article class="dashboard-kpi"><span class="kpi-icon blue-soft">▤</span><div><small>Total de hojas</small><strong id="dashSheetCount">0</strong><p>Plantillas recibidas</p></div></article>
+        <article class="dashboard-kpi"><span class="kpi-icon green-soft">✓</span><div><small>Hojas liberadas</small><strong id="dashReleasedCount">0</strong><p id="dashReleasedCaption">0% del total</p></div></article>
+        <article class="dashboard-kpi progress-kpi"><div><small>Avance general</small><strong id="dashOverallProgress">0%</strong><p>Liberación y captura</p><div class="progress-track"><div class="progress-fill" id="dashOverallFill"></div></div></div><div class="mini-ring" id="dashOverallRing"><span>0%</span></div></article>
       </section>
 
-      <section class="dashboard-panels">
-        <article class="card dashboard-panel progress-panel">
-          <div class="section-heading"><div><h2>Avance por módulo</h2><p>Porcentaje de hojas liberadas por el Director.</p></div></div>
-          <div id="moduleProgressBars" class="module-progress-bars"></div>
-        </article>
-        <article class="card dashboard-panel donut-panel">
-          <div class="section-heading"><div><h2>Estado documental</h2><p>Hojas liberadas y pendientes.</p></div></div>
-          <div class="donut-layout"><div class="dashboard-donut" id="releaseDonut"><div><strong id="releasePercent">0%</strong><span>Liberadas</span></div></div><div class="donut-legend"><p><i class="legend-released"></i><span>Liberadas</span><strong id="releasedLegend">0</strong></p><p><i class="legend-pending"></i><span>Pendientes</span><strong id="pendingLegend">83</strong></p></div></div>
-        </article>
+      <section class="dashboard-main-grid">
+        <article class="dashboard-panel module-progress-panel"><div class="dashboard-panel-head"><div><h2>Avance por módulo</h2><p>Porcentaje de hojas liberadas por el Director.</p></div><button class="link-button" data-go="modulos">Ver módulos →</button></div><div id="dashModuleBars" class="module-bars"></div></article>
+        <article class="dashboard-panel"><div class="dashboard-panel-head"><div><h2>Estado de hojas</h2><p>Liberadas y pendientes.</p></div></div><div class="donut-wrap"><div class="donut" id="dashSheetDonut"><span id="dashDonutTotal">0</span><small>hojas</small></div><div class="donut-legend"><span><i class="legend-green"></i>Liberadas <b id="dashLegendReleased">0</b></span><span><i class="legend-gray"></i>Pendientes <b id="dashLegendPending">0</b></span></div></div></article>
+        <article class="dashboard-panel"><div class="dashboard-panel-head"><div><h2>Datos Maestros</h2><p>Información transversal capturada.</p></div></div><div class="master-stat"><strong id="dashMasterFilled">0</strong><span>de <b id="dashMasterTotal">0</b> campos</span><div class="progress-track"><div class="progress-fill" id="dashMasterFill"></div></div><b id="dashMasterPercent">0%</b><button class="dashboard-action" data-go="datos">Abrir Datos Maestros →</button></div></article>
       </section>
 
-      <section class="dashboard-lower-grid">
-        <article class="card dashboard-panel capture-panel">
-          <div class="section-heading"><div><h2>Captura de información</h2><p>Datos Maestros y campos introducidos.</p></div><strong class="panel-metric" id="dashboardMasterProgress">0%</strong></div>
-          <div class="progress-track large"><div class="progress-fill" id="progressFill"></div></div>
-          <div class="capture-stats"><span>Campos completos</span><strong id="capturedFieldsDetail">0 de 0</strong></div>
-        </article>
-        <article class="card dashboard-panel recurring-panel">
-          <span class="dashboard-kicker">OPERACIÓN PERIÓDICA</span><strong>17</strong><h2>Bitácoras y auditorías</h2><p>Hojas identificadas para uso recurrente, además de la carpeta física.</p><button class="link-button" data-go="bitacoras">Revisar registros →</button>
-        </article>
-        <article class="card dashboard-panel quick-panel">
-          <h2>Accesos rápidos</h2>
-          <button data-go="datos"><span>◆</span><div><strong>Datos Maestros</strong><small>Actualizar información común</small></div><b>→</b></button>
-          <button data-go="modulos"><span>▤</span><div><strong>Módulos SRRC</strong><small>Abrir documentos vivos</small></div><b>→</b></button>
-          <button data-go="vinculacion"><span>⌘</span><div><strong>Tabla de vinculación</strong><small>Consultar conceptos y celdas</small></div><b>→</b></button>
-        </article>
+      <section class="dashboard-bottom-grid">
+        <article class="dashboard-panel compact-panel"><h2>Bitácoras y auditorías</h2><strong class="large-number" id="dashPeriodicCount">17</strong><p>Hojas identificadas para operación periódica.</p><button class="dashboard-action" data-go="bitacoras">Revisar registros →</button></article>
+        <article class="dashboard-panel compact-panel"><h2>Últimos módulos actualizados</h2><div class="recent-module"><span>2</span><div><strong>Mantenimiento de infraestructura</strong><small>Mapas e imágenes</small></div></div><div class="recent-module"><span>10</span><div><strong>Uso y manejo del agua</strong><small>Plantilla vertical recibida</small></div></div></article>
+        <article class="dashboard-panel compact-panel"><h2>Accesos rápidos</h2><div class="quick-grid"><button data-go="datos">◆ <span>Datos Maestros</span></button><button data-go="modulos">▤ <span>Módulos SRRC</span></button><button data-go="vinculacion">⌘ <span>Vinculación</span></button><button data-go="galeria">▧ <span>Galería</span></button></div></article>
       </section>
     </section>
 
