@@ -1,4 +1,4 @@
-# CONTROL DE ARCHIVOS V1.48
+# CONTROL DE ARCHIVOS
 
 | Carpeta | Archivo | Acción |
 |---|---|---|
@@ -7,5 +7,4 @@
 | / | styles.css | Sustituir |
 | /docs | CONTROL_DE_CAMBIOS.md | Sustituir |
 | /docs | CONTROL_DE_ARCHIVOS.md | Sustituir |
-
-No borrar archivos. Apps Script y plantillas no cambian.
+| /docs | MANIFIESTO.json | Sustituir |
