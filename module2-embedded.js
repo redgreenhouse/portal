@@ -407,47 +407,72 @@ function m2CellPoint(cell){
  let col=0;for(const ch of match[1])col=col*26+(ch.charCodeAt(0)-64);
  return {col:col-1,row:Number(match[2])-1};
 }
-async function m2InsertSingleImage(generatedBuffer,sheetName,range,image){
+async function m2InsertImages(generatedBuffer,insertions){
  if(typeof JSZip==='undefined')throw new Error('No se cargó JSZip.');
+ if(!Array.isArray(insertions)||!insertions.length)return generatedBuffer;
  const zip=await JSZip.loadAsync(generatedBuffer),parser=new DOMParser(),serializer=new XMLSerializer();
  const workbookDoc=parser.parseFromString(await zip.file('xl/workbook.xml').async('string'),'application/xml');
  const workbookRels=parser.parseFromString(await zip.file('xl/_rels/workbook.xml.rels').async('string'),'application/xml');
  const relTargets=new Map([...workbookRels.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>[n.getAttribute('Id'),n.getAttribute('Target')]));
- let sheetPath='';
+ const sheetPaths=new Map();
  [...workbookDoc.getElementsByTagName('*')].filter(n=>n.localName==='sheet').forEach(n=>{
-  if(String(n.getAttribute('name')||'').trim()!==String(sheetName||'').trim())return;
   const rid=n.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||n.getAttribute('r:id');
-  const target=relTargets.get(rid);if(target)sheetPath='xl/'+target.replace(/^\/?xl\//,'').replace(/^\//,'');
+  const target=relTargets.get(rid);if(!target)return;
+  sheetPaths.set(String(n.getAttribute('name')||'').trim(),'xl/'+target.replace(/^\/?xl\//,'').replace(/^\//,''));
  });
- if(!sheetPath||!zip.file(sheetPath))throw new Error('No se encontró la hoja '+sheetName+'.');
- const [fromCell,toCell]=String(range).split(':'),from=m2CellPoint(fromCell),to=m2CellPoint(toCell||fromCell);
- const ext=(image.mimeType==='image/png')?'png':'jpeg';
- const mediaName='m2-poligonos.'+ext,drawingName='drawing-m2-poligonos.xml';
- zip.file('xl/media/'+mediaName,m2Base64Bytes(image.base64));
- const drawingXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>${from.col}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${from.row}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${to.col+1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${to.row+1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="1" name="Polígonos"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>`;
- const drawingRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/${mediaName}"/></Relationships>`;
- zip.file('xl/drawings/'+drawingName,drawingXml);zip.file('xl/drawings/_rels/'+drawingName+'.rels',drawingRels);
- const sheetDoc=parser.parseFromString(await zip.file(sheetPath).async('string'),'application/xml');
- const relPath=sheetPath.replace('/worksheets/','/worksheets/_rels/')+'.rels';
- let relDoc;
- if(zip.file(relPath))relDoc=parser.parseFromString(await zip.file(relPath).async('string'),'application/xml');
- else relDoc=parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>','application/xml');
- const used=new Set([...relDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));let rid='rIdM2Image',i=1;while(used.has(rid))rid='rIdM2Image'+(i++);
- const rel=relDoc.createElementNS(relDoc.documentElement.namespaceURI,'Relationship');rel.setAttribute('Id',rid);rel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing');rel.setAttribute('Target','../drawings/'+drawingName);relDoc.documentElement.appendChild(rel);
- [...sheetDoc.getElementsByTagName('*')].filter(n=>n.localName==='drawing').forEach(n=>n.remove());
- const drawing=sheetDoc.createElementNS(sheetDoc.documentElement.namespaceURI,'drawing');drawing.setAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','r:id',rid);sheetDoc.documentElement.appendChild(drawing);
- zip.file(sheetPath,serializer.serializeToString(sheetDoc));zip.file(relPath,serializer.serializeToString(relDoc));
+ const grouped=new Map();
+ insertions.forEach(item=>{const key=String(item.sheetName||'').trim();if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(item);});
+ let globalSeq=1;
+ for(const [sheetName,items] of grouped){
+  const sheetPath=sheetPaths.get(sheetName);if(!sheetPath||!zip.file(sheetPath))throw new Error('No se encontró la hoja '+sheetName+'.');
+  const sheetDoc=parser.parseFromString(await zip.file(sheetPath).async('string'),'application/xml');
+  const relPath=sheetPath.replace('/worksheets/','/worksheets/_rels/')+'.rels';
+  let sheetRelDoc=zip.file(relPath)?parser.parseFromString(await zip.file(relPath).async('string'),'application/xml'):parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>','application/xml');
+  let drawingNode=[...sheetDoc.getElementsByTagName('*')].find(n=>n.localName==='drawing');
+  let drawingPath='',drawingRelPath='',drawingDoc,drawingRelDoc;
+  if(drawingNode){
+   const drawingRid=drawingNode.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id')||drawingNode.getAttribute('r:id');
+   const drawingRel=[...sheetRelDoc.getElementsByTagName('*')].find(n=>n.localName==='Relationship'&&n.getAttribute('Id')===drawingRid);
+   const target=drawingRel&&drawingRel.getAttribute('Target');
+   if(target){
+    const base=sheetPath.substring(0,sheetPath.lastIndexOf('/')+1);
+    const normalized=(base+target).replace('/worksheets/../','/');
+    drawingPath=normalized.startsWith('xl/')?normalized:'xl/'+normalized.replace(/^\//,'');
+   }
+  }
+  if(drawingPath&&zip.file(drawingPath)){
+   drawingDoc=parser.parseFromString(await zip.file(drawingPath).async('string'),'application/xml');
+   drawingRelPath=drawingPath.replace('/drawings/','/drawings/_rels/')+'.rels';
+   drawingRelDoc=zip.file(drawingRelPath)?parser.parseFromString(await zip.file(drawingRelPath).async('string'),'application/xml'):parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>','application/xml');
+  }else{
+   let drawIndex=1;while(zip.file('xl/drawings/drawing-m2-'+drawIndex+'.xml'))drawIndex++;
+   drawingPath='xl/drawings/drawing-m2-'+drawIndex+'.xml';drawingRelPath='xl/drawings/_rels/drawing-m2-'+drawIndex+'.xml.rels';
+   drawingDoc=parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>','application/xml');
+   drawingRelDoc=parser.parseFromString('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>','application/xml');
+   const used=new Set([...sheetRelDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));let rid='rIdM2Drawing',i=1;while(used.has(rid))rid='rIdM2Drawing'+(i++);
+   const rel=sheetRelDoc.createElementNS(sheetRelDoc.documentElement.namespaceURI,'Relationship');rel.setAttribute('Id',rid);rel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing');rel.setAttribute('Target','../drawings/'+drawingPath.split('/').pop());sheetRelDoc.documentElement.appendChild(rel);
+   drawingNode=sheetDoc.createElementNS(sheetDoc.documentElement.namespaceURI,'drawing');drawingNode.setAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','r:id',rid);sheetDoc.documentElement.appendChild(drawingNode);
+  }
+  const usedImageRids=new Set([...drawingRelDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));
+  let picId=Math.max(0,...[...drawingDoc.getElementsByTagName('*')].filter(n=>n.localName==='cNvPr').map(n=>Number(n.getAttribute('id'))||0))+1;
+  for(const item of items){
+   const [fromCell,toCell]=String(item.range).split(':'),from=m2CellPoint(fromCell),to=m2CellPoint(toCell||fromCell);
+   const ext=item.image.mimeType==='image/png'?'png':'jpeg';
+   const mediaName='m2-image-'+(globalSeq++)+'.'+ext;zip.file('xl/media/'+mediaName,m2Base64Bytes(item.image.base64));
+   let imageRid='rIdM2Image'+globalSeq,ridSeq=1;while(usedImageRids.has(imageRid))imageRid='rIdM2Image'+globalSeq+'_'+(ridSeq++);usedImageRids.add(imageRid);
+   const imageRel=drawingRelDoc.createElementNS(drawingRelDoc.documentElement.namespaceURI,'Relationship');imageRel.setAttribute('Id',imageRid);imageRel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/image');imageRel.setAttribute('Target','../media/'+mediaName);drawingRelDoc.documentElement.appendChild(imageRel);
+   const anchorXml=`<xdr:twoCellAnchor editAs="oneCell" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:from><xdr:col>${from.col}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${from.row}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${to.col+1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${to.row+1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${picId++}" name="${String(item.name||'Evidencia').replace(/[&<>\"]/g,'')}"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="${imageRid}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor>`;
+   const anchorDoc=parser.parseFromString(anchorXml,'application/xml');drawingDoc.documentElement.appendChild(drawingDoc.importNode(anchorDoc.documentElement,true));
+  }
+  zip.file(sheetPath,serializer.serializeToString(sheetDoc));zip.file(relPath,serializer.serializeToString(sheetRelDoc));zip.file(drawingPath,serializer.serializeToString(drawingDoc));zip.file(drawingRelPath,serializer.serializeToString(drawingRelDoc));
+ }
  const ctDoc=parser.parseFromString(await zip.file('[Content_Types].xml').async('string'),'application/xml');
- const hasExt=[...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Default'&&n.getAttribute('Extension')===ext);
- if(!hasExt){const d=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Default');d.setAttribute('Extension',ext);d.setAttribute('ContentType',ext==='png'?'image/png':'image/jpeg');ctDoc.documentElement.appendChild(d);}
- const part='/xl/drawings/'+drawingName;
- const hasDrawing=[...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Override'&&n.getAttribute('PartName')===part);
- if(!hasDrawing){const o=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Override');o.setAttribute('PartName',part);o.setAttribute('ContentType','application/vnd.openxmlformats-officedocument.drawing+xml');ctDoc.documentElement.appendChild(o);}
+ for(const ext of ['png','jpeg'])if(![...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Default'&&n.getAttribute('Extension')===ext)){const d=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Default');d.setAttribute('Extension',ext);d.setAttribute('ContentType',ext==='png'?'image/png':'image/jpeg');ctDoc.documentElement.appendChild(d);}
+ const drawingPaths=Object.keys(zip.files).filter(name=>name.startsWith('xl/drawings/')&&name.endsWith('.xml')&&!name.includes('/_rels/'));
+ for(const path of drawingPaths){const part='/'+path;if(![...ctDoc.getElementsByTagName('*')].some(n=>n.localName==='Override'&&n.getAttribute('PartName')===part)){const o=ctDoc.createElementNS(ctDoc.documentElement.namespaceURI,'Override');o.setAttribute('PartName',part);o.setAttribute('ContentType','application/vnd.openxmlformats-officedocument.drawing+xml');ctDoc.documentElement.appendChild(o);}}
  zip.file('[Content_Types].xml',serializer.serializeToString(ctDoc));
  return zip.generateAsync({type:'arraybuffer',compression:'DEFLATE'});
 }
-
 async function m2GenerateExcel(){
  m2ImageTrace=[];m2Trace('generation-start',{imageCount:m2ImageFiles.size});
  const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
@@ -470,26 +495,23 @@ async function m2GenerateExcel(){
   const formulaProtected=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());
   const visuallyProtected=await m2RestoreTemplateDrawings(templateBuffer,formulaProtected);
   let finalBuffer=visuallyProtected;
-  // Prueba controlada: insertar la primera imagen persistida de la última hoja (DOC-2.5).
-  const lastSheetEntry=Object.entries(m2EmbeddedValues).find(([key,value])=>
-   key.startsWith('DOC-2.5|image|')&&value&&typeof value==='object'&&value.fileId
+  // Inserta todas las evidencias persistidas en sus hojas y rangos mapeados.
+  const imageEntries=Object.entries(m2EmbeddedValues).filter(([key,value])=>
+   key.includes('|image|')&&value&&typeof value==='object'&&value.fileId
   );
-  if(lastSheetEntry){
-   const [imageKey,imageRef]=lastSheetEntry;
-   const imageIndex=Number(imageKey.split('|')[2]);
-   const targetRange=m2ImageRange('DOC-2.5',imageIndex);
-   if(!targetRange)throw new Error('No existe rango destino para '+imageKey+'.');
-   m2Trace('excel-image-test',{imageKey,fileId:imageRef.fileId,targetRange});
+  const insertions=[];
+  for(const [imageKey,imageRef] of imageEntries){
+   const [code,_image,indexText]=imageKey.split('|'),imageIndex=Number(indexText);
+   const sheetName=M2_SHEET_NAME_BY_CODE[code],targetRange=m2ImageRange(code,imageIndex);
+   if(!sheetName||!targetRange){m2Trace('excel-image-skipped',{imageKey,reason:'Sin hoja o rango mapeado'});continue;}
+   m2Trace('excel-image-fetch',{imageKey,fileId:imageRef.fileId,sheetName,targetRange});
    const driveImage=await m2GetDriveImage(imageRef.fileId);
-   finalBuffer=await m2InsertSingleImage(
-    finalBuffer,
-    M2_SHEET_NAME_BY_CODE['DOC-2.5'],
-    targetRange,
-    driveImage
-   );
-  }else{
-   m2Trace('excel-image-test-skipped',{reason:'No hay imagen persistida en DOC-2.5'});
+   insertions.push({sheetName,range:targetRange,image:driveImage,name:imageRef.name||driveImage.name||imageKey});
   }
+  if(insertions.length){
+   finalBuffer=await m2InsertImages(finalBuffer,insertions);
+   m2Trace('excel-images-inserted',{count:insertions.length});
+  }else m2Trace('excel-images-skipped',{reason:'No hay imágenes persistidas'});
   blob=new Blob([finalBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){m2Trace('generation-error',{message:err.message,stack:err.stack||''});m2DownloadTrace();alert('No se pudo generar el Excel: '+err.message);}
