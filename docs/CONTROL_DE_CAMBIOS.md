@@ -1,11 +1,10 @@
 # CONTROL DE CAMBIOS
 
-Versión 1.42
+Versión activa: 1.48
 
-| Cambio | Archivo | Verificación |
-|---|---|---|
-| Logo maestro en las 12 hojas del M2 | `module2-embedded.js` | Abrir las 12 hojas del Documento Vivo |
-| Una sola fuente de cabecera | `module2-embedded.js` | `m2GetMasterHeader()` y `m2ApplyMasterLogo()` |
-| Persistencia visual del logo | `app.js` | Reemplazar logo y volver a abrir M2 |
-| Estilos de logo dentro del documento | `styles.css` | Logo dentro de la réplica, no flotante externo |
-| Versión 1.42 | `index.html` | Público y privado muestran 1.42 |
+- Home sustituido por dashboard ejecutivo.
+- Menú lateral simplificado.
+- Logo HTML del menú sustituido por imagen oficial.
+- Eliminadas del menú: Producción, Inventarios, Calidad, Plan Maestro y Reportes.
+- Eliminados del Home: Riesgo, tareas y Plan Maestro.
+- Indicadores: 14 módulos, 83 hojas, hojas liberadas, avance general, captura y 17 registros periódicos.

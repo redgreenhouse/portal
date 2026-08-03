@@ -1,5 +1,5 @@
 {
-  "version": "1.42",
+  "version": "1.48",
   "base": "portal-main after v40.zip",
   "scope": [
     "Cabecera maestra única M2",
@@ -38,5 +38,6 @@
     "templates/MODULO-8-PLANTILLA.xlsx": "46618f802265ba0f538aa1d8a35f5c4e94c374324eb699a18892a82239095411",
     "templates/MODULO-9-PLANTILLA.xlsx": "f7fdaf2c0bb51f68e451cc2c04be531a8bf60f78141d490a1f7a756465d32dda",
     "templates/temp": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
-  }
+  },
+  "release": "Dashboard ejecutivo y navegación simplificada"
 }

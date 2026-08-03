@@ -1,19 +1,11 @@
-# CONTROL DE ARCHIVOS
-
-Comparación: `portal-main after v40.zip` → V1.42
-
-| Carpeta | Archivo | Versión vieja | Versión nueva | Acción |
-|---|---|---|---|---|
-| `/` | `index.html` | 1.40 | Modificado | Sustituir |
-| `/` | `app.js` | 1.40 | Modificado | Sustituir |
-| `/` | `module2-embedded.js` | 1.40 | Modificado | Sustituir |
-| `/` | `styles.css` | 1.40 | Modificado | Sustituir |
-| `/docs` | `CONTROL_DE_CAMBIOS.md` | Existente | Modificado | Sustituir |
-| `/docs` | `CONTROL_DE_ARCHIVOS.md` | Existente | Modificado | Sustituir |
-| `/docs` | `MANIFIESTO.json` | Existente | Modificado | Sustituir |
-
-## Eliminar
+# CONTROL DE ARCHIVOS V1.48
 
 | Carpeta | Archivo | Acción |
 |---|---|---|
-| — | Ninguno | No borrar archivos |
+| / | index.html | Sustituir |
+| / | app.js | Sustituir |
+| / | styles.css | Sustituir |
+| /docs | CONTROL_DE_CAMBIOS.md | Sustituir |
+| /docs | CONTROL_DE_ARCHIVOS.md | Sustituir |
+
+No borrar archivos. Apps Script y plantillas no cambian.
