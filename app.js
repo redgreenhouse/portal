@@ -138,7 +138,9 @@ function renderMasterData(){
       <h3>${group}</h3>
       ${shown.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),value=esc(String(masterValues[key]||'')),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);const certainty=x.source==='Por confirmar'?'probable':'confirmed';const confirmedCount=Object.values(x.modules).filter(v=>v==='c').length;const probableCount=Object.values(x.modules).filter(v=>v==='p').length;const impactText=certainty==='confirmed'?`Impacto real: ${confirmedCount} módulo${confirmedCount===1?'':'s'}`:`Impacto probable: ${probableCount} módulo${probableCount===1?'':'s'}`;return `
         <div class="master-field">
-          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
+          <span class="field-certainty ${certainty}" title="${certainty==='confirmed'?'Confirmado en Excel recibidos':'Probable; pendiente de validar'}"></span>
+          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p><div class="field-meta"><span class="certainty-label ${certainty}">${certainty==='confirmed'?'Confirmado':'Probable'}</span><span class="impact-chip">${impactText}</span></div>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
+          <span class="source-chip">${x.source}</span>
         </div>`}).join('')}
     </section>`).join('');
   document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{input.closest('.master-field').classList.toggle('has-value',!!input.value.trim())}));
@@ -178,13 +180,12 @@ function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
 function renderDashboard(){
-  const total=(window.RED_DATA&&RED_DATA.module2)?RED_DATA.module2.length:12;
-  const released=Object.values(directorReleaseState()).filter(Boolean).length;
-  const p=total?Math.round(Math.min(released,total)/total*100):0;
-  const pv=document.getElementById('progressValue');if(pv)pv.textContent=`${p}%`;
-  const pf=document.getElementById('progressFill');if(pf)pf.style.width=`${p}%`;
-  const sc=document.getElementById('dashboardSheetCount');if(sc)sc.textContent=total;
-  const rc=document.getElementById('dashboardReleasedCount');if(rc)rc.textContent=Math.min(released,total);
+  const p=progress(),c=masterCompletion();
+  document.getElementById('progressValue').textContent=`${p}%`;
+  document.getElementById('progressFill').style.width=`${p}%`;
+  const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
+  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
+  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
@@ -195,7 +196,7 @@ function renderTasks(){
   document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();showView(b.dataset.taskView)}));
 }
 
-const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua',11:'Fertilizantes',12:'Plaguicidas',13:'Cosecha',14:'Materia prima',15:'Transporte'};
+const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua'};
 const module2CaptureSpecs={
 'PORTADA':[
  ['Nombre de la unidad de producción','text','Identidad que aparecerá en la carpeta impresa'],['Domicilio de la unidad','textarea','Dirección completa del sitio'],['Folio SENASICA','text','Identificador oficial'],['Fecha de emisión','date','Fecha de publicación'],['Vigencia','date','Fecha límite de vigencia'],['Versión','text','Clave de control documental']
@@ -344,9 +345,9 @@ function renderModule2DocumentContent(doc){
 function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
  const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
- const mods=[2,3,4,5,6,7,8,9,10,11,12,13,14,15], release=directorReleaseState();
- summary.innerHTML='';
- grid.innerHTML=mods.map(m=>{const sheets=m===2?RED_DATA.module2.length:((window.SRRC_MODULES||[]).find(x=>x.module===m)?.sheets?.length||0);const released=m===2?RED_DATA.module2.filter(d=>release[`M2|${d.code}`]).length:0;const percent=sheets?Math.round(released/sheets*100):0;return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]||'Módulo SRRC'}</p></div><span class="module-lock" title="${released===sheets&&sheets?'Liberado':'En revisión'}">${released===sheets&&sheets?'🔓':'🔒'}</span></div><div class="module-progress-line"><span>${sheets||'—'} hojas · ${released} liberadas</span><strong>${percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div><span class="module-open">Abrir módulo →</span></article>`}).join('');
+ const m2=module2Status(),mods=[2,3,4,5,6,7,8,9,10];
+ summary.innerHTML=`<article class="summary-card"><span>Hojas visibles del Módulo 2</span><strong>${RED_DATA.module2.length}</strong></article><article class="summary-card"><span>Campos identificados</span><strong>${m2.total}</strong></article><article class="summary-card"><span>Captura Módulo 2</span><strong>${m2.percent}%</strong></article>`;
+ grid.innerHTML=mods.map(m=>{const st=m===2?m2:moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${m===2?'Piloto completo':st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${m===2?`${RED_DATA.module2.length} hojas · ${st.total} campos`:`${st.filled} de ${st.total} datos aplicables`}</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">${m===2?'Ver contenido completo del Excel →':'Abrir tabla estructurada →'}</span></article>`}).join('');
  grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
 }
 function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,masterField=module2MasterField(doc,field);if(masterField){const raw=module2MasterValue(masterField),value=esc(raw);return `<div class="module-field master-linked-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type linked-data-type">Dato maestro</span><p>${hint}</p></div><div class="module-field-control"><div class="master-linked-value ${value?'':'master-linked-empty'}"><span>${value||'Pendiente de captura en Datos Maestros'}</span><button type="button" data-open-master>Ir a Datos Maestros</button></div><small class="master-linked-source">Origen único: ${masterField}</small></div></div>`}const value=esc(module2EffectiveValue(doc,field,i));let control='';
