@@ -1,15 +1,33 @@
-# RED Greenhouse · Portal de Gestión
+Versión actual: 1.35
 
-## Cambios de la versión 1.50B
+# RED Greenhouse Portal v1.29
 
-| Descripción del cambio | Archivo afectado |
-|---|---|
-| Se restaura el motor estable de navegación y renderizado de módulos sin modificar la información guardada en Datos Maestros. | `app.js` |
-| Se restaura la página Certificaciones con acceso a Inocuidad · SRRC. | `index.html`, `styles.css` |
-| Se recupera el acceso a Módulos SRRC y Referencias Excel desde Certificaciones. | `index.html`, `app.js` |
-| Se simplifica la barra lateral para mostrar únicamente áreas principales, sin submenús desplegados. | `index.html` |
-| Se elimina el panel Nivel de certeza de Datos Maestros. | `index.html`, `styles.css` |
-| Se elimina la Matriz de utilización de Datos Maestros. | `index.html` |
-| Se actualizan las leyendas visibles de versión a 1.50. | `index.html` |
+Incluye sitio público, intranet, galería en Drive y documentos vivos para los módulos 2 a 7.
 
-La versión 1.50B no modifica `data.js`, `capture.js`, `module2-embedded.js`, plantillas Excel ni archivos de mapeo.
+## Plantillas
+Las plantillas limpias están en `/templates`. El Módulo 5 usa provisionalmente el archivo original como plantilla hasta recibir una versión limpia.
+
+## Apps Script
+Actualiza el proyecto con `apps-script/Code.gs` y publica una nueva versión del despliegue.
+
+
+## Galería v1.29
+
+La administración de la galería permite editar título y descripción, ocultar/mostrar una foto y eliminarla. Al eliminar una fotografía de Google Drive, el Apps Script la envía a la papelera y elimina su registro de la galería.
+
+Después de copiar el nuevo `apps-script/Code.gs`, publique una **nueva versión del despliegue existente**. La URL `/exec` permanece igual.
+
+
+## v1.30 preliminar
+- Módulos 8, 9 y 10 integrados desde original/coloreado/plantilla.
+- Plantilla dinámica (morado), Código (rosa mexicano), correo y teléfono.
+- Navegación por páginas horizontales en M8 hoja 8.3.
+- Galería: refresco y retiro de tarjeta local al eliminar.
+- Rutas de logo unificadas.
+
+
+## v1.31
+- Módulo 2: selección de imagen sube directamente a Google Drive y muestra miniatura persistente.
+- Excel M2: restaura logos/dibujos originales de la plantilla.
+- Excel M2: llena Folio SENASICA, emisión, vigencia y versión en todas las cabeceras mapeadas.
+- Evidencias: se exportan como hipervínculo Abrir evidencia fotográfica.

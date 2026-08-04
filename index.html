@@ -14,7 +14,7 @@
     <header class="public-header">
       <div class="public-brand"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><div><strong>RED Greenhouse</strong><span>Producción responsable</span></div></div>
       <nav><a href="#nosotros">Nosotros</a><a href="#productos">Productos</a><a href="#certificaciones">Certificaciones</a><a href="#galeria">Galería</a><a href="#contacto">Contacto</a></nav>
-      <button class="portal-access-button" id="openLoginButton">Acceso Portal V1.50 →</button>
+      <button class="portal-access-button" id="openLoginButton">Acceso Portal V1.42 →</button>
     </header>
     <main>
       <section class="public-hero">
@@ -50,13 +50,20 @@
     </section>
     <nav class="nav">
       <button class="nav-item active" data-view="inicio"><span>⌂</span> Inicio</button>
+      <button class="nav-item" data-view="produccion"><span>◉</span> Producción</button>
+      <button class="nav-item" data-view="inventarios"><span>▦</span> Inventarios</button>
+      <button class="nav-item" data-view="calidad"><span>✓</span> Calidad</button>
       <button class="nav-item" data-view="certificaciones"><span>🏅</span> Certificaciones</button>
+      <button class="nav-item" data-view="plan"><span>☷</span> Plan Maestro</button>
       <button class="nav-item" data-view="datos"><span>◆</span> Datos Maestros</button>
+      <button class="nav-item" data-view="modulos"><span>▤</span> Módulos SRRC</button>
       <button class="nav-item" data-view="bitacoras"><span>☑</span> Bitácoras</button>
+      <button class="nav-item" data-view="vinculacion"><span>⌘</span> Tabla de vinculación</button>
       <button class="nav-item" data-view="galeria"><span>▧</span> Galería pública</button>
+      <button class="nav-item" data-view="reportes"><span>▥</span> Reportes</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · v1.50</div>
+    <div class="sidebar-footer">RED Greenhouse · v1.35</div>
   </aside>
 
   <main class="main">
@@ -67,22 +74,14 @@
         <button class="nav-control home-control" id="homeButton" title="Ir al inicio">⌂ <span>Inicio</span></button>
         <div class="breadcrumb" id="breadcrumb">Inicio</div>
       </div>
-      <div class="topbar-right"><button class="public-return-button" id="publicSiteButton">← Sitio público</button><span class="portal-status"><i></i> Versión activa 1.50</span><span id="currentDate"></span></div>
+      <div class="topbar-right"><button class="public-return-button" id="publicSiteButton">← Sitio público</button><span class="portal-status"><i></i> Versión activa 1.42</span><span id="currentDate"></span></div>
     </header>
 
     <section class="view active" id="view-inicio">
-      <section class="dashboard-hero">
-        <div class="dashboard-hero-copy">
-          <span class="dashboard-hero-kicker">PORTAL DE GESTIÓN · CERTIFICACIÓN SRRC</span>
-          <h1>Buenos días, equipo</h1>
-          <p>Consulta el avance documental y entra directamente a las áreas que requieren atención.</p>
-        </div>
-        <div class="dashboard-hero-objective">
-          <span>OBJETIVO PRÓXIMO</span>
-          <strong>Auditoría interna</strong>
-          <small>11 de agosto de 2026</small>
-        </div>
-      </section>
+      <div class="page-heading">
+        <div><h1>Implementación SRRC</h1><p>Dashboard ejecutivo</p></div>
+        <button class="primary-button" data-go="plan">Ver Plan Maestro</button>
+      </div>
       <section class="kpi-grid">
         <article class="card kpi-card"><span class="kpi-label">Avance general</span><div class="kpi-value green" id="progressValue">18%</div><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><small>Progreso total de implementación</small><div class="master-dashboard-line"><span>Datos maestros capturados</span><strong id="dashboardMasterProgress">0%</strong></div></article>
         <article class="card kpi-card"><span class="kpi-label">Riesgo actual</span><div class="risk-value"><span>⚠</span><strong>MEDIO</strong></div><small>Requiere atención para cumplir la fecha compromiso</small></article>
@@ -138,33 +137,34 @@
           <div class="master-catalog" id="masterCatalog"></div>
         </article>
 
-
+        <aside class="card confidence-card">
+          <h2>Nivel de certeza</h2>
+          <div class="confidence-row"><span class="confidence confirmed"></span><div><strong>Confirmado</strong><p>Localizado en los Excel recibidos.</p></div></div>
+          <div class="confidence-row"><span class="confidence probable"></span><div><strong>Probable</strong><p>Previsto para módulos 8–14; falta validar el formato.</p></div></div>
+          <div class="confidence-row"><span class="confidence none"></span><div><strong>No identificado</strong><p>No se propone su uso en ese módulo.</p></div></div>
+          <div class="scope-note">
+            Los datos “probables” no se usarán para llenar documentos hasta recibir y revisar los Excel oficiales.
+          </div>
+        </aside>
       </section>
 
-
-    </section>
-
-
-    <section class="view" id="view-certificaciones">
-      <div class="page-heading certification-heading">
-        <div><h1>Certificaciones</h1><p>Selecciona la certificación que deseas gestionar.</p></div>
-      </div>
-      <section class="certification-hub">
-        <article class="card certification-card certification-card-active">
-          <div class="certification-icon">🌿</div>
-          <div class="certification-copy">
-            <span class="eyebrow">CERTIFICACIÓN ACTIVA</span>
-            <h2>Inocuidad · SRRC</h2>
-            <p>Sistema de Reducción de Riesgos de Contaminación.</p>
-            <div class="certification-meta"><span>14 módulos</span><span>En implementación</span></div>
+      <section class="card matrix-card">
+        <div class="section-heading">
+          <div>
+            <h2>Matriz de utilización</h2>
+            <p>Relación entre cada dato maestro y los módulos donde se utiliza o probablemente se utilizará.</p>
           </div>
-          <div class="certification-actions">
-            <button class="primary-button" data-go="modulos">Abrir módulos</button>
-            <button class="ghost-button" data-go="vinculacion">Referencias Excel</button>
-          </div>
-        </article>
+          <div class="matrix-legend"><span><i class="matrix-dot confirmed"></i> Confirmado</span><span><i class="matrix-dot probable"></i> Probable</span></div>
+        </div>
+        <div class="matrix-scroll">
+          <table class="usage-matrix">
+            <thead id="matrixHead"></thead>
+            <tbody id="matrixBody"></tbody>
+          </table>
+        </div>
       </section>
     </section>
+
 
     <section class="view" id="view-modulos">
       <div class="page-heading">
@@ -235,7 +235,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js?v=1.42"></script>
   <script src="module2-embedded.js?v=1.42"></script>
   <script src="srrc-modules.js?v=1.42"></script>
-  <script src="app.js?v=1.50b"></script>
+  <script src="app.js?v=1.42"></script>
   <script src="srrc-runtime.js?v=1.42"></script>
   <script src="capture.js?v=1.42"></script>
 </body>
