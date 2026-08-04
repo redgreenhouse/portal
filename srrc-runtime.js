@@ -135,10 +135,53 @@
     });
   }
 
+  function isHeaderLogoRange(ref) {
+    try {
+      const x = parseRange(String(ref || '').trim());
+      return x.r1 <= 2 && x.c1 <= 2 && x.r2 <= 6 && x.c2 <= 8;
+    } catch (_err) {
+      return false;
+    }
+  }
+  function isHeaderLogoControl(c) {
+    return c?.type === 'logo' || (c?.type === 'image' && isHeaderLogoRange(c.range));
+  }
+  function corporateLogo() {
+    const obj = (typeof masterValues !== 'undefined' && typeof masterKey !== 'undefined')
+      ? masterValues[masterKey('Logo corporativo')]
+      : null;
+    if (obj && typeof obj === 'object') {
+      const src = obj.dataUrl || obj.imageUrl || obj.thumbnailUrl || obj.url || '';
+      if (src) return { src, url:obj.url || obj.imageUrl || src, name:obj.name || 'Logo corporativo' };
+    }
+    return { src:'assets/images/logo-redgreenhouse.png', url:'', name:'Logo corporativo RED Greenhouse' };
+  }
+  function inferredLogoRange(s) {
+    const existing = (s.controls || []).find(isHeaderLogoControl);
+    if (existing) return existing.range;
+    const merged = (s.merges || []).map(ref => {
+      try { return {ref, x:parseRange(ref)}; } catch (_err) { return null; }
+    }).filter(Boolean).find(item => item.x.r1 <= 2 && item.x.c1 === 1 && item.x.r2 <= 6 && item.x.c2 >= 3 && item.x.c2 <= 8);
+    if (merged) return merged.ref;
+    if (/^PORTADA$/i.test(String(s.name || '').trim())) return 'A1:C6';
+    return '';
+  }
+  function sheetControlsWithLogo(s) {
+    const controls = [...(s.controls || [])];
+    if (!controls.some(isHeaderLogoControl)) {
+      const range = inferredLogoRange(s);
+      if (range) controls.unshift({id:`AUTO.LOGO.${String(s.name || '').trim()}`,type:'logo',range,label:'Logo corporativo'});
+    }
+    return controls;
+  }
   function controlHtml(c) {
     const v = values[c.id] ?? c.initial ?? '';
     if (c.type === 'masterData') {
       return `<div class="srrc-master-control" title="Dato maestro"><b>${esc(master(c.field) || 'Pendiente en Datos Maestros')}</b><small>${esc(c.field)}</small></div>`;
+    }
+    if (isHeaderLogoControl(c)) {
+      const logo = corporateLogo();
+      return `<div class="srrc-logo-control">${logo.url ? `<a href="${esc(logo.url)}" target="_blank" rel="noopener">` : ''}<img src="${esc(logo.src)}" alt="${esc(logo.name)}">${logo.url ? '</a>' : ''}</div>`;
     }
     if (c.type === 'image') {
       const obj = typeof v === 'object' ? v : null;
@@ -162,7 +205,7 @@
       top[cellRef(x.r1,x.c1)] = {rowspan:x.r2-x.r1+1, colspan:x.c2-x.c1+1};
       for (let r=x.r1;r<=x.r2;r++) for (let c=x.c1;c<=x.c2;c++) if (r!==x.r1 || c!==x.c1) covered.add(cellRef(r,c));
     }
-    for (const c of s.controls) {
+    for (const c of sheetControlsWithLogo(s)) {
       const x = parseRange(c.range);
       controls[cellRef(x.r1,x.c1)] = c;
       top[cellRef(x.r1,x.c1)] = {rowspan:x.r2-x.r1+1, colspan:x.c2-x.c1+1};
@@ -259,7 +302,9 @@
         if (!target) continue;
         const v = values[c.id] ?? c.initial ?? '';
         if (c.type === 'masterData') sh.cell(target).value(master(c.field) || '');
-        else if (c.type === 'image') {
+        else if (isHeaderLogoControl(c)) {
+          // La plantilla ya contiene el logo. No escribir en esta zona evita deformarlo o sustituirlo.
+        } else if (c.type === 'image') {
           const o = typeof v === 'object' ? v : null;
           if (o?.url) sh.cell(target).formula(`HYPERLINK("${String(o.url).replace(/"/g,'""')}","Abrir evidencia fotográfica")`);
         } else if (c.type === 'checkbox') sh.cell(target).value(v === false ? '' : '✓');
