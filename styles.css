@@ -200,7 +200,7 @@
 .drive-file-input{display:none!important}.drive-upload-button{border:0;font:inherit}.portal-status i{display:none}.portal-status{padding-left:14px}
 
 /* V1.37 · Mapeo agrupado y búsqueda */
-.mapping-toolbar{display:grid;grid-template-columns:minmax(280px,1fr) 220px auto;gap:14px;align-items:end;padding:16px;margin-bottom:16px}
+.mapping-toolbar{display:grid;grid-template-columns:minmax(280px,1fr) 190px 260px auto;gap:14px;align-items:end;padding:16px;margin-bottom:16px}
 .mapping-toolbar label{display:grid;gap:6px;font-weight:700;color:#173f32}
 .mapping-toolbar input,.mapping-toolbar select{width:100%;border:1px solid #cbdad3;border-radius:10px;padding:11px 12px;background:#fff;font:inherit}
 .mapping-toolbar span{padding:11px 0;color:#60756c;font-weight:700;white-space:nowrap}
