@@ -7,6 +7,20 @@
   let values = JSON.parse(localStorage.getItem(STORE) || '{}');
   const save = () => localStorage.setItem(STORE, JSON.stringify(values));
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const EXCEL_REFERENCE_STORE_KEY = 'redGreenhouseExcelReferences';
+  function excelReference(id, fallback) {
+    try {
+      const refs = JSON.parse(localStorage.getItem(EXCEL_REFERENCE_STORE_KEY) || '{}');
+      return Object.prototype.hasOwnProperty.call(refs, id)
+        ? String(refs[id] || '').trim()
+        : String(fallback || '').trim();
+    } catch (_err) {
+      return String(fallback || '').trim();
+    }
+  }
+  function moduleReference(n, id, fallback) {
+    return Number(n) === 3 ? excelReference(id, fallback) : String(fallback || '').trim();
+  }
 
   function parseCell(a) {
     const m = /^([A-Z]+)(\d+)$/.exec(a);
@@ -103,11 +117,21 @@
     if(row==='5')return master('versionDocumento')||'';
     return text;
   }
+  const HEADER_CONCEPT_BY_KEY = {
+    folio:'folioSenasica', emision:'fechaEmision', vigencia:'vigenciaDocumento', version:'versionDocumento'
+  };
   function applyGenericHeaders(wb,n){
     const values=headerValues(), map=GENERIC_HEADER_MAP[n]||{};
+    const moduleConfig=SRRC_MODULES.find(item=>Number(item.module)===Number(n));
     Object.entries(map).forEach(([sheetName,cells])=>{
       const sh=wb.sheet(sheetName)||wb.sheets().find(x=>String(x.name()).trim()===String(sheetName).trim()); if(!sh)return;
-      Object.entries(cells).forEach(([key,cell])=>sh.cell(cell).value(values[key]||''));
+      const sheetIndex=(moduleConfig?.sheets||[]).findIndex(x=>String(x.name||'').trim()===String(sheetName).trim())+1;
+      Object.entries(cells).forEach(([key,cell])=>{
+        const concept=HEADER_CONCEPT_BY_KEY[key]||key;
+        const referenceId=sheetIndex>0?`M${n}.HEADER.${sheetIndex}.${concept}`:'';
+        const target=moduleReference(n,referenceId,cell).split(':')[0];
+        if(target)sh.cell(target).value(values[key]||'');
+      });
     });
   }
 
@@ -231,7 +255,8 @@
       const sh = wb.sheet(s.name) || wb.sheets().find(x => String(x.name()).trim() === String(s.name).trim());
       if (!sh) continue;
       for (const c of s.controls) {
-        const target = c.range.split(':')[0];
+        const target = moduleReference(n,c.id,c.range).split(':')[0];
+        if (!target) continue;
         const v = values[c.id] ?? c.initial ?? '';
         if (c.type === 'masterData') sh.cell(target).value(master(c.field) || '');
         else if (c.type === 'image') {
