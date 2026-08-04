@@ -434,51 +434,6 @@ function m2CellPoint(cell){
  let col=0;for(const ch of match[1])col=col*26+(ch.charCodeAt(0)-64);
  return {col:col-1,row:Number(match[2])-1};
 }
-function m2ImageSize(image){
- return new Promise((resolve,reject)=>{
-  const img=new Image();
-  img.onload=()=>resolve({width:img.naturalWidth||img.width||1,height:img.naturalHeight||img.height||1});
-  img.onerror=()=>reject(new Error('No se pudieron leer las dimensiones de '+(image.name||'la imagen')+'.'));
-  img.src=`data:${image.mimeType||'image/png'};base64,${image.base64}`;
- });
-}
-function m2ColumnPixels(width){
- const value=Number(width)||8.43;
- return Math.max(1,Math.floor(value*7+5));
-}
-function m2RowPixels(height){return Math.max(1,(Number(height)||15)*96/72);}
-function m2SheetDimensions(sheetDoc){
- const format=[...sheetDoc.getElementsByTagName('*')].find(n=>n.localName==='sheetFormatPr');
- const defaultCol=Number(format?.getAttribute('defaultColWidth'))||8.43;
- const defaultRow=Number(format?.getAttribute('defaultRowHeight'))||15;
- const columns=[];
- [...sheetDoc.getElementsByTagName('*')].filter(n=>n.localName==='col').forEach(node=>{
-  const min=Number(node.getAttribute('min'))||1,max=Number(node.getAttribute('max'))||min,width=Number(node.getAttribute('width'))||defaultCol;
-  for(let col=min-1;col<=max-1;col++)columns[col]=node.getAttribute('hidden')==='1'?0:m2ColumnPixels(width);
- });
- const rows=[];
- [...sheetDoc.getElementsByTagName('*')].filter(n=>n.localName==='row').forEach(node=>{
-  const row=(Number(node.getAttribute('r'))||1)-1,height=Number(node.getAttribute('ht'))||defaultRow;
-  rows[row]=node.getAttribute('hidden')==='1'?0:m2RowPixels(height);
- });
- return {
-  col:index=>columns[index]??m2ColumnPixels(defaultCol),
-  row:index=>rows[index]??m2RowPixels(defaultRow)
- };
-}
-function m2RangeBox(range,dimensions){
- const [start,end=start]=String(range||'A1').split(':'),from=m2CellPoint(start),to=m2CellPoint(end);
- let width=0,height=0;
- for(let col=from.col;col<=to.col;col++)width+=dimensions.col(col);
- for(let row=from.row;row<=to.row;row++)height+=dimensions.row(row);
- return {from,width,height};
-}
-function m2ContainImage(range,imageSize,dimensions,padding=4){
- const box=m2RangeBox(range,dimensions),availableWidth=Math.max(1,box.width-padding*2),availableHeight=Math.max(1,box.height-padding*2);
- const scale=Math.min(availableWidth/imageSize.width,availableHeight/imageSize.height);
- const width=Math.max(1,imageSize.width*scale),height=Math.max(1,imageSize.height*scale);
- return {from:box.from,x:(box.width-width)/2,y:(box.height-height)/2,width,height};
-}
 async function m2InsertImages(generatedBuffer,insertions){
  if(typeof JSZip==='undefined')throw new Error('No se cargó JSZip.');
  if(!Array.isArray(insertions)||!insertions.length)return generatedBuffer;
@@ -526,16 +481,14 @@ async function m2InsertImages(generatedBuffer,insertions){
    drawingNode=sheetDoc.createElementNS(sheetDoc.documentElement.namespaceURI,'drawing');drawingNode.setAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','r:id',rid);sheetDoc.documentElement.appendChild(drawingNode);
   }
   const usedImageRids=new Set([...drawingRelDoc.getElementsByTagName('*')].filter(n=>n.localName==='Relationship').map(n=>n.getAttribute('Id')));
-  const sheetDimensions=m2SheetDimensions(sheetDoc);
   let picId=Math.max(0,...[...drawingDoc.getElementsByTagName('*')].filter(n=>n.localName==='cNvPr').map(n=>Number(n.getAttribute('id'))||0))+1;
   for(const item of items){
-   const imageSize=await m2ImageSize(item.image),placement=m2ContainImage(item.range,imageSize,sheetDimensions);
+   const [fromCell,toCell]=String(item.range).split(':'),from=m2CellPoint(fromCell),to=m2CellPoint(toCell||fromCell);
    const ext=item.image.mimeType==='image/png'?'png':'jpeg';
    const mediaName='m2-image-'+(globalSeq++)+'.'+ext;zip.file('xl/media/'+mediaName,m2Base64Bytes(item.image.base64));
    let imageRid='rIdM2Image'+globalSeq,ridSeq=1;while(usedImageRids.has(imageRid))imageRid='rIdM2Image'+globalSeq+'_'+(ridSeq++);usedImageRids.add(imageRid);
    const imageRel=drawingRelDoc.createElementNS(drawingRelDoc.documentElement.namespaceURI,'Relationship');imageRel.setAttribute('Id',imageRid);imageRel.setAttribute('Type','http://schemas.openxmlformats.org/officeDocument/2006/relationships/image');imageRel.setAttribute('Target','../media/'+mediaName);drawingRelDoc.documentElement.appendChild(imageRel);
-   const emu=9525,xOff=Math.round(placement.x*emu),yOff=Math.round(placement.y*emu),cx=Math.round(placement.width*emu),cy=Math.round(placement.height*emu);
-   const anchorXml=`<xdr:oneCellAnchor xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:from><xdr:col>${placement.from.col}</xdr:col><xdr:colOff>${xOff}</xdr:colOff><xdr:row>${placement.from.row}</xdr:row><xdr:rowOff>${yOff}</xdr:rowOff></xdr:from><xdr:ext cx="${cx}" cy="${cy}"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${picId++}" name="${String(item.name||'Evidencia').replace(/[&<>\"]/g,'')}"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="${imageRid}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>`;
+   const anchorXml=`<xdr:twoCellAnchor editAs="oneCell" xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:from><xdr:col>${from.col}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${from.row}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>${to.col+1}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${to.row+1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${picId++}" name="${String(item.name||'Evidencia').replace(/[&<>\"]/g,'')}"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="${imageRid}"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor>`;
    const anchorDoc=parser.parseFromString(anchorXml,'application/xml');drawingDoc.documentElement.appendChild(drawingDoc.importNode(anchorDoc.documentElement,true));
   }
   zip.file(sheetPath,serializer.serializeToString(sheetDoc));zip.file(relPath,serializer.serializeToString(sheetRelDoc));zip.file(drawingPath,serializer.serializeToString(drawingDoc));zip.file(drawingRelPath,serializer.serializeToString(drawingRelDoc));
