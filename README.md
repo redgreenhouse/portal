@@ -32,14 +32,11 @@ Después de copiar el nuevo `apps-script/Code.gs`, publique una **nueva versión
 - Excel M2: llena Folio SENASICA, emisión, vigencia y versión en todas las cabeceras mapeadas.
 - Evidencias: se exportan como hipervínculo Abrir evidencia fotográfica.
 
-## Cambios de la versión 1.50
+## Cambios de la versión 1.50A
 
-| Descripción del cambio | Archivo(s) afectado(s) |
+| Descripción del cambio | Archivo afectado |
 |---|---|
-| Centralización del número de versión del portal público y privado. | `config.js`, `index.html` |
-| Sustitución del logotipo HTML por la imagen oficial en la barra lateral. | `index.html`, `styles.css`, `assets/images/logo-redgreenhouse.png` |
-| Limpieza y reorganización visual del Home ejecutivo. | `index.html`, `styles.css`, `app.js` |
-| Simplificación de la barra lateral a las áreas principales. | `index.html`, `styles.css` |
-| Restauración de la página Certificaciones con acceso a Inocuidad, Módulos y Referencias Excel. | `index.html`, `styles.css` |
-| Eliminación visual de Nivel de certeza y Matriz de utilización, sin alterar los Datos Maestros almacenados. | `index.html`, `styles.css` |
-| Ajuste de transparencia del banner del Dashboard para mejorar la visibilidad de la fotografía. | `styles.css` |
+| Se reemplazó el encabezado dividido del Home por un Hero continuo a todo lo ancho. | `index.html`, `styles.css` |
+| Se integró el saludo y el objetivo próximo dentro del mismo banner. | `index.html`, `styles.css` |
+| Se preparó y recortó una imagen específica para la proporción horizontal del Dashboard. | `assets/images/dashboard-banner.png` |
+| Se agregó degradado para mejorar la lectura sin ocultar la fotografía. | `styles.css` |
