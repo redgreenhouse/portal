@@ -257,3 +257,50 @@
 .certification-actions{display:flex;flex-direction:column;gap:10px;min-width:165px}
 .certification-actions .ghost-button{margin:0;color:var(--g700);border-color:#cfe0d5}
 @media(max-width:760px){.certification-card{grid-template-columns:1fr}.certification-actions{min-width:0}.certification-actions button{width:100%}}
+
+/* V1.50 · Parche banner Home opción B */
+.dashboard-hero{
+  min-height:190px;
+  position:relative;
+  overflow:hidden;
+  padding:34px 34px;
+  color:#fff;
+  background:
+    linear-gradient(90deg,rgba(7,50,35,.84) 0%,rgba(7,50,35,.58) 43%,rgba(7,50,35,.20) 72%,rgba(7,50,35,.12) 100%),
+    url('assets/images/dashboard-banner.png') center 42%/cover no-repeat;
+  border:1px solid rgba(20,87,64,.16);
+}
+.dashboard-hero>div:first-child{max-width:650px;position:relative;z-index:1}
+.dashboard-kicker{color:#9de0b7;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.dashboard-hero h1{color:#fff;font-size:34px;text-shadow:0 2px 8px rgba(0,0,0,.30)}
+.dashboard-hero p{color:#f1f7f3;font-size:16px;text-shadow:0 1px 5px rgba(0,0,0,.30)}
+.dashboard-deadline{
+  position:relative;
+  z-index:1;
+  min-width:225px;
+  margin-left:auto;
+  background:transparent;
+  box-shadow:none;
+  border:0;
+  padding:10px 0 10px 20px;
+  text-shadow:0 1px 5px rgba(0,0,0,.34);
+}
+.dashboard-deadline strong{font-size:17px}
+.dashboard-deadline b{
+  max-width:190px;
+  margin-top:13px;
+  background:rgba(255,255,255,.95);
+  color:var(--g700);
+  text-shadow:none;
+}
+@media(max-width:1150px){
+  .dashboard-hero{background-size:cover;background-position:center}
+}
+@media(max-width:760px){
+  .dashboard-hero{
+    background:
+      linear-gradient(rgba(7,50,35,.76),rgba(7,50,35,.66)),
+      url('assets/images/dashboard-banner.png') center/cover no-repeat;
+  }
+  .dashboard-deadline{padding-left:0;width:100%}
+}
