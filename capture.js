@@ -85,7 +85,7 @@ function renderMap(){
   el.querySelectorAll('[data-reference-id]').forEach(input=>{const value=input.value.trim().toUpperCase();input.value=value;if(value&&!valid.test(value)&&!bad)bad=input;next[input.dataset.referenceId]=value;});
   const msg=document.getElementById('excelReferenceMessage');
   if(bad){bad.focus();msg.textContent='Referencia inválida. Usa formatos como H66 o C16:Q40.';return;}
-  localStorage.setItem(storageKey,JSON.stringify(next));msg.textContent='Referencias guardadas. Se usarán en la siguiente generación del Excel.';
+  localStorage.setItem(storageKey,JSON.stringify(next));msg.textContent='Referencias guardadas como mapa activo. Se usarán en la siguiente generación del Excel.';
  });
  document.getElementById('resetExcelReferences').addEventListener('click',()=>{if(confirm('¿Restaurar todas las referencias originales del archivo de configuración?')){localStorage.removeItem(storageKey);renderMap();}});
 }

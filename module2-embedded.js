@@ -7,7 +7,10 @@ const M2_SHEET_NAME_BY_CODE={
 };
 const M2_REFERENCE_STORE_KEY='redGreenhouseExcelReferences';
 function m2Reference(id,fallback){
- try{const refs=JSON.parse(localStorage.getItem(M2_REFERENCE_STORE_KEY)||'{}');return String(refs[id]||fallback||'').trim();}catch(_err){return fallback;}
+ try{
+  const refs=JSON.parse(localStorage.getItem(M2_REFERENCE_STORE_KEY)||'{}');
+  return Object.prototype.hasOwnProperty.call(refs,id)?String(refs[id]||'').trim():String(fallback||'').trim();
+ }catch(_err){return String(fallback||'').trim();}
 }
 function m2PopulateSheet(workbook,name){
  const exact=workbook.sheet(name);if(exact)return exact;
@@ -253,6 +256,19 @@ function m2AddMasterSignatures(root,doc){
   el.classList.add('m2-master-cell');
  });
 }
+const M2_HEADER_SHEET_INDEX={
+ 'PORTADA':1,'POE MTTO INFRAESTR':2,'ANÁLISIS DESCRIPTIVO':3,'PLAN DE ACCIÓN':4,
+ 'MAPA 2.1':5,'MAPA 2.1.1':6,'MAPA 2.1.2':7,'CROQUIS 2.2':8,
+ 'DOC-2.3 FRENTE':9,'DOC-2.3 REVERSO':10,'DOC-2.4':11,'DOC-2.5':12
+};
+const M2_HEADER_CONCEPT={
+ empresa:'unidadProduccion',domicilio:'domicilio',folio:'folioSenasica',
+ emision:'fechaEmision',version:'versionDocumento',vigencia:'vigenciaDocumento'
+};
+function m2HeaderReference(code,key,fallback){
+ const sheetIndex=M2_HEADER_SHEET_INDEX[code],concept=M2_HEADER_CONCEPT[key];
+ return sheetIndex&&concept?m2Reference(`M2.HEADER.${sheetIndex}.${concept}`,fallback):fallback;
+}
 const M2_HEADER_CELLS={
  'PORTADA':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
  'POE MTTO INFRAESTR':{empresa:'D1',domicilio:'D2',folio:'H2',emision:'I3',version:'I4',vigencia:'I5'},
@@ -335,7 +351,10 @@ function m2ApplyHeaders(workbook){
  const values=m2GetMasterHeader();
  Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{
   const sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]);if(!sheet)return;
-  Object.entries(cells).forEach(([key,cell])=>sheet.cell(cell).value(values[key]||''));
+  Object.entries(cells).forEach(([key,fallback])=>{
+   const cell=m2HeaderReference(code,key,fallback);
+   if(cell)sheet.cell(cell).value(values[key]||'');
+  });
  });
 }
 
@@ -343,7 +362,7 @@ async function m2RestoreTemplateFormulas(templateBuffer,generatedBuffer){
  if(typeof JSZip==='undefined')throw new Error('No se cargó el protector de fórmulas de Excel.');
  const [templateZip,generatedZip]=await Promise.all([JSZip.loadAsync(templateBuffer),JSZip.loadAsync(generatedBuffer)]);
  const protectedBySheet={};
- Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{const name=M2_SHEET_NAME_BY_CODE[code];if(!name)return;protectedBySheet[name]=protectedBySheet[name]||new Set();Object.values(cells).forEach(cell=>protectedBySheet[name].add(cell));});
+ Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{const name=M2_SHEET_NAME_BY_CODE[code];if(!name)return;protectedBySheet[name]=protectedBySheet[name]||new Set();Object.entries(cells).forEach(([key,fallback])=>{const cell=m2HeaderReference(code,key,fallback);if(cell)protectedBySheet[name].add(cell);});});
  const poeName=M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR'];protectedBySheet[poeName]=protectedBySheet[poeName]||new Set();['B66','E66','H66'].forEach(cell=>protectedBySheet[poeName].add(cell));
  Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),name=M2_SHEET_NAME_BY_CODE[code],target=m2ImageRange(code,Number(index))?.split(':')[0];if(name&&target){protectedBySheet[name]=protectedBySheet[name]||new Set();protectedBySheet[name].add(target);}});
  const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));
