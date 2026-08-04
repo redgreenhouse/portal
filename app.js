@@ -179,13 +179,39 @@ function setDate(){document.getElementById('currentDate').textContent=new Intl.D
 function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,t)=>s+(t.status==='done'?1:t.status==='doing'?.5:0),0)/tasks.length*100)}
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
+function dashboardModuleSummary(){
+  const release=directorReleaseState();
+  const summaries=[];
+  const m2Total=(window.RED_DATA&&Array.isArray(RED_DATA.module2))?RED_DATA.module2.length:0;
+  const m2Released=Object.keys(release).filter(k=>k.startsWith('M2|')&&release[k]).length;
+  summaries.push({module:2,title:'Infraestructura',total:m2Total,released:Math.min(m2Released,m2Total)});
+  const structured=Array.isArray(window.SRRC_MODULES)?window.SRRC_MODULES:[];
+  for(let m=3;m<=15;m++){
+    const item=structured.find(x=>x.module===m);
+    const total=item&&Array.isArray(item.sheets)?item.sheets.length:0;
+    const released=Object.keys(release).filter(k=>k.startsWith(`M${m}|`)&&release[k]).length;
+    summaries.push({module:m,title:(item&&item.title)||moduleNames[m]||`Módulo ${m}`,total,released:Math.min(released,total)});
+  }
+  return summaries;
+}
 function renderDashboard(){
-  const p=progress(),c=masterCompletion();
-  document.getElementById('progressValue').textContent=`${p}%`;
-  document.getElementById('progressFill').style.width=`${p}%`;
-  const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
-  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
-  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
+  const modules=dashboardModuleSummary();
+  const totalSheets=modules.reduce((s,m)=>s+m.total,0);
+  const released=modules.reduce((s,m)=>s+m.released,0);
+  const pending=Math.max(0,totalSheets-released);
+  const percent=totalSheets?Math.round(released/totalSheets*100):0;
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+  set('dashboardModuleCount','14');set('dashboardSheetCount',totalSheets);set('dashboardReleasedCount',released);set('dashboardPendingCount',pending);
+  set('dashboardReleasedPercent',`${percent}% del total`);set('dashboardPercent',`${percent}%`);set('legendReleased',released);set('legendPending',pending);
+  const donut=document.getElementById('dashboardDonut');if(donut)donut.style.setProperty('--dashboard-progress',`${percent*3.6}deg`);
+  const bars=document.getElementById('dashboardModuleBars');
+  if(bars)bars.innerHTML=modules.map(m=>{const p=m.total?Math.round(m.released/m.total*100):0;return `<div class="module-bar-item" title="Módulo ${m.module}: ${m.released} de ${m.total} hojas liberadas"><span>M${m.module}</span><div><i style="height:${Math.max(4,p)}%"></i></div><b>${p}%</b></div>`}).join('');
+  const completed=modules.filter(m=>m.total>0&&m.released===m.total).length;
+  const doing=modules.filter(m=>m.released>0&&m.released<m.total).length;
+  const started=modules.filter(m=>m.total>0&&m.released===0).length;
+  const unavailable=modules.filter(m=>m.total===0).length;
+  const status=document.getElementById('dashboardModuleStatus');
+  if(status)status.innerHTML=`<div><i class="status-green"></i><span>Completados</span><strong>${completed}</strong></div><div><i class="status-orange"></i><span>En progreso</span><strong>${doing}</strong></div><div><i class="status-blue"></i><span>Por iniciar</span><strong>${started}</strong></div><div><i class="status-gray"></i><span>Por integrar</span><strong>${unavailable}</strong></div>`;
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
@@ -489,3 +515,12 @@ document.getElementById('backButton').addEventListener('click',()=>{if(viewHisto
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}));
 const modal=document.getElementById('modalBackdrop');document.getElementById('addTaskButton').addEventListener('click',()=>modal.classList.add('open'));document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('open'));modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});document.getElementById('taskForm').addEventListener('submit',e=>{e.preventDefault();tasks.unshift({id:Date.now(),title:document.getElementById('taskTitle').value.trim(),detail:'Tarea agregada desde el portal.',owner:document.getElementById('taskOwner').value.trim(),priority:document.getElementById('taskPriority').value,status:document.getElementById('taskStatus').value,due:'Sin fecha'});saveTasks();e.target.reset();modal.classList.remove('open');renderAll()});syncMasterTask();setDate();renderAll();
+
+
+// V1.50 · versión centralizada sin modificar datos persistidos.
+(function applyPortalVersion(){
+  const cfg=window.RED_PORTAL_CONFIG||{version:'1.50',updatedAt:'04 Agosto 2026'};
+  const login=document.getElementById('openLoginButton');if(login)login.textContent=`Acceso Portal V${cfg.version} →`;
+  const status=document.querySelector('.portal-status');if(status)status.innerHTML=`<i></i> Versión activa ${cfg.version}`;
+  const card=document.querySelector('.sidebar-version-card');if(card)card.innerHTML=`<span>Versión del portal</span><strong>V${cfg.version}</strong><small>Última actualización<br>${cfg.updatedAt}</small>`;
+})();
