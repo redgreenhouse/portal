@@ -1,0 +1,42 @@
+{
+  "version": "1.42",
+  "base": "portal-main after v40.zip",
+  "scope": [
+    "Cabecera maestra única M2",
+    "Logo maestro visible en las 12 hojas del Live Page"
+  ],
+  "files": {
+    "README.md": "5719a3d33712dbad358d80afb7099360c182ce53ce7618eb2abfacdca54f95bc",
+    "app.js": "bfffda32f8373be41b3d2950c8b34bc080c3f2c99bc63b718b30f1b31e402e89",
+    "assets/images/gallery/invernadero-familia.png": "c8fe65e90614c91c519229622ada9f40b5b4d4be7eea2ee330417264c5e16330",
+    "assets/images/gallery/text": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "assets/images/logo-redgreenhouse.png": "301f5ce7f84258767e9cd4f1f8d0f3e75b07fd75e09119b21fed44bdba88a4ec",
+    "capture.js": "4475f2ff5f7080cc0ec75de22805a429c2f99c2d6f7b3460b7ca52747827ed03",
+    "config/field-map.json": "e26451348febb9adf476d752f6d28131534751124345fb1d3285f1f17dc2ccac",
+    "config/master-data-map.json": "13de487158f5fd51f4c830b7c0d35ca409d40270303084c1fe1e8f8bfd64ae93",
+    "data.js": "0462c317e5ea8625daf288786867e6312b953f6f35729b66674b8d4aa9f78320",
+    "docs/CONTROL_DE_ARCHIVOS.md": "4647811440c330798f163c4823fcdee4e79ce0fdf71a6b29b805251821eade9e",
+    "docs/CONTROL_DE_CAMBIOS.md": "3ee4568320465494965fa533c6ae0556abdda43b44ba71162a4dff9cb7871221",
+    "docs/FIELD_MAP_SPEC.md": "e2adb769a3ee7d616268c0179452bbbfdc8b79e78b3e673a639ba622e895b3b7",
+    "docs/HEADER_AUDIT_M2_M10.md": "2255479758d0f2645c7c1378c542cdbef2f15eefa0c1a72ec48d93d0690c1962",
+    "docs/MANIFIESTO.json": "a1f36969ad3290f3881725c120576a2247f3c6ee2123291039cb0ab20912d1f3",
+    "docs/PUBLIC_PRIVATE_AND_DRIVE.md": "bd403516c8b7a1d87597951e793b5fcc5ebec7c3f864b9dcdec97946cd784408",
+    "index.html": "718ed9f6ef9752ec83529248eef43195262d89daf131a4adf0c6a3a43bdd39e0",
+    "module2-annotations.js": "aedcd588ca6419f4298ca2d591a89b8ced2b1f1f1da6df77b29da4f833ae7435",
+    "module2-embedded.js": "0182973bbe0fd5c7c9f7e0330678c7bf145732c2882f3a472f188879a490669b",
+    "module2-replicas.js": "4a29774e5fcfb2c26602debe3b15bafb5c1c0934a4509c1a5bbb93f0a3a3eaa8",
+    "srrc-modules.js": "0a2a828e5c6073fc6c56fa2213d9687b6e48223b9aad0100919f761420ffbf76",
+    "srrc-runtime.js": "9bf80954bf82c3ac57b896c199007c42f10c6145d257490866e6c7ab81e5af91",
+    "styles.css": "c6c6b1465390859ba8651b7881c90b5c8906d45947ad5d435082e397c632586e",
+    "templates/MODULO-10-PLANTILLA.xlsx": "4e39c9f2e355c0a677618598051539007c68c594712d96eb29fe5e22034bb31d",
+    "templates/MODULO-2-PLANTILLA.xlsx": "736b3891f1009dd9cbb61a561f7a67b78ae204dd026469ad141b0d9e647b48c0",
+    "templates/MODULO-3-PLANTILLA.xlsx": "3de4c888566ec63847c9b85ac34b60d35b9bbf6d21cf849f303644148a1f8b60",
+    "templates/MODULO-4-PLANTILLA.xlsx": "0031432712b3668d07a58b4058192fca287f9b2469fccbc3554438333ed8f8bc",
+    "templates/MODULO-5-PLANTILLA.xlsx": "ef6576698350c84410f170284725a4126a501520c16895d8eb59374e460fb8bb",
+    "templates/MODULO-6-PLANTILLA.xlsx": "5a1931f5db348d5916dc54e4a649fbccadb6d22686ab69e4d669dc68a5c7cb0e",
+    "templates/MODULO-7-PLANTILLA.xlsx": "9edfaeb7e938d0236ce8c61990ef00ab2eb003bc82ce1933ed3368e59ccb81bf",
+    "templates/MODULO-8-PLANTILLA.xlsx": "46618f802265ba0f538aa1d8a35f5c4e94c374324eb699a18892a82239095411",
+    "templates/MODULO-9-PLANTILLA.xlsx": "f7fdaf2c0bb51f68e451cc2c04be531a8bf60f78141d490a1f7a756465d32dda",
+    "templates/temp": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  }
+}
