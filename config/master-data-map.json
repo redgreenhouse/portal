@@ -1,0 +1,59 @@
+{
+  "empresa": {
+    "unidadProduccion": {
+      "label": "Nombre de la unidad de producción",
+      "value": "RED Greenhouse"
+    },
+    "logoCorporativo": {
+      "label": "Logo corporativo",
+      "type": "image",
+      "value": null
+    },
+    "domicilio": {
+      "label": "Domicilio",
+      "value": ""
+    },
+    "folioSenasica": {
+      "label": "Folio SENASICA",
+      "value": ""
+    },
+    "versionDocumento": {
+      "label": "Versión",
+      "value": ""
+    },
+    "fechaEmision": {
+      "label": "Fecha de emisión",
+      "value": ""
+    },
+    "vigenciaDocumento": {
+      "label": "Vigencia",
+      "value": ""
+    }
+  },
+  "responsables": {
+    "directorGeneral": {
+      "label": "Director general",
+      "value": "Eduardo Romero Mani"
+    },
+    "responsableTecnico": {
+      "label": "Responsable técnico",
+      "value": "Christian Nieto"
+    },
+    "auxiliarSRRC": {
+      "label": "Auxiliar SRRC",
+      "value": ""
+    },
+    "responsableInocuidad": {
+      "label": "Responsable de inocuidad",
+      "value": ""
+    }
+  },
+  "personal": [
+    {
+      "id": "EMP-001",
+      "nombre": "",
+      "puesto": "",
+      "activo": true
+    }
+  ]
+}
