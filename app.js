@@ -53,7 +53,7 @@ function structuredFieldStatus(field){
 function renderStructuredCapture(item){
   const def=structuredDefinitions[item.field],key=masterKey(item.field),vals=structuredValues[key]||{};
   const old=String(masterValues[key]||'').trim();
-  return `<div class="structured-capture"><table><thead><tr><th>${item.field==='Responsables por área'?'Área':'Función'}</th>${def.columns.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${def.rows.map(r=>`<tr><td class="fixed-cell">${r.label}</td>${def.columns.map(c=>`<td><input class="structured-input" data-structured-field="${key}" data-structured-row="${r.id}" data-structured-col="${c.key}" value="${esc(String(vals[r.id]?.[c.key]||''))}" placeholder="Capturar..."></td>`).join('')}</tr>`).join('')}</tbody></table></div>${old?`<div class="previous-text-note">Texto anterior conservado: ${esc(old)}</div>`:''}`;
+  return `<div class="structured-capture"><table><thead><tr><th>${item.field==='Responsables por área'?'Área':'Función'}</th>${def.columns.map(c=>`<th>${c.label}</th>`).join('')}<th>Destino confirmado</th></tr></thead><tbody>${def.rows.map(r=>`<tr><td class="fixed-cell">${r.label}</td>${def.columns.map(c=>`<td><input class="structured-input" data-structured-field="${key}" data-structured-row="${r.id}" data-structured-col="${c.key}" value="${esc(String(vals[r.id]?.[c.key]||''))}" placeholder="Capturar..."></td>`).join('')}<td class="mapping-cell">${r.mapping||def.mapping}</td></tr>`).join('')}</tbody></table></div>${old?`<div class="previous-text-note">Texto anterior conservado: ${esc(old)}</div>`:''}`;
 }
 
 let activeMasterCategory='Todas';
@@ -125,16 +125,38 @@ function bindMasterImageControls(){
 }
 
 function renderMasterData(){
-  const catalog=document.getElementById('masterCatalog');
-  if(!catalog)return;
-  const groups=[...new Set(masterData.map(x=>x.category))];
-  catalog.innerHTML=groups.map(group=>`<section class="master-group"><h3>${group}</h3>${masterData.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);return `<div class="master-field clean-master-field"><div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div></div>`}).join('')}</section>`).join('');
-  document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>input.closest('.master-field')?.classList.toggle('has-value',!!input.value.trim())));
-  document.querySelectorAll('[data-structured-field]').forEach(input=>input.addEventListener('input',()=>input.closest('.master-field')?.classList.add('has-value')));
+  const categories=['Todas',...new Set(masterData.map(x=>x.category))];
+  const filters=document.getElementById('masterFilters');
+  if(!filters) return;
+  filters.innerHTML=categories.map(c=>`<button class="master-filter ${c===activeMasterCategory?'active':''}" data-master-category="${c}">${c}</button>`).join('');
+  filters.querySelectorAll('[data-master-category]').forEach(b=>b.addEventListener('click',()=>{activeMasterCategory=b.dataset.masterCategory;renderMasterData()}));
+
+  const shown=activeMasterCategory==='Todas'?masterData:masterData.filter(x=>x.category===activeMasterCategory);
+  const groups=[...new Set(shown.map(x=>x.category))];
+  document.getElementById('masterCatalog').innerHTML=groups.map(group=>`
+    <section class="master-group">
+      <h3>${group}</h3>
+      ${shown.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),value=esc(String(masterValues[key]||'')),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);const certainty=x.source==='Por confirmar'?'probable':'confirmed';const confirmedCount=Object.values(x.modules).filter(v=>v==='c').length;const probableCount=Object.values(x.modules).filter(v=>v==='p').length;const impactText=certainty==='confirmed'?`Impacto real: ${confirmedCount} módulo${confirmedCount===1?'':'s'}`:`Impacto probable: ${probableCount} módulo${probableCount===1?'':'s'}`;return `
+        <div class="master-field">
+          <span class="field-certainty ${certainty}" title="${certainty==='confirmed'?'Confirmado en Excel recibidos':'Probable; pendiente de validar'}"></span>
+          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p><div class="field-meta"><span class="certainty-label ${certainty}">${certainty==='confirmed'?'Confirmado':'Probable'}</span><span class="impact-chip">${impactText}</span></div>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
+          <span class="source-chip">${x.source}</span>
+        </div>`}).join('')}
+    </section>`).join('');
+  document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{input.closest('.master-field').classList.toggle('has-value',!!input.value.trim())}));
+  document.querySelectorAll('[data-structured-field]').forEach(input=>input.addEventListener('input',()=>input.closest('.master-field').classList.add('has-value')));
   bindMasterImageControls();
+
+  document.getElementById('masterFieldCount').textContent=masterData.length;
+  document.getElementById('masterCategoryCount').textContent=new Set(masterData.map(x=>x.category)).size;
   const c=masterCompletion();
   const val=document.getElementById('masterProgressValue'),fill=document.getElementById('masterProgressFill'),dash=document.getElementById('dashboardMasterProgress');
   if(val)val.textContent=`${c.percent}%`;if(fill)fill.style.width=`${c.percent}%`;if(dash)dash.textContent=`${c.percent}%`;
+
+  const modules=Array.from({length:13},(_,i)=>i+2);
+  document.getElementById('matrixHead').innerHTML=`<tr><th>Dato maestro</th>${modules.map(m=>`<th>M${m}</th>`).join('')}</tr>`;
+  document.getElementById('matrixBody').innerHTML=masterData.map(x=>`
+    <tr><td class="matrix-field-name"><strong>${x.field}</strong><small>${x.category}</small></td>${modules.map(m=>{const st=x.modules[m]||'';return `<td><span class="matrix-cell ${st==='c'?'confirmed':st==='p'?'probable':'empty'}">${st==='c'?'✓':st==='p'?'?':'–'}</span></td>`}).join('')}</tr>`).join('');
 }
 const DEADLINE=new Date('2026-08-11T23:59:59');
 const defaultTasks=[
@@ -153,47 +175,28 @@ const defaultTasks=[
 let tasks=JSON.parse(localStorage.getItem('redGreenhouseTasks')||'null')||defaultTasks;let activeFilter='all';
 const statusLabels={pending:'Pendiente',doing:'En proceso',done:'Completada'};const priorityLabels={critical:'Crítica',high:'Alta',medium:'Media'};
 function saveTasks(){localStorage.setItem('redGreenhouseTasks',JSON.stringify(tasks))}
-function setDate(){
-  const dateNode=document.getElementById('currentDate');if(dateNode)dateNode.textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());
-  const days=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000));
-  const old=document.getElementById('daysRemaining');if(old)old.textContent=days;
-  const hero=document.getElementById('heroDaysRemaining');if(hero)hero.textContent=days;
-}
+function setDate(){document.getElementById('currentDate').textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());document.getElementById('daysRemaining').textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
 function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,t)=>s+(t.status==='done'?1:t.status==='doing'?.5:0),0)/tasks.length*100)}
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
-function releaseCounts(){
-  const state=directorReleaseState();
-  const modules=Array.isArray(RED_DATA?.modules)?RED_DATA.modules:[];
-  const total=modules.reduce((sum,m)=>sum+Number(m.documents||0),0);
-  const released=Object.entries(state).filter(([key,value])=>value&&/^M\d+\|/.test(key)).length;
-  return {modules,total,released:Math.min(released,total),pending:Math.max(0,total-released),percent:total?Math.round(Math.min(released,total)/total*100):0};
-}
-function moduleReleaseCount(moduleNumber){const state=directorReleaseState();return Object.entries(state).filter(([key,value])=>value&&key.startsWith(`M${moduleNumber}|`)).length;}
 function renderDashboard(){
-  const counts=releaseCounts(),modules=RED_DATA.modules||[];
-  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
-  set('dashboardModuleCount',modules.length);set('dashboardSheetCount',counts.total);set('dashboardReleasedCount',counts.released);set('dashboardReleasedPercent',`${counts.percent}% del total`);set('dashboardPendingCount',counts.pending);
-  set('releaseDonutPercent',`${counts.percent}%`);set('legendReleased',counts.released);set('legendPending',counts.pending);set('certModuleCount',`${modules.length} módulos`);set('certSheetCount',`${counts.total} hojas`);
-  const donut=document.getElementById('releaseDonut');if(donut)donut.style.setProperty('--release-percent',`${counts.percent*3.6}deg`);
-  const bars=document.getElementById('dashboardModuleBars');if(bars)bars.innerHTML=modules.map(m=>{const total=Number(m.documents||0),released=Math.min(moduleReleaseCount(m.number),total),percent=total?Math.round(released/total*100):0;return `<div class="module-bar-item"><span>M${m.number}</span><div class="module-bar-track"><i style="height:${Math.max(4,percent)}%"></i></div><b>${percent}%</b></div>`}).join('');
-  const completed=modules.filter(m=>m.documents>0&&moduleReleaseCount(m.number)>=m.documents).length;
-  const inProgress=modules.filter(m=>moduleReleaseCount(m.number)>0&&moduleReleaseCount(m.number)<m.documents).length;
-  const ready=modules.filter(m=>m.documents>0&&moduleReleaseCount(m.number)===0).length;
-  const pending=modules.filter(m=>!m.documents).length;
-  const states=document.getElementById('dashboardModuleStates');if(states)states.innerHTML=`<span><i class="state-complete"></i>Completados <b>${completed}</b></span><span><i class="state-progress"></i>En progreso <b>${inProgress}</b></span><span><i class="state-ready"></i>Por iniciar <b>${ready}</b></span><span><i class="state-pending"></i>Por integrar <b>${pending}</b></span>`;
+  const p=progress(),c=masterCompletion();
+  document.getElementById('progressValue').textContent=`${p}%`;
+  document.getElementById('progressFill').style.width=`${p}%`;
+  const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
+  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
+  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
 }
 function renderTasks(){
-  const taskList=document.getElementById('taskList');if(!taskList)return;
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
-  taskList.innerHTML=f.length?f.map(t=>{const target=taskActionView(t);return `<div class="task-row ${target?'linked-task':''}"><input class="task-check" type="checkbox" ${t.status==='done'?'checked':''} ${target?'disabled title="Se actualiza desde Datos Maestros"':''} data-id="${t.id}"><div class="task-title">${target?`<button class="task-title-link" data-task-view="${target}">${esc(t.title)}</button>`:`<strong>${esc(t.title)}</strong>`}<small>${esc(t.detail||'')}</small></div><div class="task-owner">${esc(t.owner)}</div><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span><div class="task-date">${esc(t.due||'Sin fecha')}</div>${target?`<button class="task-open-link" data-task-view="${target}">Abrir</button>`:`<button class="delete-task" data-delete="${t.id}">×</button>`}</div>`}).join(''):'<div class="placeholder"><p>No hay tareas para este filtro.</p></div>';
+  document.getElementById('taskList').innerHTML=f.length?f.map(t=>{const target=taskActionView(t);return `<div class="task-row ${target?'linked-task':''}"><input class="task-check" type="checkbox" ${t.status==='done'?'checked':''} ${target?'disabled title="Se actualiza desde Datos Maestros"':''} data-id="${t.id}"><div class="task-title">${target?`<button class="task-title-link" data-task-view="${target}">${esc(t.title)}</button>`:`<strong>${esc(t.title)}</strong>`}<small>${esc(t.detail||'')}</small></div><div class="task-owner">${esc(t.owner)}</div><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span><div class="task-date">${esc(t.due||'Sin fecha')}</div>${target?`<button class="task-open-link" data-task-view="${target}">Abrir</button>`:`<button class="delete-task" data-delete="${t.id}">×</button>`}</div>`}).join(''):'<div class="placeholder"><p>No hay tareas para este filtro.</p></div>';
   document.getElementById('totalTasks').textContent=tasks.length;document.getElementById('pendingTasks').textContent=tasks.filter(t=>t.status==='pending').length;document.getElementById('doingTasks').textContent=tasks.filter(t=>t.status==='doing').length;document.getElementById('doneTasks').textContent=tasks.filter(t=>t.status==='done').length;
   document.querySelectorAll('.task-check:not([disabled])').forEach(i=>i.addEventListener('change',()=>{const t=tasks.find(x=>x.id===Number(i.dataset.id));if(t){t.status=i.checked?'done':'pending';saveTasks();renderAll()}}));
   document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{tasks=tasks.filter(t=>t.id!==Number(b.dataset.delete));saveTasks();renderAll()}));
   document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();showView(b.dataset.taskView)}));
 }
 
-const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua',11:'Fertilización',12:'Uso y manejo de plaguicidas',13:'Cosecha',14:'Transporte'};
+const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua'};
 const module2CaptureSpecs={
 'PORTADA':[
  ['Nombre de la unidad de producción','text','Identidad que aparecerá en la carpeta impresa'],['Domicilio de la unidad','textarea','Dirección completa del sitio'],['Folio SENASICA','text','Identificador oficial'],['Fecha de emisión','date','Fecha de publicación'],['Vigencia','date','Fecha límite de vigencia'],['Versión','text','Clave de control documental']
@@ -341,10 +344,10 @@ function renderModule2DocumentContent(doc){
 }
 function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
- const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!grid)return;
- if(summary){summary.innerHTML='';summary.hidden=true;}
- const modules=RED_DATA.modules||[];
- grid.innerHTML=modules.map(m=>{const total=Number(m.documents||0),released=Math.min(moduleReleaseCount(m.number),total),percent=total?Math.round(released/total*100):0;const lock=total&&released>=total?'🔓':'🔒';return `<article class="card module-card clean-module-card" data-module="${m.number}"><div class="module-card-head"><div><h2>Módulo ${m.number}</h2><p>${esc(m.name||moduleNames[m.number]||'')}</p></div><span class="module-lock" title="${released>=total&&total?'Liberado':'En revisión'}">${lock}</span></div><div class="module-sheet-count"><strong>${total||'—'}</strong><span>${total===1?'hoja':'hojas'} · ${released} liberada${released===1?'':'s'}</span></div><div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div><div class="module-card-footer"><span>${total?`${percent}% liberado`:'Plantilla pendiente'}</span><b>Abrir módulo →</b></div></article>`}).join('');
+ const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
+ const m2=module2Status(),mods=[2,3,4,5,6,7,8,9,10];
+ summary.innerHTML=`<article class="summary-card"><span>Hojas visibles del Módulo 2</span><strong>${RED_DATA.module2.length}</strong></article><article class="summary-card"><span>Campos identificados</span><strong>${m2.total}</strong></article><article class="summary-card"><span>Captura Módulo 2</span><strong>${m2.percent}%</strong></article>`;
+ grid.innerHTML=mods.map(m=>{const st=m===2?m2:moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${m===2?'Piloto completo':st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${m===2?`${RED_DATA.module2.length} hojas · ${st.total} campos`:`${st.filled} de ${st.total} datos aplicables`}</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">${m===2?'Ver contenido completo del Excel →':'Abrir tabla estructurada →'}</span></article>`}).join('');
  grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
 }
 function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,masterField=module2MasterField(doc,field);if(masterField){const raw=module2MasterValue(masterField),value=esc(raw);return `<div class="module-field master-linked-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type linked-data-type">Dato maestro</span><p>${hint}</p></div><div class="module-field-control"><div class="master-linked-value ${value?'':'master-linked-empty'}"><span>${value||'Pendiente de captura en Datos Maestros'}</span><button type="button" data-open-master>Ir a Datos Maestros</button></div><small class="master-linked-source">Origen único: ${masterField}</small></div></div>`}const value=esc(module2EffectiveValue(doc,field,i));let control='';
@@ -372,13 +375,38 @@ function openModule(m){if(m===2){openModule2();return}if(window.SRRC_MODULES&&wi
 function renderAll(){ensureStructuredDefaults();renderDashboard();renderTasks();renderMasterData();renderModules()}
 
 let currentView='inicio',viewHistory=[];
-function showView(v,track=true){
- if(track&&v!==currentView)viewHistory.push(currentView);
- document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
- const d=document.getElementById(`view-${v}`);
- const labels={inicio:'Inicio',certificaciones:'Certificaciones',datos:'Datos Maestros',modulos:'Módulos SRRC',bitacoras:'Bitácoras',vinculacion:'Referencias Excel',configuracion:'Administración',galeria:'Galería pública',captura:'Captura'};
- if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=labels[v]||v;}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=labels[v]||v;document.getElementById('breadcrumb').textContent=labels[v]||v;}
- currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});
+function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v==='configuracion'?'Administración':v==='galeria'?'Galería pública':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+
+// Acceso público / privado y configuración básica.
+const DEFAULT_PORTAL_PASSWORD='RED2026';
+const portalPassword=()=>localStorage.getItem('redGreenhousePortalPassword')||DEFAULT_PORTAL_PASSWORD;
+function openLogin(){document.getElementById('loginBackdrop').hidden=false;document.getElementById('loginPassword').focus()}
+function closeLogin(){document.getElementById('loginBackdrop').hidden=true;document.getElementById('loginError').textContent='';document.getElementById('loginForm').reset()}
+function enterPrivatePortal(){document.getElementById('publicSite').hidden=true;document.getElementById('privateApp').hidden=false;sessionStorage.setItem('redGreenhousePrivateSession','1');showView('inicio',false)}
+function exitPrivatePortal(){sessionStorage.removeItem('redGreenhousePrivateSession');document.getElementById('privateApp').hidden=true;document.getElementById('publicSite').hidden=false;showView('inicio',false)}
+document.getElementById('openLoginButton').addEventListener('click',openLogin);
+document.getElementById('footerLoginButton').addEventListener('click',openLogin);
+document.getElementById('closeLoginButton').addEventListener('click',closeLogin);
+document.getElementById('loginBackdrop').addEventListener('click',e=>{if(e.target.id==='loginBackdrop')closeLogin()});
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();if(document.getElementById('loginPassword').value===portalPassword()){closeLogin();enterPrivatePortal()}else document.getElementById('loginError').textContent='Contraseña incorrecta.'});
+document.getElementById('logoutButton').addEventListener('click',exitPrivatePortal);
+document.getElementById('publicSiteButton').addEventListener('click',exitPrivatePortal);
+document.getElementById('savePasswordButton').addEventListener('click',()=>{const a=document.getElementById('newPortalPassword').value,b=document.getElementById('confirmPortalPassword').value,msg=document.getElementById('passwordMessage');if(a.length<4){msg.textContent='Usa al menos 4 caracteres.';return}if(a!==b){msg.textContent='Las contraseñas no coinciden.';return}localStorage.setItem('redGreenhousePortalPassword',a);document.getElementById('newPortalPassword').value='';document.getElementById('confirmPortalPassword').value='';msg.textContent='Contraseña actualizada.'});
+const driveConfig=JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}');
+document.getElementById('driveFolderId').value=driveConfig.folderId||'1nhz_xAqRz6kcsZdg_zodmaLACmw584sL';
+document.getElementById('driveWebAppUrl').value=driveConfig.webAppUrl||'https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec';
+document.getElementById('saveDriveConfigButton').addEventListener('click',()=>{localStorage.setItem('redGreenhouseDriveConfig',JSON.stringify({folderId:document.getElementById('driveFolderId').value.trim(),webAppUrl:document.getElementById('driveWebAppUrl').value.trim()}));document.getElementById('driveMessage').textContent='Configuración guardada.'});
+if(sessionStorage.getItem('redGreenhousePrivateSession')==='1')enterPrivatePortal();
+
+
+const DEFAULT_GALLERY=[{fileId:'local-invernadero',title:'Producción en campo',description:'Trabajo cotidiano dentro del invernadero.',imageUrl:'assets/images/gallery/invernadero-familia.png',visible:true,local:true}];
+function galleryEndpoint(){return (JSON.parse(localStorage.getItem('redGreenhouseDriveConfig')||'{}').webAppUrl||document.getElementById('driveWebAppUrl')?.value||'').trim()}
+function fileToDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file)})}
+function fileToBase64(file){return fileToDataUrl(file).then(dataUrl=>dataUrl.split(',')[1])}
+function localGalleryItem(){
+  const saved=JSON.parse(localStorage.getItem('redGreenhouseLocalGalleryItem')||'null');
+  if(saved?.deleted)return null;
+  return {...DEFAULT_GALLERY[0],...(saved||{})};
 }
 async function loadGallery(){
   const local=localGalleryItem();let items=local?[local]:[];const url=galleryEndpoint();
@@ -455,11 +483,9 @@ document.getElementById('refreshGalleryButton').addEventListener('click',loadGal
 document.getElementById('galleryAdminGrid').addEventListener('click',e=>{const b=e.target.closest('[data-gallery-action]');if(b)handleGalleryAction(b)});
 loadGallery();
 
-function applyPortalVersion(){const cfg=window.RED_PORTAL_CONFIG||{version:'1.50',updated:'04 Agosto 2026'};document.querySelectorAll('[data-portal-version]').forEach(el=>el.textContent=cfg.version);document.querySelectorAll('[data-portal-updated]').forEach(el=>el.textContent=cfg.updated);const publicButton=document.getElementById('openLoginButton');if(publicButton)publicButton.textContent=`Acceso Portal V${cfg.version} →`;const status=document.querySelector('.portal-status');if(status)status.innerHTML=`Versión activa ${cfg.version}`;}
-applyPortalVersion();
 ensureStructuredDefaults();
 clearDuplicateModule2Values();
 document.getElementById('backButton').addEventListener('click',()=>{if(viewHistory.length)showView(viewHistory.pop(),false)});document.getElementById('homeButton').addEventListener('click',()=>showView('inicio'));document.getElementById('saveMasterDataButton').addEventListener('click',saveMasterData);
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}));
-const modal=document.getElementById('modalBackdrop'),addTaskButton=document.getElementById('addTaskButton'),closeModal=document.getElementById('closeModal'),taskForm=document.getElementById('taskForm');if(addTaskButton&&modal)addTaskButton.addEventListener('click',()=>modal.classList.add('open'));if(closeModal&&modal)closeModal.addEventListener('click',()=>modal.classList.remove('open'));if(modal)modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});if(taskForm)taskForm.addEventListener('submit',e=>{e.preventDefault();tasks.unshift({id:Date.now(),title:document.getElementById('taskTitle').value.trim(),detail:'Tarea agregada desde el portal.',owner:document.getElementById('taskOwner').value.trim(),priority:document.getElementById('taskPriority').value,status:document.getElementById('taskStatus').value,due:'Sin fecha'});saveTasks();e.target.reset();modal?.classList.remove('open');renderAll()});syncMasterTask();setDate();renderAll();
+const modal=document.getElementById('modalBackdrop');document.getElementById('addTaskButton').addEventListener('click',()=>modal.classList.add('open'));document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('open'));modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});document.getElementById('taskForm').addEventListener('submit',e=>{e.preventDefault();tasks.unshift({id:Date.now(),title:document.getElementById('taskTitle').value.trim(),detail:'Tarea agregada desde el portal.',owner:document.getElementById('taskOwner').value.trim(),priority:document.getElementById('taskPriority').value,status:document.getElementById('taskStatus').value,due:'Sin fecha'});saveTasks();e.target.reset();modal.classList.remove('open');renderAll()});syncMasterTask();setDate();renderAll();
