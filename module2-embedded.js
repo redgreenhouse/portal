@@ -5,13 +5,6 @@ const M2_SHEET_NAME_BY_CODE={
   'MAPA 2.1.2':'MAPA POLIGONOS  2.1.2.','CROQUIS 2.2':'CROQUIS DE INSTALACIONES 2.2','DOC-2.3 FRENTE':'BITACORA 2.3 FRENTE.',
   'DOC-2.3 REVERSO':'BITACORA 2.3 ATRAS ','DOC-2.4':'ORGANIGRAMA 2.4','DOC-2.5':'PERFIL DE PUESTOS 2.5'
 };
-const M2_IMAGE_RANGES={
- 'PORTADA':['A2:G6'],'POE MTTO INFRAESTR':['A2:G6'],'ANÁLISIS DESCRIPTIVO':['A1:G5'],'PLAN DE ACCIÓN':['A1:C5'],
- 'MAPA 2.1':['A2:G6','B10:AV35'],'MAPA 2.1.1':['A2:G6','B10:AV35'],'MAPA 2.1.2':['A2:B6','C16:Q40'],
- 'CROQUIS 2.2':['B2:H6','B8:AX38'],'DOC-2.3 FRENTE':['A1:G5'],'DOC-2.3 REVERSO':['A1:G5'],
- 'DOC-2.4':['A1:G5','A7:AW32'],'DOC-2.5':['A1:G5','C10:G15','C25:G30','C40:G45']
-};
-
 const M2_REFERENCE_STORE_KEY='redGreenhouseExcelReferences';
 function m2Reference(id,fallback){
  try{const refs=JSON.parse(localStorage.getItem(M2_REFERENCE_STORE_KEY)||'{}');return String(refs[id]||fallback||'').trim();}catch(_err){return fallback;}
@@ -32,7 +25,21 @@ const M2_IMAGE_IDS={
  'CROQUIS 2.2':['M2.H08.IMG1','M2.H08.IMG2'],'DOC-2.3 FRENTE':['M2.H09.IMG1'],'DOC-2.3 REVERSO':['M2.H10.IMG1'],
  'DOC-2.4':['M2.H11.IMG1','M2.H11.IMG2'],'DOC-2.5':['M2.H12.IMG1','M2.H12.IMG2','M2.H12.IMG3','M2.H12.IMG4']
 };
-function m2ImageRange(code,index){return m2Reference((M2_IMAGE_IDS[code]||[])[index],(M2_IMAGE_RANGES[code]||[])[index]);}
+function m2ImageIds(code){return M2_IMAGE_IDS[code]||[];}
+function m2ImageControlById(id){
+ const config=typeof SRRC_CONFIG!=='undefined'?SRRC_CONFIG:null;
+ const module=config?.modules?.find(item=>Number(item.module)===2);
+ if(!module||!id)return null;
+ for(const sheet of module.sheets||[]){
+  const control=(sheet.controls||[]).find(item=>item.id===id&&item.type==='image');
+  if(control)return control;
+ }
+ return null;
+}
+function m2ImageRange(code,index){
+ const id=m2ImageIds(code)[index],control=m2ImageControlById(id);
+ return id?m2Reference(id,control?.range||''):'';
+}
 const M2_STORE_KEY='redGreenhouseM2Embedded';
 let m2EmbeddedValues=JSON.parse(localStorage.getItem(M2_STORE_KEY)||'{}');
 const m2ImageFiles=new Map();
@@ -135,7 +142,7 @@ function m2ReplaceMasterText(root){
  });
 }
 function m2AddImages(root,doc){
- (M2_IMAGE_RANGES[doc.code]||[]).forEach((_range,index)=>{
+ m2ImageIds(doc.code).forEach((_id,index)=>{
   const range=m2ImageRange(doc.code,index);
   const cells=m2CellsInRange(root,range),top=m2TopCell(root,range);if(!top)return;
   cells.forEach(c=>c.classList.add('m2-image-region'));
@@ -191,7 +198,7 @@ function m2StoredImageInfoHtml(value){
  return `<span class="m2-drive-file-info" data-m2-file-info><strong>${esc(name)}</strong><small>Ruta: Images / M2 / ${esc(name)}</small>${url?`<a href="${esc(url)}" target="_blank" rel="noopener">Ver imagen</a>`:''}</span>`;
 }
 function m2UpgradeLegacyFileInputs(root,doc){
- const evidenceRanges=Math.max(0,(M2_IMAGE_RANGES[doc.code]||[]).length-1);
+ const evidenceRanges=Math.max(0,m2ImageIds(doc.code).length-1);
  root.querySelectorAll('input[type="file"]:not([data-m2-image])').forEach((input,index)=>{
   // Cuando la hoja tiene áreas de evidencia, cada selector legacy se vincula al rango oficial posterior al logo.
   const imageIndex=index<evidenceRanges?index+1:null;

@@ -410,7 +410,7 @@ function showView(v,track=true){
   currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});
 }
 
-const PORTAL_VERSION=window.RED_PORTAL_CONFIG?.version||'1.50';
+const PORTAL_VERSION=window.RED_PORTAL_CONFIG?.version||'1.51';
 function applyPortalVersion(){
   const values={privateVersion:PORTAL_VERSION,heroVersion:PORTAL_VERSION,sidebarVersion:`v${PORTAL_VERSION}`,systemVersion:`v${PORTAL_VERSION}`};
   Object.entries(values).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value});
