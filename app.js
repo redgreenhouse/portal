@@ -53,7 +53,7 @@ function structuredFieldStatus(field){
 function renderStructuredCapture(item){
   const def=structuredDefinitions[item.field],key=masterKey(item.field),vals=structuredValues[key]||{};
   const old=String(masterValues[key]||'').trim();
-  return `<div class="structured-capture"><table><thead><tr><th>${item.field==='Responsables por área'?'Área':'Función'}</th>${def.columns.map(c=>`<th>${c.label}</th>`).join('')}<th>Destino confirmado</th></tr></thead><tbody>${def.rows.map(r=>`<tr><td class="fixed-cell">${r.label}</td>${def.columns.map(c=>`<td><input class="structured-input" data-structured-field="${key}" data-structured-row="${r.id}" data-structured-col="${c.key}" value="${esc(String(vals[r.id]?.[c.key]||''))}" placeholder="Capturar..."></td>`).join('')}<td class="mapping-cell">${r.mapping||def.mapping}</td></tr>`).join('')}</tbody></table></div>${old?`<div class="previous-text-note">Texto anterior conservado: ${esc(old)}</div>`:''}`;
+  return `<div class="structured-capture"><table><thead><tr><th>${item.field==='Responsables por área'?'Área':'Función'}</th>${def.columns.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead><tbody>${def.rows.map(r=>`<tr><td class="fixed-cell">${r.label}</td>${def.columns.map(c=>`<td><input class="structured-input" data-structured-field="${key}" data-structured-row="${r.id}" data-structured-col="${c.key}" value="${esc(String(vals[r.id]?.[c.key]||''))}" placeholder="Capturar..."></td>`).join('')}</tr>`).join('')}</tbody></table></div>${old?`<div class="previous-text-note">Texto anterior conservado: ${esc(old)}</div>`:''}`;
 }
 
 let activeMasterCategory='Todas';
@@ -125,38 +125,28 @@ function bindMasterImageControls(){
 }
 
 function renderMasterData(){
-  const categories=['Todas',...new Set(masterData.map(x=>x.category))];
-  const filters=document.getElementById('masterFilters');
-  if(!filters) return;
-  filters.innerHTML=categories.map(c=>`<button class="master-filter ${c===activeMasterCategory?'active':''}" data-master-category="${c}">${c}</button>`).join('');
-  filters.querySelectorAll('[data-master-category]').forEach(b=>b.addEventListener('click',()=>{activeMasterCategory=b.dataset.masterCategory;renderMasterData()}));
-
-  const shown=activeMasterCategory==='Todas'?masterData:masterData.filter(x=>x.category===activeMasterCategory);
-  const groups=[...new Set(shown.map(x=>x.category))];
-  document.getElementById('masterCatalog').innerHTML=groups.map(group=>`
+  const catalog=document.getElementById('masterCatalog');
+  if(!catalog)return;
+  const groups=[...new Set(masterData.map(x=>x.category))];
+  catalog.innerHTML=groups.map(group=>`
     <section class="master-group">
       <h3>${group}</h3>
-      ${shown.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),value=esc(String(masterValues[key]||'')),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);const certainty=x.source==='Por confirmar'?'probable':'confirmed';const confirmedCount=Object.values(x.modules).filter(v=>v==='c').length;const probableCount=Object.values(x.modules).filter(v=>v==='p').length;const impactText=certainty==='confirmed'?`Impacto real: ${confirmedCount} módulo${confirmedCount===1?'':'s'}`:`Impacto probable: ${probableCount} módulo${probableCount===1?'':'s'}`;return `
+      ${masterData.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);return `
         <div class="master-field">
-          <span class="field-certainty ${certainty}" title="${certainty==='confirmed'?'Confirmado en Excel recibidos':'Probable; pendiente de validar'}"></span>
-          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p><div class="field-meta"><span class="certainty-label ${certainty}">${certainty==='confirmed'?'Confirmado':'Probable'}</span><span class="impact-chip">${impactText}</span></div>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
-          <span class="source-chip">${x.source}</span>
+          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
         </div>`}).join('')}
     </section>`).join('');
   document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{input.closest('.master-field').classList.toggle('has-value',!!input.value.trim())}));
   document.querySelectorAll('[data-structured-field]').forEach(input=>input.addEventListener('input',()=>input.closest('.master-field').classList.add('has-value')));
   bindMasterImageControls();
 
-  document.getElementById('masterFieldCount').textContent=masterData.length;
-  document.getElementById('masterCategoryCount').textContent=new Set(masterData.map(x=>x.category)).size;
+  const fieldCount=document.getElementById('masterFieldCount'),categoryCount=document.getElementById('masterCategoryCount');
+  if(fieldCount)fieldCount.textContent=masterData.length;
+  if(categoryCount)categoryCount.textContent=new Set(masterData.map(x=>x.category)).size;
   const c=masterCompletion();
-  const val=document.getElementById('masterProgressValue'),fill=document.getElementById('masterProgressFill'),dash=document.getElementById('dashboardMasterProgress');
-  if(val)val.textContent=`${c.percent}%`;if(fill)fill.style.width=`${c.percent}%`;if(dash)dash.textContent=`${c.percent}%`;
-
-  const modules=Array.from({length:13},(_,i)=>i+2);
-  document.getElementById('matrixHead').innerHTML=`<tr><th>Dato maestro</th>${modules.map(m=>`<th>M${m}</th>`).join('')}</tr>`;
-  document.getElementById('matrixBody').innerHTML=masterData.map(x=>`
-    <tr><td class="matrix-field-name"><strong>${x.field}</strong><small>${x.category}</small></td>${modules.map(m=>{const st=x.modules[m]||'';return `<td><span class="matrix-cell ${st==='c'?'confirmed':st==='p'?'probable':'empty'}">${st==='c'?'✓':st==='p'?'?':'–'}</span></td>`}).join('')}</tr>`).join('');
+  const val=document.getElementById('masterProgressValue'),fill=document.getElementById('masterProgressFill');
+  if(val)val.textContent=`${c.percent}%`;
+  if(fill)fill.style.width=`${c.percent}%`;
 }
 const DEADLINE=new Date('2026-08-11T23:59:59');
 const defaultTasks=[
@@ -175,17 +165,48 @@ const defaultTasks=[
 let tasks=JSON.parse(localStorage.getItem('redGreenhouseTasks')||'null')||defaultTasks;let activeFilter='all';
 const statusLabels={pending:'Pendiente',doing:'En proceso',done:'Completada'};const priorityLabels={critical:'Crítica',high:'Alta',medium:'Media'};
 function saveTasks(){localStorage.setItem('redGreenhouseTasks',JSON.stringify(tasks))}
-function setDate(){document.getElementById('currentDate').textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());document.getElementById('daysRemaining').textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
+function setDate(){const date=document.getElementById('currentDate');if(date)date.textContent=new Intl.DateTimeFormat('es-MX',{day:'numeric',month:'long',year:'numeric'}).format(new Date());const days=document.getElementById('daysRemaining');if(days)days.textContent=Math.max(0,Math.ceil((DEADLINE-new Date())/86400000))}
 function progress(){if(!tasks.length)return 0;return Math.round(tasks.reduce((s,t)=>s+(t.status==='done'?1:t.status==='doing'?.5:0),0)/tasks.length*100)}
 function esc(v=''){return v.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function taskActionView(t){return t.linkedTo==='masterData'?'datos':null}
+const SRRC_MODULE_IDS=Array.from({length:14},(_,i)=>i+2);
+function integratedModule(n){
+  if(n===2)return {module:2,title:moduleNames[2],sheets:RED_DATA.module2.map(s=>({name:s.code}))};
+  return window.SRRC_MODULES?.find(m=>m.module===n)||null;
+}
+function moduleReleaseStats(n){
+  const module=integratedModule(n),sheets=module?.sheets||[];
+  const released=sheets.filter(s=>isDirectorReleased(`M${n}|${s.name}`)).length;
+  return {module:n,title:moduleNames[n]||module?.title||'Pendiente de integrar',total:sheets.length,released,percent:sheets.length?Math.round(released/sheets.length*100):0,integrated:sheets.length>0};
+}
+function releaseDashboardStats(){
+  const modules=SRRC_MODULE_IDS.map(moduleReleaseStats);
+  const total=modules.reduce((sum,m)=>sum+m.total,0),released=modules.reduce((sum,m)=>sum+m.released,0);
+  return {modules,total,released,pending:Math.max(0,total-released),percent:total?Math.round(released/total*100):0};
+}
 function renderDashboard(){
-  const p=progress(),c=masterCompletion();
-  document.getElementById('progressValue').textContent=`${p}%`;
-  document.getElementById('progressFill').style.width=`${p}%`;
-  const dm=document.getElementById('dashboardMasterProgress');if(dm)dm.textContent=`${c.percent}%`;
-  document.getElementById('dashboardTasks').innerHTML=tasks.slice(0,5).map(t=>{const target=taskActionView(t);return `<div class="compact-task ${target?'actionable':''}" ${target?`data-task-view="${target}" tabindex="0" role="link"`:''}><div class="compact-task-copy"><strong class="${target?'task-link':''}">${esc(t.title)}</strong><small>${esc(t.owner)} · ${esc(t.due)}</small></div><div class="compact-task-badges"><span class="badge badge-${t.priority}">${priorityLabels[t.priority]}</span><span class="badge status-badge">${statusLabels[t.status]}</span></div></div>`}).join('');
-  document.querySelectorAll('[data-task-view]').forEach(row=>{const open=()=>showView(row.dataset.taskView);row.addEventListener('click',open);row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
+  const stats=releaseDashboardStats();
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+  set('dashboardModuleTotal',SRRC_MODULE_IDS.length);
+  set('dashboardSheetTotal',stats.total);
+  set('dashboardReleasedTotal',stats.released);
+  set('dashboardPendingTotal',stats.pending);
+  set('releasePercent',`${stats.percent}%`);
+  set('releaseSummary',`${stats.released} de ${stats.total} hojas`);
+  set('certificationProgressText',`${stats.percent}%`);
+  set('certificationSheetCount',stats.total);
+  const donut=document.getElementById('releaseDonut');if(donut)donut.style.setProperty('--progress',`${stats.percent*3.6}deg`);
+  const certFill=document.getElementById('certificationProgressFill');if(certFill)certFill.style.width=`${stats.percent}%`;
+
+  const integrated=stats.modules.filter(m=>m.integrated);
+  const releasedModules=integrated.filter(m=>m.percent===100).length;
+  set('modulesReleasedCount',releasedModules);
+  set('modulesProgressCount',integrated.length-releasedModules);
+  set('modulesLockedCount',stats.modules.length-integrated.length);
+
+  const bars=document.getElementById('dashboardModuleBars');
+  if(bars)bars.innerHTML=integrated.map(m=>`<button class="dashboard-module-row" data-dashboard-module="${m.module}"><span>M${m.module}</span><div><div class="dashboard-bar"><i style="width:${m.percent}%"></i></div><small>${m.released} de ${m.total} hojas</small></div><strong>${m.percent}%</strong></button>`).join('');
+  document.querySelectorAll('[data-dashboard-module]').forEach(row=>row.addEventListener('click',()=>{showView('modulos');setTimeout(()=>openModule(Number(row.dataset.dashboardModule)),0)}));
 }
 function renderTasks(){
   const f=tasks.filter(t=>activeFilter==='all'||(activeFilter==='critical'?t.priority==='critical':t.status===activeFilter));
@@ -196,7 +217,7 @@ function renderTasks(){
   document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();showView(b.dataset.taskView)}));
 }
 
-const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua'};
+const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua',11:'Pendiente de integrar',12:'Pendiente de integrar',13:'Pendiente de integrar',14:'Pendiente de integrar',15:'Pendiente de integrar'};
 const module2CaptureSpecs={
 'PORTADA':[
  ['Nombre de la unidad de producción','text','Identidad que aparecerá en la carpeta impresa'],['Domicilio de la unidad','textarea','Dirección completa del sitio'],['Folio SENASICA','text','Identificador oficial'],['Fecha de emisión','date','Fecha de publicación'],['Vigencia','date','Fecha límite de vigencia'],['Versión','text','Clave de control documental']
@@ -344,11 +365,16 @@ function renderModule2DocumentContent(doc){
 }
 function module2Status(){const docs=RED_DATA.module2,total=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).length,0),filled=docs.reduce((n,d)=>n+(module2CaptureSpecs[d.code]||[]).filter((f,i)=>{const masterField=module2MasterField(d,f);return masterField?!!module2MasterValue(masterField):!!module2EffectiveValue(d,f,i).trim()}).length,0);return {total,filled,percent:total?Math.round(filled/total*100):0}}
 function renderModules(){
- const summary=document.getElementById('moduleSummary'),grid=document.getElementById('moduleGrid');if(!summary||!grid)return;
- const m2=module2Status(),mods=[2,3,4,5,6,7,8,9,10];
- summary.innerHTML=`<article class="summary-card"><span>Hojas visibles del Módulo 2</span><strong>${RED_DATA.module2.length}</strong></article><article class="summary-card"><span>Campos identificados</span><strong>${m2.total}</strong></article><article class="summary-card"><span>Captura Módulo 2</span><strong>${m2.percent}%</strong></article>`;
- grid.innerHTML=mods.map(m=>{const st=m===2?m2:moduleStatus(m);return `<article class="card module-card" data-module="${m}"><div class="module-card-head"><div><h2>Módulo ${m}</h2><p>${moduleNames[m]}</p></div><span class="badge status-badge">${m===2?'Piloto completo':st.percent===100?'Completo':st.percent?'En proceso':'Pendiente'}</span></div><div class="module-progress-line"><span>${m===2?`${RED_DATA.module2.length} hojas · ${st.total} campos`:`${st.filled} de ${st.total} datos aplicables`}</span><strong>${st.percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${st.percent}%"></div></div><span class="module-open">${m===2?'Ver contenido completo del Excel →':'Abrir tabla estructurada →'}</span></article>`}).join('');
- grid.querySelectorAll('[data-module]').forEach(card=>card.addEventListener('click',()=>openModule(Number(card.dataset.module))));
+  const grid=document.getElementById('moduleGrid');if(!grid)return;
+  const modules=SRRC_MODULE_IDS.map(moduleReleaseStats);
+  grid.innerHTML=modules.map(m=>`<article class="card module-card release-module-card ${m.integrated?'is-integrated':'is-locked'}" ${m.integrated?`data-module="${m.module}" tabindex="0" role="button"`:''}>
+    <div class="module-card-head"><div><span class="module-number">Módulo ${m.module}</span><h2>${m.title}</h2></div><span class="module-lock" title="${m.integrated?'Módulo integrado':'Plantilla pendiente'}">${m.integrated?'🔓':'🔒'}</span></div>
+    <div class="module-release-stats"><span><strong>${m.total}</strong> hojas</span><span><strong>${m.released}</strong> liberadas</span></div>
+    <div class="module-progress-line"><span>${m.integrated?'Liberación por Dirección':'Sin plantilla integrada'}</span><strong>${m.integrated?`${m.percent}%`:'—'}</strong></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${m.percent}%"></div></div>
+    <span class="module-open">${m.integrated?'Abrir módulo →':'Pendiente de integrar'}</span>
+  </article>`).join('');
+  grid.querySelectorAll('[data-module]').forEach(card=>{const open=()=>openModule(Number(card.dataset.module));card.addEventListener('click',open);card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
 }
 function renderCaptureControl(doc,field,i){const [label,type,hint]=field,key=`${doc.id}-${i}`,masterField=module2MasterField(doc,field);if(masterField){const raw=module2MasterValue(masterField),value=esc(raw);return `<div class="module-field master-linked-field"><div class="module-field-copy"><strong>${label}</strong><span class="data-type linked-data-type">Dato maestro</span><p>${hint}</p></div><div class="module-field-control"><div class="master-linked-value ${value?'':'master-linked-empty'}"><span>${value||'Pendiente de captura en Datos Maestros'}</span><button type="button" data-open-master>Ir a Datos Maestros</button></div><small class="master-linked-source">Origen único: ${masterField}</small></div></div>`}const value=esc(module2EffectiveValue(doc,field,i));let control='';
  if(type==='image'||type==='evidence'||type==='signature')control=`<label class="upload-box"><input type="file" data-module2-file="${key}" accept="${type==='image'?'image/*':type==='signature'?'image/*,.pdf':'image/*,.pdf'}"><span>${value?'Archivo seleccionado: '+value:'Seleccionar '+typeLabels[type].toLowerCase()}</span></label>`;
@@ -362,7 +388,7 @@ function isDirectorReleased(key){return !!directorReleaseState()[key]}
 function setDirectorReleased(key,value){const state=directorReleaseState();state[key]=!!value;localStorage.setItem(DIRECTOR_RELEASE_KEY,JSON.stringify(state));}
 function openModule2(){const detail=document.getElementById('moduleDetail');detail.hidden=false;detail.innerHTML=`<div class="module-detail-head"><div><h2>Módulo 2 · Mantenimiento de infraestructura</h2><p>Las 12 hojas se muestran como documentos vivos. Los controles aparecen dentro del formato y conservan el contexto original.</p></div><button class="ghost-button" data-close-module>Cerrar</button></div><div class="module-document-list">${RED_DATA.module2.map((doc,index)=>`<article class="excel-sheet-card"><div class="excel-sheet-row"><button class="excel-sheet-head" data-sheet-toggle="${doc.id}"><span class="sheet-index">${String(index+1).padStart(2,'0')}</span><span><strong>${doc.title}</strong><small>Hoja: ${doc.code} · ${doc.type}</small></span><span class="sheet-chevron">⌄</span></button><label class="director-release"><input type="checkbox" data-director-release="M2|${doc.code}" ${isDirectorReleased(`M2|${doc.code}`)?'checked':''}><span>Liberado por Director</span></label></div><div class="excel-sheet-body" id="sheet-${doc.id}" hidden><p class="sheet-description">${doc.description}</p><div class="sheet-action"><b>Acción para la carpeta:</b> ${doc.action} · <b>Frecuencia:</b> ${doc.frequency}</div>${renderModule2DocumentContent(doc)}</div></article>`).join('')}</div>`;
  detail.querySelector('[data-close-module]').addEventListener('click',()=>detail.hidden=true);
- detail.querySelectorAll('[data-director-release]').forEach(c=>c.addEventListener('change',()=>setDirectorReleased(c.dataset.directorRelease,c.checked)));
+ detail.querySelectorAll('[data-director-release]').forEach(c=>c.addEventListener('change',()=>{setDirectorReleased(c.dataset.directorRelease,c.checked);renderModules();renderDashboard()}));
  detail.querySelectorAll('[data-sheet-toggle]').forEach(b=>b.addEventListener('click',()=>{const body=detail.querySelector(`#sheet-${b.dataset.sheetToggle}`);body.hidden=!body.hidden}));
  detail.querySelectorAll('[data-module2-input]').forEach(el=>el.addEventListener('input',()=>{module2Values[el.dataset.module2Input]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));renderModules()}));
  detail.querySelectorAll('[data-risk-key]').forEach(el=>el.addEventListener('change',()=>{module2Values[el.dataset.riskKey]=el.value;localStorage.setItem('redGreenhouseModule2',JSON.stringify(module2Values));openModule2();renderModules()}));
@@ -375,7 +401,21 @@ function openModule(m){if(m===2){openModule2();return}if(window.SRRC_MODULES&&wi
 function renderAll(){ensureStructuredDefaults();renderDashboard();renderTasks();renderMasterData();renderModules()}
 
 let currentView='inicio',viewHistory=[];
-function showView(v,track=true){if(track&&v!==currentView)viewHistory.push(currentView);document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const d=document.getElementById(`view-${v}`);if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=v==='inicio'?'Inicio':v==='plan'?'Plan Maestro':v==='datos'?'Datos Maestros':v==='modulos'?'Módulos SRRC':v==='configuracion'?'Administración':v==='galeria'?'Galería pública':v}else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+function showView(v,track=true){
+  if(track&&v!==currentView)viewHistory.push(currentView);
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  const d=document.getElementById(`view-${v}`),labels={inicio:'Inicio',certificaciones:'Certificaciones',plan:'Plan Maestro',datos:'Datos Maestros',modulos:'Módulos SRRC',bitacoras:'Bitácoras',vinculacion:'Referencias Excel',configuracion:'Administración',galeria:'Galería pública',captura:'Captura'};
+  if(d){d.classList.add('active');document.getElementById('breadcrumb').textContent=labels[v]||v.charAt(0).toUpperCase()+v.slice(1)}
+  else{document.getElementById('view-placeholder').classList.add('active');document.getElementById('placeholderTitle').textContent=v.charAt(0).toUpperCase()+v.slice(1);document.getElementById('breadcrumb').textContent=v.charAt(0).toUpperCase()+v.slice(1)}
+  currentView=v;document.getElementById('backButton').disabled=viewHistory.length===0;document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.getElementById('sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'});
+}
+
+const PORTAL_VERSION=window.RED_PORTAL_CONFIG?.version||'1.50';
+function applyPortalVersion(){
+  const values={privateVersion:PORTAL_VERSION,heroVersion:PORTAL_VERSION,sidebarVersion:`v${PORTAL_VERSION}`,systemVersion:`v${PORTAL_VERSION}`};
+  Object.entries(values).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value});
+  const access=document.getElementById('openLoginButton');if(access)access.textContent=`Acceso Portal V${PORTAL_VERSION} →`;
+}
 
 // Acceso público / privado y configuración básica.
 const DEFAULT_PORTAL_PASSWORD='RED2026';
@@ -483,6 +523,7 @@ document.getElementById('refreshGalleryButton').addEventListener('click',loadGal
 document.getElementById('galleryAdminGrid').addEventListener('click',e=>{const b=e.target.closest('[data-gallery-action]');if(b)handleGalleryAction(b)});
 loadGallery();
 
+applyPortalVersion();
 ensureStructuredDefaults();
 clearDuplicateModule2Values();
 document.getElementById('backButton').addEventListener('click',()=>{if(viewHistory.length)showView(viewHistory.pop(),false)});document.getElementById('homeButton').addEventListener('click',()=>showView('inicio'));document.getElementById('saveMasterDataButton').addEventListener('click',saveMasterData);
