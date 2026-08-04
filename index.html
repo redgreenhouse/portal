@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RED Greenhouse · Portal de Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=1.50">
+</head>
+<body>
+  <section class="public-site" id="publicSite">
+    <header class="public-header">
+      <div class="public-brand"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"><div><strong>RED Greenhouse</strong><span>Producción responsable</span></div></div>
+      <nav><a href="#nosotros">Nosotros</a><a href="#productos">Productos</a><a href="#certificaciones">Certificaciones</a><a href="#galeria">Galería</a><a href="#contacto">Contacto</a></nav>
+      <button class="portal-access-button" id="openLoginButton">Acceso Portal V1.50 →</button>
+    </header>
+    <main>
+      <section class="public-hero">
+        <div><span class="public-kicker">AGRICULTURA PROTEGIDA · PUEBLA</span><h1>Alimentos inocuos, cultivados con responsabilidad.</h1><p>RED Greenhouse produce jitomate bajo procesos orientados a la calidad, la trazabilidad y la mejora continua.</p><div class="public-actions"><a class="public-primary" href="#contacto">Contáctanos</a><a class="public-secondary" href="#certificaciones">Conoce nuestro proceso</a></div></div>
+        <div class="hero-tomato"><img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse"></div>
+      </section>
+      <section class="public-section" id="nosotros"><span class="public-kicker">NOSOTROS</span><h2>Un invernadero construido para crecer bien.</h2><p>Trabajamos para consolidar una operación productiva, ordenada y verificable, donde la inocuidad forme parte del trabajo diario.</p></section>
+      <section class="public-cards" id="productos"><article><span>🍅</span><h3>Jitomate</h3><p>Producción en invernadero con seguimiento por variedad y ciclo productivo.</p></article><article><span>🌱</span><h3>Cultivo protegido</h3><p>Infraestructura enfocada en control, rendimiento y cuidado del producto.</p></article><article><span>✓</span><h3>Trazabilidad</h3><p>Procesos documentados para mantener evidencia y facilitar auditorías.</p></article></section>
+      <section class="public-cert" id="certificaciones"><div><span class="public-kicker">CERTIFICACIONES</span><h2>SRRC en implementación</h2><p>Estamos preparando nuestro Sistema de Reducción de Riesgos de Contaminación.</p></div><div class="public-status-card"><i></i><strong>Proceso activo</strong><span>Carpeta documental y controles operativos en desarrollo.</span></div></section>
+      <section class="public-gallery" id="galeria"><div class="public-gallery-head"><div><span class="public-kicker">GALERÍA</span><h2>Nuestro invernadero</h2><p>Producción, cultivo y trabajo diario en RED Greenhouse.</p></div></div><div class="public-gallery-grid" id="publicGalleryGrid"><article class="gallery-tile"><img src="assets/images/gallery/invernadero-familia.png" alt="Cultivo de jitomate en invernadero"><div><strong>Producción en campo</strong><span>Trabajo cotidiano dentro del invernadero.</span></div></article></div></section>
+      <section class="public-contact" id="contacto"><div><span class="public-kicker">CONTACTO</span><h2>Hablemos.</h2><p>Para información comercial, alianzas o visitas, comunícate con RED Greenhouse.</p></div><div><p><strong>Correo</strong><br>contacto@redgreenhouse.mx</p><p><strong>Ubicación</strong><br>Puebla, México</p></div></section>
+    </main>
+    <footer class="public-footer">RED Greenhouse · Puebla, México <button id="footerLoginButton">Acceso privado</button></footer>
+  </section>
+
+  <div class="private-app" id="privateApp" hidden>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img class="brand-logo" src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse">
+      <div class="brand-copy"><strong>RED Greenhouse</strong><span>Portal de Gestión</span></div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="inicio"><span>⌂</span> Inicio</button>
+      <button class="nav-item" data-view="certificaciones"><span>🏅</span> Certificaciones</button>
+      <button class="nav-item" data-view="datos"><span>◆</span> Datos Maestros</button>
+      <button class="nav-item" data-view="bitacoras"><span>☑</span> Bitácoras</button>
+      <button class="nav-item" data-view="galeria"><span>▧</span> Galería pública</button>
+      <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
+    </nav>
+    <div class="sidebar-version"><span>Versión del portal</span><strong>V<span data-portal-version>1.50</span></strong><small>Actualizado <span data-portal-updated>04 Agosto 2026</span></small></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-button" id="menuButton">☰</button>
+        <button class="nav-control" id="backButton" title="Regresar" disabled>←</button>
+        <button class="nav-control home-control" id="homeButton" title="Ir al inicio">⌂ <span>Inicio</span></button>
+        <div class="breadcrumb" id="breadcrumb">Inicio</div>
+      </div>
+      <div class="topbar-right"><button class="public-return-button" id="publicSiteButton">← Sitio público</button><span class="portal-status"><i></i> Versión activa 1.50</span><span id="currentDate"></span></div>
+    </header>
+
+    <section class="view active dashboard-view" id="view-inicio">
+      <section class="dashboard-hero">
+        <div class="dashboard-hero-copy"><span>PORTAL DE GESTIÓN · CERTIFICACIÓN SRRC</span><h1>¡Buenos días, equipo! 👋</h1><p>Avance documental de RED Greenhouse.</p></div>
+        <div class="dashboard-objective"><small>OBJETIVO PRÓXIMO</small><strong>Auditoría interna SRRC</strong><span>11 Agosto 2026</span><b><span id="heroDaysRemaining">0</span> días restantes</b></div>
+      </section>
+      <section class="dashboard-kpis">
+        <article class="dashboard-kpi"><i class="kpi-icon green-icon">▤</i><div><span>Módulos SRRC</span><strong id="dashboardModuleCount">0</strong><small>Total de módulos</small></div></article>
+        <article class="dashboard-kpi"><i class="kpi-icon purple-icon">▧</i><div><span>Hojas requeridas</span><strong id="dashboardSheetCount">0</strong><small>Total documentado</small></div></article>
+        <article class="dashboard-kpi"><i class="kpi-icon blue-icon">✓</i><div><span>Hojas liberadas</span><strong id="dashboardReleasedCount">0</strong><small id="dashboardReleasedPercent">0% del total</small></div></article>
+        <article class="dashboard-kpi"><i class="kpi-icon amber-icon">⌛</i><div><span>Hojas pendientes</span><strong id="dashboardPendingCount">0</strong><small>Pendientes de liberar</small></div></article>
+      </section>
+      <section class="dashboard-analytics">
+        <article class="card dashboard-panel"><div class="panel-title"><h2>Avance general</h2><span>Hojas liberadas</span></div><div class="donut-wrap"><div class="release-donut" id="releaseDonut"><strong id="releaseDonutPercent">0%</strong><small>avance total</small></div><div class="donut-legend"><span><i class="legend-green"></i>Liberadas <b id="legendReleased">0</b></span><span><i class="legend-gray"></i>Pendientes <b id="legendPending">0</b></span></div></div><button class="panel-link" data-go="certificaciones">Ver certificaciones →</button></article>
+        <article class="card dashboard-panel dashboard-bars-panel"><div class="panel-title"><h2>Avance por módulo</h2><span>Hojas liberadas / total</span></div><div class="module-bars" id="dashboardModuleBars"></div><button class="panel-link" data-go="modulos">Ver detalle por módulo →</button></article>
+        <article class="card dashboard-panel"><div class="panel-title"><h2>Estado de módulos</h2></div><div class="module-state-list" id="dashboardModuleStates"></div><button class="panel-link" data-go="modulos">Ir a módulos →</button></article>
+      </section>
+    </section>
+
+
+    <section class="view" id="view-datos">
+      <div class="page-heading"><div><h1>Datos Maestros</h1><p>Información corporativa que alimenta los documentos SRRC.</p></div></div>
+      <div class="master-savebar"><div><strong>Captura directa</strong><p>Los datos se guardan en este navegador y alimentarán los documentos SRRC.</p></div><div class="master-save-actions"><span class="save-message" id="masterSaveMessage"></span><button class="primary-button" id="saveMasterDataButton">Guardar datos</button></div></div>
+      <article class="card master-catalog-card clean-master-catalog"><div class="section-heading"><div><h2>Catálogo de información</h2></div></div><div class="master-catalog" id="masterCatalog"></div></article>
+      <span id="masterProgressValue" hidden>0%</span><span id="masterProgressFill" hidden></span><span id="masterFieldCount" hidden></span><span id="masterCategoryCount" hidden></span><div id="masterFilters" hidden></div>
+    </section>
+
+
+    <section class="view" id="view-certificaciones">
+      <div class="page-heading"><div><h1>Certificaciones</h1><p>Gestión de certificaciones agrícolas de RED Greenhouse.</p></div></div>
+      <section class="certification-hub">
+        <article class="card certification-card active-certification"><div class="certification-icon">🌿</div><div class="certification-copy"><span>EN IMPLEMENTACIÓN</span><h2>Inocuidad · SRRC</h2><p>Sistema de Reducción de Riesgos de Contaminación.</p><div class="certification-meta"><b id="certModuleCount">0 módulos</b><b id="certSheetCount">0 hojas</b></div></div><div class="certification-actions"><button class="primary-button" data-go="modulos">Abrir módulos</button><button class="ghost-button" data-go="vinculacion">Referencias Excel</button></div></article>
+      </section>
+    </section>
+
+    <section class="view" id="view-modulos">
+      <div class="page-heading">
+        <div><h1>Módulos SRRC</h1><p>Vista estructurada de la información que deberá trasladarse a los Excel y a la carpeta física.</p></div>
+        <button class="ghost-button" data-go="vinculacion">Referencias Excel</button>
+      </div>
+      <section class="module-summary" id="moduleSummary" hidden></section>
+      <section class="module-grid" id="moduleGrid"></section>
+      <section class="card module-detail-card" id="moduleDetail" hidden></section>
+    </section>
+
+
+    <section class="view" id="view-captura">
+      <div id="captureApp"></div>
+    </section>
+    <section class="view" id="view-bitacoras">
+      <div id="logsApp"></div>
+    </section>
+    <section class="view" id="view-vinculacion">
+      <div id="mapApp"></div>
+    </section>
+
+    <section class="view" id="view-galeria">
+      <div class="page-heading"><div><h1>Galería pública</h1><p>Sube y administra las fotografías que aparecen en el sitio público.</p></div><button class="ghost-button" id="refreshGalleryButton">Actualizar</button></div>
+      <section class="card gallery-admin-card">
+        <div class="gallery-upload-grid">
+          <label>Fotografía<input type="file" id="galleryFile" accept="image/*"></label>
+          <label>Título<input type="text" id="galleryTitle" placeholder="Ej. Producción en campo"></label>
+          <label>Descripción<input type="text" id="galleryDescription" placeholder="Texto breve para el sitio público"></label>
+          <button class="primary-button" id="uploadGalleryButton">Subir a Google Drive</button>
+        </div>
+        <span class="admin-message" id="galleryMessage"></span>
+      </section>
+      <section class="gallery-admin-grid" id="galleryAdminGrid"></section>
+    </section>
+
+    <section class="view" id="view-configuracion">
+      <div class="page-heading"><div><h1>Administración</h1><p>Seguridad, almacenamiento y configuración general.</p></div><button class="ghost-button" id="logoutButton">Cerrar sesión</button></div>
+      <section class="admin-grid">
+        <article class="card admin-card"><h2>Seguridad</h2><p>Cambia la contraseña básica de acceso al portal privado.</p><label>Nueva contraseña<input type="password" id="newPortalPassword" minlength="4" placeholder="Mínimo 4 caracteres"></label><label>Confirmar contraseña<input type="password" id="confirmPortalPassword" minlength="4"></label><button class="primary-button" id="savePasswordButton">Guardar contraseña</button><span class="admin-message" id="passwordMessage"></span></article>
+        <article class="card admin-card"><h2>Google Drive</h2><p>Configuración para almacenar imágenes y recuperarlas al volver al módulo.</p><label>ID carpeta Images<input id="driveFolderId" value="1nhz_xAqRz6kcsZdg_zodmaLACmw584sL"></label><label>URL del Apps Script Web App<input id="driveWebAppUrl" value="https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec"></label><button class="primary-button" id="saveDriveConfigButton">Guardar configuración</button><span class="admin-message" id="driveMessage"></span></article>
+        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong>v<span data-portal-version>1.50</span></strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
+      </section>
+    </section>
+
+    <section class="view" id="view-placeholder"><div class="placeholder"><div class="placeholder-icon">🌱</div><h1 id="placeholderTitle">Módulo</h1><p>Esta sección se integrará en las siguientes versiones del portal.</p><button class="primary-button" data-go="inicio">Volver al inicio</button></div></section>
+  </main>
+
+  </div>
+
+  <div class="login-backdrop" id="loginBackdrop" hidden>
+    <form class="login-card" id="loginForm">
+      <button type="button" class="login-close" id="closeLoginButton">×</button>
+      <img src="assets/images/logo-redgreenhouse.png" alt="RED Greenhouse">
+      <h2>Portal RED</h2><p>Acceso privado al portal de gestión.</p>
+      <label>Contraseña<input type="password" id="loginPassword" autocomplete="current-password" required></label>
+      <span class="login-error" id="loginError"></span>
+      <button class="primary-button" type="submit">Entrar</button>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="taskForm"><div class="modal-heading"><h2>Nueva tarea</h2><button type="button" id="closeModal">×</button></div><label>Tarea<input id="taskTitle" required maxlength="100"></label><label>Responsable<input id="taskOwner" required maxlength="70"></label><label>Prioridad<select id="taskPriority"><option value="critical">Crítica</option><option value="high">Alta</option><option value="medium">Media</option></select></label><label>Estado<select id="taskStatus"><option value="pending">Pendiente</option><option value="doing">En proceso</option><option value="done">Completada</option></select></label><button class="primary-button" type="submit">Guardar tarea</button></form></div>
+  <script src="config.js?v=1.50"></script>
+  <script src="data.js?v=1.50"></script>
+  <script src="module2-replicas.js?v=1.50"></script>
+  <script src="module2-annotations.js?v=1.50"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js?v=1.42"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js?v=1.42"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js?v=1.42"></script>
+  <script src="module2-embedded.js?v=1.50"></script>
+  <script src="srrc-modules.js?v=1.50"></script>
+  <script src="app.js?v=1.50"></script>
+  <script src="srrc-runtime.js?v=1.50"></script>
+  <script src="capture.js?v=1.50"></script>
+</body>
+</html>
