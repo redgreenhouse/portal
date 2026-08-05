@@ -1,4 +1,4 @@
-# RED Greenhouse Portal V1.55
+# RED Greenhouse Portal V1.56
 
 | Cambio realizado | Archivos afectados |
 |---|---|

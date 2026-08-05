@@ -152,9 +152,30 @@
       : null;
     if (obj && typeof obj === 'object') {
       const src = obj.dataUrl || obj.imageUrl || obj.thumbnailUrl || obj.url || '';
-      if (src) return { src, url:obj.url || obj.imageUrl || src, name:obj.name || 'Logo corporativo' };
+      if (src) return { src, url:obj.url || obj.imageUrl || src, name:obj.name || 'Logo corporativo', fileId:obj.fileId || '', dataUrl:obj.dataUrl || '', mimeType:obj.mimeType || obj.type || '' };
     }
-    return { src:'assets/images/logo-redgreenhouse.png', url:'', name:'Logo corporativo RED Greenhouse' };
+    return { src:'assets/images/logo-redgreenhouse.png', url:'', name:'Logo corporativo RED Greenhouse', fileId:'', dataUrl:'', mimeType:'image/png' };
+  }
+  function dataUrlImage(dataUrl, fallbackMimeType) {
+    const match = /^data:(image\/(?:png|jpe?g));base64,(.+)$/i.exec(String(dataUrl || ''));
+    if (!match) return null;
+    return { mimeType:match[1].toLowerCase().replace('image/jpg','image/jpeg'), base64:match[2] };
+  }
+  function bytesToBase64(bytes) {
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    return btoa(binary);
+  }
+  async function corporateLogoImage() {
+    const logo = corporateLogo();
+    const embedded = dataUrlImage(logo.dataUrl || logo.src, logo.mimeType);
+    if (embedded) return embedded;
+    if (logo.fileId && typeof m2GetDriveImage === 'function') return m2GetDriveImage(logo.fileId);
+    const response = await fetch(logo.src);
+    if (!response.ok) throw new Error('No se pudo leer el logo corporativo.');
+    const blob = await response.blob();
+    return { mimeType:blob.type || logo.mimeType || 'image/png', base64:bytesToBase64(new Uint8Array(await blob.arrayBuffer())) };
   }
   function inferredLogoRange(s) {
     const existing = (s.controls || []).find(isHeaderLogoControl);
@@ -289,41 +310,68 @@
   };
   async function exportModule(n) {
     const m = SRRC_MODULES.find(x => x.module === n);
-    if (typeof XlsxPopulate === 'undefined') return alert('No se cargó el motor de Excel.');
-    const response = await fetch(m.template);
-    if (!response.ok) return alert('No se encontró la plantilla.');
-    const wb = await XlsxPopulate.fromDataAsync(await response.arrayBuffer());
-    applyGenericHeaders(wb,n);
-    for (const s of m.sheets) {
-      const sh = wb.sheet(s.name) || wb.sheets().find(x => String(x.name()).trim() === String(s.name).trim());
-      if (!sh) continue;
-      for (const c of s.controls) {
-        const target = moduleReference(n,c.id,c.range).split(':')[0];
-        if (!target) continue;
-        const v = values[c.id] ?? c.initial ?? '';
-        if (c.type === 'masterData') sh.cell(target).value(master(c.field) || '');
-        else if (isHeaderLogoControl(c)) {
-          // La plantilla ya contiene el logo. No escribir en esta zona evita deformarlo o sustituirlo.
-        } else if (c.type === 'image') {
-          const o = typeof v === 'object' ? v : null;
-          if (o?.url) sh.cell(target).formula(`HYPERLINK("${String(o.url).replace(/"/g,'""')}","Abrir evidencia fotográfica")`);
-        } else if (c.type === 'checkbox') sh.cell(target).value(v === false ? '' : '✓');
-        else if (c.type === 'trafficLight') {
-          sh.cell(target).value(v ? String(v).toUpperCase() : '');
-          if (v) sh.cell(target).style('fill', v === 'verde' ? '00B050' : v === 'amarillo' ? 'FFFF00' : 'FF0000');
-        } else if (c.type === 'date' && v) {
-          const [y,mo,d] = String(v).split('-');
-          sh.cell(target).value(`${d}/${mo}/${y}`);
-        } else sh.cell(target).value(v || '');
+    const button = document.querySelector(`[data-export-module="${n}"]`);
+    const originalText = button?.textContent || 'Generar Excel';
+    if (button) { button.disabled = true; button.textContent = 'Generando Excel…'; }
+    try {
+      if (typeof XlsxPopulate === 'undefined') throw new Error('No se cargó el motor de Excel.');
+      if (typeof m2InsertImages !== 'function') throw new Error('No se cargó el motor de imágenes de Excel.');
+      const response = await fetch(m.template);
+      if (!response.ok) throw new Error('No se encontró la plantilla.');
+      const templateBuffer = await response.arrayBuffer();
+      const wb = await XlsxPopulate.fromDataAsync(templateBuffer.slice(0));
+      applyGenericHeaders(wb,n);
+      for (const s of m.sheets) {
+        const sh = wb.sheet(s.name) || wb.sheets().find(x => String(x.name()).trim() === String(s.name).trim());
+        if (!sh) continue;
+        for (const c of s.controls) {
+          const target = moduleReference(n,c.id,c.range).split(':')[0];
+          if (!target) continue;
+          const v = values[c.id] ?? c.initial ?? '';
+          if (c.type === 'masterData') sh.cell(target).value(master(c.field) || '');
+          else if (isHeaderLogoControl(c)) {
+            // El logo se inserta como imagen después de guardar los valores del libro.
+          } else if (c.type === 'image') {
+            const o = typeof v === 'object' ? v : null;
+            if (o?.url) sh.cell(target).formula(`HYPERLINK("${String(o.url).replace(/"/g,'""')}","Abrir evidencia fotográfica")`);
+          } else if (c.type === 'checkbox') sh.cell(target).value(v === false ? '' : '✓');
+          else if (c.type === 'trafficLight') {
+            sh.cell(target).value(v ? String(v).toUpperCase() : '');
+            if (v) sh.cell(target).style('fill', v === 'verde' ? '00B050' : v === 'amarillo' ? 'FFFF00' : 'FF0000');
+          } else if (c.type === 'date' && v) {
+            const [y,mo,d] = String(v).split('-');
+            sh.cell(target).value(`${d}/${mo}/${y}`);
+          } else sh.cell(target).value(v || '');
+        }
       }
+      const generatedBlob = await wb.outputAsync();
+      let finalBuffer = await generatedBlob.arrayBuffer();
+      const logoImage = await corporateLogoImage();
+      const logo = corporateLogo();
+      const insertions = [];
+      for (const s of m.sheets) {
+        const logoControl = sheetControlsWithLogo(s).find(isHeaderLogoControl);
+        if (!logoControl) continue;
+        const range = logoControl.id && !String(logoControl.id).startsWith('AUTO.')
+          ? moduleReference(n,logoControl.id,logoControl.range)
+          : logoControl.range;
+        if (range) insertions.push({sheetName:s.name,range,image:logoImage,name:logo.name});
+      }
+      if (insertions.length) finalBuffer = await m2InsertImages(finalBuffer,insertions);
+      const blob = new Blob([finalBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MODULO ${n} LISTO PARA IMPRIMIR.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (error) {
+      alert('No se pudo generar el Excel: ' + error.message);
+    } finally {
+      if (button) { button.disabled = false; button.textContent = originalText; }
     }
-    const blob = await wb.outputAsync();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `MODULO ${n} LISTO PARA IMPRIMIR.xlsx`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   window.SRRC_RUNTIME = {modules:SRRC_MODULES, values};
 })();

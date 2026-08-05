@@ -121,7 +121,7 @@ function m2LogoSource(){
 function m2RenderDocument(doc){
  const replica=m2Replica(doc);
  if(!replica)return '<p class="empty-value">No se encontró la transcripción HTML de esta hoja.</p>';
- return `<div class="living-document-toolbar"><div><b>Documento vivo</b><span>Captura directamente en el contexto del formato original.</span></div><button type="button" class="primary-button m2-export-excel">Generar Excel listo para imprimir</button></div><div class="living-document" data-m2-code="${esc(doc.code)}">${replica}</div>`;
+ return `<div class="living-document-toolbar"><div><b>Documento vivo</b><span>Captura directamente en el contexto del formato original.</span></div></div><div class="living-document" data-m2-code="${esc(doc.code)}">${replica}</div>`;
 }
 function m2ParseCell(cell){const m=/^([A-Z]+)(\d+)$/.exec(cell);if(!m)return null;let col=0;for(const ch of m[1])col=col*26+ch.charCodeAt(0)-64;return {col,row:Number(m[2])};}
 function m2CellsInRange(root,range){
@@ -528,7 +528,7 @@ async function m2InsertImages(generatedBuffer,insertions){
 }
 async function m2GenerateExcel(){
  m2ImageTrace=[];m2Trace('generation-start',{imageCount:m2ImageFiles.size});
- const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{b.disabled=true;b.textContent='Generando Excel…'});
+ const buttons=[...document.querySelectorAll('.m2-export-excel')];buttons.forEach(b=>{if(!b.dataset.originalText)b.dataset.originalText=b.textContent;b.disabled=true;b.textContent='Generando Excel…'});
  try{
   if(typeof XlsxPopulate==='undefined')throw new Error('No se cargó el motor de Excel. Revisa la conexión y vuelve a intentar.');
   const response=await fetch('templates/MODULO-2-PLANTILLA.xlsx');if(!response.ok)throw new Error('No se encontró la plantilla Excel del Módulo 2.');
@@ -578,7 +578,7 @@ async function m2GenerateExcel(){
   blob=new Blob([finalBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MODULO 2 INFRAESTRUCTURA_LISTO_PARA_IMPRIMIR.xlsx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
  }catch(err){m2Trace('generation-error',{message:err.message,stack:err.stack||''});m2DownloadTrace();alert('No se pudo generar el Excel: '+err.message);}
- finally{buttons.forEach(b=>{b.disabled=false;b.textContent='Generar Excel listo para imprimir'});}
+ finally{buttons.forEach(b=>{b.disabled=false;b.textContent=b.dataset.originalText||'Generar Excel'});}
 }
 function m2EnhanceOpenDocument(detail,doc){
  const root=detail.querySelector(`.living-document[data-m2-code="${CSS.escape(doc.code)}"]`);if(!root)return;
