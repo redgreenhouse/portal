@@ -1,14 +1,12 @@
-# RED Greenhouse Portal V1.60
+# RED Greenhouse Portal V1.61
 
-| Cambio realizado | Archivos afectados |
-|---|---|
-| Reproceso de M8, M9 y M10 usando las plantillas limpias adjuntas | `templates/MODULO-8-PLANTILLA.xlsx`, `MODULO-9-PLANTILLA.xlsx`, `MODULO-10-PLANTILLA.xlsx` |
-| Página LIVE basada en el área de impresión vertical de cada hoja | `srrc-modules.js`, `config/field-map.json` |
-| Conversión de los bloques horizontales de M8 y M9 a páginas una debajo de otra | `srrc-modules.js`, `config/field-map.json` |
-| Integración de PORTADA y hojas verticales de M10 | `srrc-modules.js`, `config/field-map.json` |
-| Limpieza automática, una sola vez, de referencias antiguas únicamente para M8–M10 | `srrc-runtime.js` |
-| Versión y caché actualizadas | `config.js`, `index.html` |
+Corrección de páginas LIVE M7–M10.
 
-## Prueba recomendada
+- Se retiró la tabla de referencia de colores de todas las páginas LIVE.
+- M7 conserva su funcionamiento anterior sin la tabla.
+- M8–M10 alinean cada control con la celda o rango combinado real de las plantillas verticales.
+- Se eliminaron destinos duplicados que ocultaban campos o sobrescribían datos al exportar.
+- Referencias Excel quedó sincronizado con los nuevos destinos.
+- Se reinician una sola vez únicamente las referencias guardadas de M8–M10.
 
-Abrir M8 hoja 8.3, M9 hojas 9.0 y 9.1, y M10 hojas 10.0 y 10.3. Las páginas deben aparecer verticales y el Excel generado debe conservar exactamente las plantillas limpias adjuntas.
+Controles M8–M10 antes/después: {8: (877, 247), 9: (1092, 1092), 10: (801, 799)}.
