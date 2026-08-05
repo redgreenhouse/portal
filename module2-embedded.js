@@ -169,10 +169,17 @@ function m2EnsureCoordinateGrid(root,doc){
  panel.innerHTML=`<div class="m2-coordinate-title"><strong>Coordenadas geográficas del polígono</strong><span>Estos valores se escribirán en la hoja MAPA 2.1.2 del Excel.</span></div><div class="m2-coordinate-grid">${rows.flat().map(([label,cell,value])=>`<label class="m2-coordinate-item"><b>${label}</b><span data-cell="${cell}"></span></label>`).join('')}</div>`;
  root.appendChild(panel);
 }
+function m2AnnotationsForSheet(sheetName){
+ if(typeof MODULE2_ANNOTATIONS==='undefined')return [];
+ if(MODULE2_ANNOTATIONS[sheetName])return MODULE2_ANNOTATIONS[sheetName];
+ const wanted=String(sheetName||'').trim().toUpperCase();
+ const key=Object.keys(MODULE2_ANNOTATIONS).find(name=>String(name||'').trim().toUpperCase()===wanted);
+ return key?MODULE2_ANNOTATIONS[key]:[];
+}
 function m2AddControls(root,doc){
  m2EnsureCoordinateGrid(root,doc);
  const sheetName=M2_SHEET_NAME_BY_CODE[doc.code]||doc.code;
- const controls=[...((typeof MODULE2_ANNOTATIONS!=='undefined'&&MODULE2_ANNOTATIONS[sheetName])||[])];
+ const controls=[...m2AnnotationsForSheet(sheetName)];
  if(doc.code==='MAPA 2.1.2') controls.push(...[
   ['E9',' 18.988608° -98.488697°'],['J9',' 18.987893° -98.488645°'],['O9',' 18.988337° -98.487868°'],
   ['E11',' 18.989391° -98.489109°'],['J11',' 18.988251° -98.488463°'],['O11',' 18.988573° -98.487551°'],
@@ -189,7 +196,7 @@ function m2AddControls(root,doc){
    cell.classList.add('m2-editable-cell');
   }else if(item.type==='status'){
    const current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'';
-   cell.innerHTML=`<button type="button" class="embedded-status ${current==='✓'?'status-yes':current==='✗'?'status-no':current==='NL'?'status-nl':'status-empty'}" data-m2-status="${esc(key)}" title="Clic para cambiar: ✓, ✗, NL"><span>${current||' '}</span><small data-m2-ref>${item.cell}</small></button>`;
+   cell.innerHTML=`<button type="button" class="embedded-status ${current==='✓'?'status-yes':current==='✗'?'status-no':current==='NL'?'status-nl':'status-empty'}" data-m2-status="${esc(key)}" title="Clic para cambiar: □, ✓, ✗, NL" aria-label="Estado ${esc(item.cell)}: ${esc(current||'sin marcar')}"><span>${current||'□'}</span><small data-m2-ref>${item.cell}</small></button>`;
    cell.classList.add('m2-editable-cell','m2-status-cell');
   }
  });
@@ -218,7 +225,7 @@ function m2Bind(root){
  root.querySelectorAll('[data-m2-input]').forEach(el=>el.addEventListener('input',()=>{m2EmbeddedValues[el.dataset.m2Input]=el.value;m2Save();}));
  root.querySelectorAll('[data-m2-status]').forEach(btn=>btn.addEventListener('click',()=>{
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
-  btn.querySelector('span').textContent=next;btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
+  btn.querySelector('span').textContent=next||'□';btn.setAttribute('aria-label',`Estado ${key.split('|').pop()}: ${next||'sin marcar'}`);btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
  }));
  root.querySelectorAll('[data-m2-image]').forEach(el=>el.addEventListener('change',async()=>{
   const file=el.files[0];if(!file)return;const key=el.dataset.m2Image,url=galleryEndpoint();
