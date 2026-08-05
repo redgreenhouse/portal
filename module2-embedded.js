@@ -123,7 +123,32 @@ function m2RenderDocument(doc){
  if(!replica)return '<p class="empty-value">No se encontró la transcripción HTML de esta hoja.</p>';
  return `<div class="living-document-toolbar"><div><b>Documento vivo</b><span>Captura directamente en el contexto del formato original.</span></div></div><div class="living-document" data-m2-code="${esc(doc.code)}">${replica}</div>`;
 }
-function m2ParseCell(cell){const m=/^([A-Z]+)(\d+)$/.exec(cell);if(!m)return null;let col=0;for(const ch of m[1])col=col*26+ch.charCodeAt(0)-64;return {col,row:Number(m[2])};}
+function m2ParseCell(cell){const m=/^([A-Z]+)(\d+)$/.exec(String(cell||'').trim().toUpperCase());if(!m)return null;let col=0;for(const ch of m[1])col=col*26+ch.charCodeAt(0)-64;return {col,row:Number(m[2])};}
+function m2CellRef(row,col){let letters='';for(let n=Number(col);n>0;n=Math.floor((n-1)/26))letters=String.fromCharCode(65+(n-1)%26)+letters;return letters+Number(row);}
+function m2RangeBounds(range){const [start,end=start]=String(range||'').trim().toUpperCase().split(':'),a=m2ParseCell(start),b=m2ParseCell(end);return a&&b?{r1:a.row,c1:a.col,r2:b.row,c2:b.col}:null;}
+function m2CellInsideRange(cell,range){const p=m2ParseCell(cell),r=m2RangeBounds(range);return !!(p&&r&&p.row>=r.r1&&p.row<=r.r2&&p.col>=r.c1&&p.col<=r.c2);}
+function m2ConfigSheet(code){
+ const config=typeof SRRC_CONFIG!=='undefined'?SRRC_CONFIG:null,module=config?.modules?.find(item=>Number(item.module)===2),wanted=String(M2_SHEET_NAME_BY_CODE[code]||code||'').trim().toUpperCase();
+ return module?.sheets?.find(sheet=>String(sheet.name||'').trim().toUpperCase()===wanted)||null;
+}
+function m2CaptureControlForCell(code,cell){
+ const controls=m2ConfigSheet(code)?.controls||[];
+ return controls.find(control=>control?.range&&!['image','logo','masterData'].includes(control.type)&&m2CellInsideRange(cell,control.range))||null;
+}
+function m2MappedCaptureCell(code,originalCell){
+ const control=m2CaptureControlForCell(code,originalCell);if(!control)return String(originalCell||'').trim().toUpperCase();
+ const original=m2RangeBounds(control.range),active=m2RangeBounds(m2Reference(control.id,control.range)),point=m2ParseCell(originalCell);if(!original||!active||!point)return String(originalCell||'').trim().toUpperCase();
+ return m2CellRef(active.r1+(point.row-original.r1),active.c1+(point.col-original.c1));
+}
+function m2AnnotationForCell(code,cell){
+ const sheetName=M2_SHEET_NAME_BY_CODE[code]||code;
+ return m2AnnotationsForSheet(sheetName).find(item=>String(item.cell||'').trim().toUpperCase()===String(cell||'').trim().toUpperCase())||null;
+}
+function m2ExcelCaptureValue(code,cell,value){
+ const annotation=m2AnnotationForCell(code,cell);
+ if(code==='ANÁLISIS DESCRIPTIVO'&&annotation?.type==='status')return value?'X':'';
+ return value??'';
+}
 function m2CellsInRange(root,range){
  const [a,b=a]=range.split(':'),pa=m2ParseCell(a),pb=m2ParseCell(b);if(!pa||!pb)return [];
  return [...root.querySelectorAll('[data-cell]')].filter(el=>{const p=m2ParseCell(el.dataset.cell);return p&&p.col>=pa.col&&p.col<=pb.col&&p.row>=pa.row&&p.row<=pb.row;});
@@ -196,7 +221,12 @@ function m2AddControls(root,doc){
    cell.classList.add('m2-editable-cell');
   }else if(item.type==='status'){
    const current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'';
-   cell.innerHTML=`<button type="button" class="embedded-status ${current==='✓'?'status-yes':current==='✗'?'status-no':current==='NL'?'status-nl':'status-empty'}" data-m2-status="${esc(key)}" title="Clic para cambiar: □, ✓, ✗, NL" aria-label="Estado ${esc(item.cell)}: ${esc(current||'sin marcar')}"><span>${current||'□'}</span><small data-m2-ref>${item.cell}</small></button>`;
+   if(doc.code==='ANÁLISIS DESCRIPTIVO'){
+    const checked=!!current;
+    cell.innerHTML=`<label class="embedded-binary-check" title="Marcar o desmarcar esta opción"><input type="checkbox" data-m2-check="${esc(key)}" ${checked?'checked':''}><span>${checked?'X':''}</span><small data-m2-ref>${item.cell}</small></label>`;
+   }else{
+    cell.innerHTML=`<button type="button" class="embedded-status ${current==='✓'?'status-yes':current==='✗'?'status-no':current==='NL'?'status-nl':'status-empty'}" data-m2-status="${esc(key)}" title="Clic para cambiar: □, ✓, ✗, NL" aria-label="Estado ${esc(item.cell)}: ${esc(current||'sin marcar')}"><span>${current||'□'}</span><small data-m2-ref>${item.cell}</small></button>`;
+   }
    cell.classList.add('m2-editable-cell','m2-status-cell');
   }
  });
@@ -223,6 +253,7 @@ function m2UpgradeLegacyFileInputs(root,doc){
 function m2Bind(root){
  root.querySelectorAll('[data-m2-upload-trigger]').forEach(btn=>btn.addEventListener('click',()=>{const input=root.querySelector(`[data-m2-image="${CSS.escape(btn.dataset.m2UploadTrigger)}"]`);if(input)input.click();}));
  root.querySelectorAll('[data-m2-input]').forEach(el=>el.addEventListener('input',()=>{m2EmbeddedValues[el.dataset.m2Input]=el.value;m2Save();}));
+ root.querySelectorAll('[data-m2-check]').forEach(el=>el.addEventListener('change',()=>{const key=el.dataset.m2Check,value=el.checked?'X':'';m2EmbeddedValues[key]=value;m2Save();const mark=el.parentElement?.querySelector('span');if(mark)mark.textContent=value;}));
  root.querySelectorAll('[data-m2-status]').forEach(btn=>btn.addEventListener('click',()=>{
   const seq=['','✓','✗','NL'],key=btn.dataset.m2Status,current=Object.prototype.hasOwnProperty.call(m2EmbeddedValues,key)?m2EmbeddedValues[key]:'',next=seq[(seq.indexOf(current)+1)%seq.length];m2EmbeddedValues[key]=next;m2Save();
   btn.querySelector('span').textContent=next||'□';btn.setAttribute('aria-label',`Estado ${key.split('|').pop()}: ${next||'sin marcar'}`);btn.classList.remove('status-yes','status-no','status-nl','status-empty');btn.classList.add(next==='✓'?'status-yes':next==='✗'?'status-no':next==='NL'?'status-nl':'status-empty');
@@ -370,8 +401,14 @@ async function m2RestoreTemplateFormulas(templateBuffer,generatedBuffer){
  const [templateZip,generatedZip]=await Promise.all([JSZip.loadAsync(templateBuffer),JSZip.loadAsync(generatedBuffer)]);
  const protectedBySheet={};
  Object.entries(M2_HEADER_CELLS).forEach(([code,cells])=>{const name=M2_SHEET_NAME_BY_CODE[code];if(!name)return;protectedBySheet[name]=protectedBySheet[name]||new Set();Object.entries(cells).forEach(([key,fallback])=>{const cell=m2HeaderReference(code,key,fallback);if(cell)protectedBySheet[name].add(cell);});});
- const poeName=M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR'];protectedBySheet[poeName]=protectedBySheet[poeName]||new Set();['B66','E66','H66'].forEach(cell=>protectedBySheet[poeName].add(cell));
- Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),name=M2_SHEET_NAME_BY_CODE[code],target=m2ImageRange(code,Number(index))?.split(':')[0];if(name&&target){protectedBySheet[name]=protectedBySheet[name]||new Set();protectedBySheet[name].add(target);}});
+ const poeName=M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR'];protectedBySheet[poeName]=protectedBySheet[poeName]||new Set();[
+  m2Reference('M2.SIGN.ELABORO','F60'),m2Reference('M2.SIGN.REVISO','W60'),m2Reference('M2.SIGN.AUTORIZO','AJ60')
+ ].filter(Boolean).forEach(cell=>protectedBySheet[poeName].add(cell.split(':')[0]));
+ Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
+  const parts=key.split('|');
+  if(parts.length===2&&!parts[1].startsWith('image')){const [code,cell]=parts,name=M2_SHEET_NAME_BY_CODE[code],target=m2MappedCaptureCell(code,cell);if(name&&target){protectedBySheet[name]=protectedBySheet[name]||new Set();protectedBySheet[name].add(target);}}
+  if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=parts,name=M2_SHEET_NAME_BY_CODE[code],target=m2ImageRange(code,Number(index))?.split(':')[0];if(name&&target){protectedBySheet[name]=protectedBySheet[name]||new Set();protectedBySheet[name].add(target);}
+ });
  const sheetPaths=Object.keys(templateZip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path));
  const parser=new DOMParser(),serializer=new XMLSerializer();
  const workbookDoc=parser.parseFromString(await templateZip.file('xl/workbook.xml').async('string'),'application/xml');
@@ -544,12 +581,16 @@ async function m2GenerateExcel(){
   Object.entries(m2EmbeddedValues).forEach(([key,value])=>{
    const parts=key.split('|');if(parts.length!==2||parts[1].startsWith('image'))return;
    const [code,cell]=parts,sheetName=M2_SHEET_NAME_BY_CODE[code];if(!sheetName||!cell)return;
-   const sheet=m2PopulateSheet(workbook,sheetName);if(sheet)sheet.cell(cell).value(value||'');
+   const sheet=m2PopulateSheet(workbook,sheetName),target=m2MappedCaptureCell(code,cell);if(!sheet||!target)return;
+   const exportValue=m2ExcelCaptureValue(code,cell,value);sheet.cell(target).value(exportValue);
+   if(code==='ANÁLISIS DESCRIPTIVO'&&exportValue)sheet.cell(target).style({fontColor:'000000',bold:true,horizontalAlignment:'center',verticalAlignment:'center'});
   });
   m2ApplyHeaders(workbook);
   Object.entries(m2EmbeddedValues).forEach(([key,value])=>{if(!key.includes('|image|')||!value||typeof value!=='object'||!value.url)return;const [code,_image,index]=key.split('|'),sheet=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE[code]),target=m2ImageRange(code,Number(index))?.split(':')[0];if(sheet&&target){const cell=sheet.cell(target);cell.value('Abrir evidencia fotográfica');cell.hyperlink(String(value.url));cell.style({fontColor:'0563C1',underline:true});}});
   const sig=m2SignatureData(),poe=m2PopulateSheet(workbook,M2_SHEET_NAME_BY_CODE['POE MTTO INFRAESTR']);
-  if(poe){poe.cell(m2Reference('M2.SIGN.ELABORO','B66')).value(sig.elaboro.nombre);poe.cell(m2Reference('M2.SIGN.REVISO','E66')).value(sig.reviso.nombre);poe.cell(m2Reference('M2.SIGN.AUTORIZO','H66')).value(sig.autorizo.nombre);}
+  if(poe){
+   [[m2Reference('M2.SIGN.ELABORO','F60'),sig.elaboro.nombre],[m2Reference('M2.SIGN.REVISO','W60'),sig.reviso.nombre],[m2Reference('M2.SIGN.AUTORIZO','AJ60'),sig.autorizo.nombre]].forEach(([target,name])=>{const cell=String(target||'').split(':')[0];if(cell)poe.cell(cell).value(name||'').style({fontColor:'000000',bold:true,horizontalAlignment:'center',verticalAlignment:'center',wrapText:true});});
+  }
   let blob=await workbook.outputAsync();
   // Las evidencias se guardan en Drive. Después restauramos fórmulas y dibujos originales (incluido el logo).
   const formulaProtected=await m2RestoreTemplateFormulas(templateBuffer,await blob.arrayBuffer());

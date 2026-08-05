@@ -358,3 +358,9 @@
 .excel-color-reference-scroll{overflow-x:auto}.excel-color-reference table{width:100%;border-collapse:collapse;font-size:12px}.excel-color-reference th,.excel-color-reference td{padding:10px 13px;text-align:left;border-bottom:1px solid #edf2ef;vertical-align:middle}.excel-color-reference th{background:#fbfdfc;color:#476057;font-size:11px;text-transform:uppercase;letter-spacing:.35px}.excel-color-reference tbody tr:last-child td{border-bottom:0}.excel-color-reference td:first-child{white-space:nowrap}.excel-color-swatch{display:inline-block;width:19px;height:19px;border-radius:5px;border:1px solid rgba(15,55,41,.22);vertical-align:middle;margin-right:8px}.legend-pink{background:#f4cccc}.legend-yellow{background:#ffe699}.legend-green{background:#92d050}.legend-sky{background:#b7e1f0}.legend-red{background:#f8696b}.legend-navy{background:#1f4e78}.legend-none{background:#fff}
 .embedded-status.status-empty{background:#eaf7fc;color:#24677e;border:1px solid #78bdd4}.embedded-status.status-empty span{font-size:18px;line-height:1}.embedded-status.status-empty span::after{content:none}
 @media(max-width:760px){.excel-color-reference-title{align-items:flex-start;flex-direction:column;gap:4px}.excel-color-reference table{min-width:680px}}
+
+
+/* M2 hoja 3: probabilidad y severidad son casillas binarias; el Excel recibe una X. */
+.embedded-binary-check{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:28px;background:#eaf7fc;cursor:pointer}
+.embedded-binary-check input{width:18px;height:18px;margin:0;accent-color:#176f56;cursor:pointer}
+.embedded-binary-check span{display:none}

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.61">
+  <link rel="stylesheet" href="styles.css?v=1.62">
 </head>
 <body>
   <section class="public-site" id="publicSite">
@@ -192,7 +192,7 @@
       <section class="admin-grid">
         <article class="card admin-card"><h2>Seguridad</h2><p>Cambia la contraseña básica de acceso al portal privado.</p><label>Nueva contraseña<input type="password" id="newPortalPassword" minlength="4" placeholder="Mínimo 4 caracteres"></label><label>Confirmar contraseña<input type="password" id="confirmPortalPassword" minlength="4"></label><button class="primary-button" id="savePasswordButton">Guardar contraseña</button><span class="admin-message" id="passwordMessage"></span></article>
         <article class="card admin-card"><h2>Google Drive</h2><p>Configuración para almacenar imágenes y recuperarlas al volver al módulo.</p><label>ID carpeta Images<input id="driveFolderId" value="1nhz_xAqRz6kcsZdg_zodmaLACmw584sL"></label><label>URL del Apps Script Web App<input id="driveWebAppUrl" value="https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec"></label><button class="primary-button" id="saveDriveConfigButton">Guardar configuración</button><span class="admin-message" id="driveMessage"></span></article>
-        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong id="systemVersion">v1.61</strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
+        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong id="systemVersion">v1.62</strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
       </section>
     </section>
 
@@ -213,17 +213,17 @@
   </div>
 
   <div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="taskForm"><div class="modal-heading"><h2>Nueva tarea</h2><button type="button" id="closeModal">×</button></div><label>Tarea<input id="taskTitle" required maxlength="100"></label><label>Responsable<input id="taskOwner" required maxlength="70"></label><label>Prioridad<select id="taskPriority"><option value="critical">Crítica</option><option value="high">Alta</option><option value="medium">Media</option></select></label><label>Estado<select id="taskStatus"><option value="pending">Pendiente</option><option value="doing">En proceso</option><option value="done">Completada</option></select></label><button class="primary-button" type="submit">Guardar tarea</button></form></div>
-  <script src="config.js?v=1.61"></script>
-  <script src="data.js?v=1.61"></script>
-  <script src="module2-replicas.js?v=1.61"></script>
-  <script src="module2-annotations.js?v=1.61"></script>
+  <script src="config.js?v=1.62"></script>
+  <script src="data.js?v=1.62"></script>
+  <script src="module2-replicas.js?v=1.62"></script>
+  <script src="module2-annotations.js?v=1.62"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-  <script src="module2-embedded.js?v=1.61"></script>
-  <script src="srrc-modules.js?v=1.61"></script>
-  <script src="app.js?v=1.61"></script>
-  <script src="srrc-runtime.js?v=1.61"></script>
-  <script src="capture.js?v=1.61"></script>
+  <script src="module2-embedded.js?v=1.62"></script>
+  <script src="srrc-modules.js?v=1.62"></script>
+  <script src="app.js?v=1.62"></script>
+  <script src="srrc-runtime.js?v=1.62"></script>
+  <script src="capture.js?v=1.62"></script>
 </body>
 </html>
