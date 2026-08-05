@@ -10,6 +10,7 @@ const masterData = [
   {category:'Personas', field:'Alta Dirección', detail:'Nombre y cargo de quien autoriza procedimientos y recursos.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
   {category:'Personas', field:'Responsable de inocuidad', detail:'Persona que implementa, supervisa y revisa el sistema SRRC.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
   {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Personas', field:'Personal de la unidad', detail:'Nombres y puestos usados en la bitácora de revisión de higiene del personal.', optional:true, source:'M3 · BIT 08', modules:{2:'p',3:'c',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
   {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos estables para los pies de aprobación.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
   {category:'Control documental', field:'Versión', detail:'Versión vigente del documento.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
   {category:'Control documental', field:'Fecha de emisión', detail:'Fecha de emisión del documento oficial.', inputType:'date', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
@@ -22,6 +23,11 @@ const structuredDefinitions={
     columns:[{key:'nombre',label:'Nombre del responsable'},{key:'cargo',label:'Cargo / función'}],
     rows:['Producción','Mantenimiento','Higiene','Capacitación','Fauna','Auditoría'].map(area=>({id:masterKey(area),label:area})),
     mapping:'Catálogo transversal; se relacionará con perfiles, programas y procedimientos de M2–M7.'
+  },
+  'Personal de la unidad':{
+    columns:[{key:'nombre',label:'Nombre completo'},{key:'puesto',label:'Puesto / función'}],
+    rows:Array.from({length:19},(_,i)=>({id:`trabajador${String(i+1).padStart(2,'0')}`,label:`Trabajador ${String(i+1).padStart(2,'0')}`})),
+    mapping:'M3 · REV DE PERSONAL FRENTE BIT 08 · filas 1 a 19.'
   },
   'Firmas de elaboración, revisión y autorización':{
     columns:[{key:'nombre',label:'Nombre completo'},{key:'cargo',label:'Cargo'}],
@@ -58,9 +64,9 @@ function renderStructuredCapture(item){
 
 let activeMasterCategory='Todas';
 let masterValues=JSON.parse(localStorage.getItem('redGreenhouseMasterData')||'{}');
-const requiredMasterFields=new Set(masterData.map(x=>x.field));
+const requiredMasterFields=new Set(masterData.filter(x=>!x.optional).map(x=>x.field));
 function masterKey(field){return field.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
-function masterCompletion(){let total=0,filled=0;masterData.forEach(x=>{if(structuredDefinitions[x.field]){const st=structuredFieldStatus(x.field);total+=st.total;filled+=st.filled}else{total++;if(String(masterValues[masterKey(x.field)]||'').trim())filled++}});return {filled,total,percent:total?Math.round(filled/total*100):0}}
+function masterCompletion(){let total=0,filled=0;masterData.forEach(x=>{if(x.optional)return;if(structuredDefinitions[x.field]){const st=structuredFieldStatus(x.field);total+=st.total;filled+=st.filled}else{total++;if(String(masterValues[masterKey(x.field)]||'').trim())filled++}});return {filled,total,percent:total?Math.round(filled/total*100):0}}
 function syncMasterTask(){
   let task=tasks.find(t=>t.linkedTo==='masterData'||/completar datos maestros|capturar datos maestros/i.test(t.title));
   if(!task){task={id:1,title:'Capturar Datos Maestros',detail:'Completar el catálogo único que alimentará los documentos SRRC.',owner:'Dirección',priority:'critical',status:'pending',due:'30 jul',linkedTo:'masterData'};tasks.unshift(task)}
@@ -133,7 +139,7 @@ function renderMasterData(){
       <h3>${group}</h3>
       ${masterData.filter(x=>x.category===group).map(x=>{const key=masterKey(x.field),long=/domicilio|coordenadas|macro|inventario|croquis|responsables por área|firmas/i.test(x.field);return `
         <div class="master-field">
-          <div class="master-input-wrap"><strong>${x.field}<span class="required-mark">*</span></strong><p>${x.detail}</p>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
+          <div class="master-input-wrap"><strong>${x.field}${x.optional?'':'<span class="required-mark">*</span>'}</strong><p>${x.detail}</p>${structuredDefinitions[x.field]?renderStructuredCapture(x):masterInputHtml(x,key,masterValues[key]||'',long)}</div>
         </div>`}).join('')}
     </section>`).join('');
   document.querySelectorAll('[data-master-input]').forEach(input=>input.addEventListener('input',()=>{input.closest('.master-field').classList.toggle('has-value',!!input.value.trim())}));

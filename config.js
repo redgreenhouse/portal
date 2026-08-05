@@ -1,1 +1,1 @@
-window.RED_PORTAL_CONFIG=Object.freeze({version:'1.62'});
+window.RED_PORTAL_CONFIG=Object.freeze({version:'1.64'});

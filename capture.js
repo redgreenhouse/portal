@@ -4,9 +4,10 @@ const capSave=()=>localStorage.setItem('red_srrc_capture_v119',JSON.stringify(CA
 
 async function initCapture(){
   try{
+    const version=window.RED_PORTAL_CONFIG?.version||'1.64';
     [SRRC_CONFIG,SRRC_MASTER]=await Promise.all([
-      fetch('config/field-map.json').then(r=>r.json()),
-      fetch('config/master-data-map.json').then(r=>r.json())
+      fetch(`config/field-map.json?v=${encodeURIComponent(version)}`,{cache:'no-store'}).then(r=>r.json()),
+      fetch(`config/master-data-map.json?v=${encodeURIComponent(version)}`,{cache:'no-store'}).then(r=>r.json())
     ]);
     renderCaptureHome(); renderLogs(); renderMap();
   }catch(e){
@@ -47,7 +48,7 @@ function renderCaptureControl(c){
 }
 function hydrateCapture(){document.querySelectorAll('[data-cap-key]').forEach(el=>{const k=el.dataset.capKey;if(k.startsWith('master.')){el.onchange=()=>{CAPTURE_STORE[k]=el.value;capSave()};return}if(CAPTURE_STORE[k]!==undefined){if(el.type==='checkbox')el.checked=CAPTURE_STORE[k];else if(el.tagName!=='DIV'&&el.type!=='file')el.value=CAPTURE_STORE[k]}el.onchange=()=>{CAPTURE_STORE[k]=el.type==='checkbox'?el.checked:el.value;capSave()}})}
 function selectCapStatus(btn,key,val){btn.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');CAPTURE_STORE[key]=val;capSave()}
-function masterLabel(f){return ({unidadProduccion:'Unidad de producción',domicilio:'Domicilio',folioSenasica:'Folio SENASICA',directorGeneral:'Director general',responsableTecnico:'Responsable técnico',auxiliarSRRC:'Auxiliar SRRC'})[f]||f}
+function masterLabel(f){const personal=String(f||'').match(/^personalNombre(\d{2})$/);if(personal)return `Personal de la unidad · Trabajador ${personal[1]}`;return ({razonSocialPropietario:'Razón social / propietario',unidadProduccion:'Unidad de producción',domicilio:'Domicilio',folioSenasica:'Folio SENASICA',directorGeneral:'Director general',responsableInocuidad:'Responsable de inocuidad',responsableTecnico:'Responsable técnico',auxiliarSRRC:'Auxiliar SRRC',firmaElaboroNombre:'Elaboró · Nombre completo',firmaElaboroCargo:'Elaboró · Cargo',firmaRevisoNombre:'Revisó · Nombre completo',firmaRevisoCargo:'Revisó · Cargo',firmaAutorizoNombre:'Autorizó · Nombre completo',firmaAutorizoCargo:'Autorizó · Cargo'})[f]||f}
 function masterValue(f){return CAPTURE_STORE['master.'+f]??SRRC_MASTER?.empresa?.[f]?.value??SRRC_MASTER?.responsables?.[f]?.value??''}
 function showCaptureMasters(){
  const el=document.getElementById('captureApp'),sections=[['Empresa',SRRC_MASTER.empresa],['Responsables permanentes',SRRC_MASTER.responsables]];
@@ -61,9 +62,15 @@ function renderMap(){
  const el=document.getElementById('mapApp');if(!el||!SRRC_CONFIG)return;
  const storageKey='redGreenhouseExcelReferences';
  let saved={};try{saved=JSON.parse(localStorage.getItem(storageKey)||'{}')}catch(_err){}
+ function controlSource(c){
+  const row=Number((String(c.range||c.excelCell||'').match(/\d+/)||[])[0]||0);
+  if(c.type==='masterData'&&/^firma/i.test(String(c.field||'')))return 'Firma / pie de página';
+  if(c.type==='masterData'&&row>0&&row<=6)return 'Cabecera';
+  return 'Campo de captura';
+ }
  const controlRows=allSheets().flatMap(x=>x.sheet.controls.map(c=>({
   module:x.module,moduleTitle:x.moduleTitle,sheet:x.sheet.displayName||x.sheet.name,exactSheet:x.sheet.name,
-  id:c.id,type:c.type,label:c.label||'',concept:c.label||'',target:saved[c.id]||c.range||c.excelCell||'',source:'Campo de captura'
+  id:c.id,type:c.type,label:c.label||'',concept:c.label||'',target:saved[c.id]||c.range||c.excelCell||'',source:controlSource(c)
  })));
  const headerRows=allSheets().flatMap(x=>(x.sheet.headerMappings||[]).map((h,i)=>({
   module:x.module,moduleTitle:x.moduleTitle,sheet:x.sheet.displayName||x.sheet.name,exactSheet:x.sheet.name,

@@ -60,15 +60,65 @@
     }
     return s + r;
   }
-  function master(field) {
-    const map = {
-      unidadProduccion:'Nombre de la unidad de producción', domicilio:'Domicilio de la unidad',
-      folioSenasica:'Folio SENASICA', directorGeneral:'Alta Dirección',
-      responsableInocuidad:'Responsable de inocuidad', responsableTecnico:'Responsable técnico',
-      auxiliarSRRC:'Auxiliar SRRC', versionDocumento:'Versión', fechaEmision:'Fecha de emisión',
-      vigenciaDocumento:'Vigencia'
+  const MASTER_FIELD_LABELS = {
+    razonSocialPropietario:'Razón social / propietario', unidadProduccion:'Nombre de la unidad de producción', domicilio:'Domicilio de la unidad',
+    folioSenasica:'Folio SENASICA', directorGeneral:'Alta Dirección',
+    responsableInocuidad:'Responsable de inocuidad', responsableTecnico:'Responsable técnico',
+    auxiliarSRRC:'Auxiliar SRRC', versionDocumento:'Versión', fechaEmision:'Fecha de emisión',
+    vigenciaDocumento:'Vigencia',
+    firmaElaboroNombre:'Elaboró · Nombre completo', firmaElaboroCargo:'Elaboró · Cargo',
+    firmaRevisoNombre:'Revisó · Nombre completo', firmaRevisoCargo:'Revisó · Cargo',
+    firmaAutorizoNombre:'Autorizó · Nombre completo', firmaAutorizoCargo:'Autorizó · Cargo'
+  };
+  function simpleMasterValue(field) {
+    return (typeof masterValues !== 'undefined' && typeof masterKey !== 'undefined')
+      ? (masterValues[masterKey(MASTER_FIELD_LABELS[field] || field)] || '')
+      : '';
+  }
+  function signatureMasterValue(field) {
+    const fields = {
+      firmaElaboroNombre:['elaboro','nombre'], firmaElaboroCargo:['elaboro','cargo'],
+      firmaRevisoNombre:['reviso','nombre'], firmaRevisoCargo:['reviso','cargo'],
+      firmaAutorizoNombre:['autorizo','nombre'], firmaAutorizoCargo:['autorizo','cargo']
     };
-    return (typeof masterValues !== 'undefined' && typeof masterKey !== 'undefined') ? (masterValues[masterKey(map[field] || field)] || '') : '';
+    const target = fields[field];
+    if (!target) return '';
+    let value = '';
+    if (typeof structuredValues !== 'undefined' && typeof masterKey !== 'undefined') {
+      const signatures = structuredValues[masterKey('Firmas de elaboración, revisión y autorización')] || {};
+      value = signatures[target[0]]?.[target[1]] || '';
+    }
+    if (value) return value;
+    const fallback = {
+      firmaElaboroNombre: simpleMasterValue('auxiliarSRRC'),
+      firmaElaboroCargo: 'Auxiliar en SRRC',
+      firmaRevisoNombre: simpleMasterValue('responsableInocuidad'),
+      firmaRevisoCargo: 'Responsable de inocuidad',
+      firmaAutorizoNombre: simpleMasterValue('directorGeneral'),
+      firmaAutorizoCargo: 'Director general'
+    };
+    return fallback[field] || '';
+  }
+  function personnelMasterValue(field) {
+    const match = /^personalNombre(\d{2})$/.exec(String(field || ''));
+    if (!match || typeof structuredValues === 'undefined' || typeof masterKey === 'undefined') return '';
+    const personnel = structuredValues[masterKey('Personal de la unidad')] || {};
+    return personnel[`trabajador${match[1]}`]?.nombre || '';
+  }
+  function master(field) {
+    const personal = personnelMasterValue(field);
+    if (personal) return personal;
+    const signature = signatureMasterValue(field);
+    if (signature) return signature;
+    const value = simpleMasterValue(field);
+    if (value) return value;
+    if (field === 'razonSocialPropietario') return simpleMasterValue('unidadProduccion');
+    return '';
+  }
+  function masterFieldLabel(field) {
+    const personal = /^personalNombre(\d{2})$/.exec(String(field || ''));
+    if (personal) return `Personal de la unidad · Trabajador ${personal[1]}`;
+    return MASTER_FIELD_LABELS[field] || field || 'Dato maestro';
   }
 
   const GENERIC_HEADER_MAP = {
@@ -215,7 +265,7 @@
   function controlHtml(c) {
     const v = values[c.id] ?? c.initial ?? '';
     if (c.type === 'masterData') {
-      return `<div class="srrc-master-control" title="Dato maestro"><b>${esc(master(c.field) || 'Pendiente en Datos Maestros')}</b><small>${esc(c.field)}</small></div>`;
+      return `<div class="srrc-master-control" title="Dato maestro"><b>${esc(master(c.field) || 'Pendiente en Datos Maestros')}</b><small>${esc(masterFieldLabel(c.field))}</small></div>`;
     }
     if (isHeaderLogoControl(c)) {
       const logo = corporateLogo();
