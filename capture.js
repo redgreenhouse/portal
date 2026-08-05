@@ -4,7 +4,7 @@ const capSave=()=>localStorage.setItem('red_srrc_capture_v119',JSON.stringify(CA
 
 async function initCapture(){
   try{
-    const version=window.RED_PORTAL_CONFIG?.version||'1.65';
+    const version=window.RED_PORTAL_CONFIG?.version||'1.66';
     [SRRC_CONFIG,SRRC_MASTER]=await Promise.all([
       fetch(`config/field-map.json?v=${encodeURIComponent(version)}`,{cache:'no-store'}).then(r=>r.json()),
       fetch(`config/master-data-map.json?v=${encodeURIComponent(version)}`,{cache:'no-store'}).then(r=>r.json())
