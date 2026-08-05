@@ -19,7 +19,10 @@
     }
   }
   function moduleReference(n, id, fallback) {
-    return Number(n) === 3 ? excelReference(id, fallback) : String(fallback || '').trim();
+    const moduleNumber = Number(n);
+    return moduleNumber >= 3 && moduleNumber <= 10
+      ? excelReference(id, fallback)
+      : String(fallback || '').trim();
   }
 
   function parseCell(a) {
