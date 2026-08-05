@@ -1,13 +1,13 @@
-# RED Greenhouse Portal V1.57
+# RED Greenhouse Portal V1.59
 
 | Cambio realizado | Archivos afectados |
 |---|---|
-| Se procesaron las 13 hojas faltantes de los módulos 8, 9 y 10 | `srrc-modules.js`, `config/field-map.json` |
-| Las referencias guardadas ahora gobiernan la exportación de todos los módulos M3–M10 | `srrc-runtime.js` |
-| Se reconstruyeron las cabeceras de M8–M10 para usar Datos Maestros y se agregaron zonas de logo en cada bloque imprimible | `srrc-modules.js` |
-| Referencias Excel y Captura SRRC ahora incluyen M2–M10 | `config/field-map.json`, `capture.js` |
+| Integración de las plantillas limpias y coloreadas de M11 a M15 | `templates/`, `srrc-modules.js`, `config/field-map.json` |
+| Página LIVE, referencias editables y exportación para M11–M15 | `srrc-modules.js`, `srrc-runtime.js` |
+| Inserción del logo en todos los bloques de cabecera repetidos | `srrc-runtime.js` |
+| Nombres oficiales de M11–M15 y alcance de Datos Maestros | `app.js` |
 | Versión y caché actualizadas | `config.js`, `index.html` |
 
 ## Prueba recomendada
 
-Generar un Excel de M8, M9 y M10. Si una celda requiere ajuste, modificarla en **Referencias Excel**, pulsar **Guardar referencias** y volver a generar el módulo.
+Abrir M11, M12, M13, M14 y M15; revisar una hoja LIVE de cada módulo y generar su Excel. Los ajustes de celda se realizan en **Referencias Excel** y deben guardarse antes de volver a generar.

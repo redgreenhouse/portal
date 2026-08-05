@@ -20,7 +20,7 @@
   }
   function moduleReference(n, id, fallback) {
     const moduleNumber = Number(n);
-    return moduleNumber >= 3 && moduleNumber <= 10
+    return moduleNumber >= 3 && moduleNumber <= 15
       ? excelReference(id, fallback)
       : String(fallback || '').trim();
   }
@@ -353,12 +353,13 @@
       const logo = corporateLogo();
       const insertions = [];
       for (const s of m.sheets) {
-        const logoControl = sheetControlsWithLogo(s).find(isHeaderLogoControl);
-        if (!logoControl) continue;
-        const range = logoControl.id && !String(logoControl.id).startsWith('AUTO.')
-          ? moduleReference(n,logoControl.id,logoControl.range)
-          : logoControl.range;
-        if (range) insertions.push({sheetName:s.name,range,image:logoImage,name:logo.name});
+        const logoControls = sheetControlsWithLogo(s).filter(isHeaderLogoControl);
+        for (const logoControl of logoControls) {
+          const range = logoControl.id && !String(logoControl.id).startsWith('AUTO.')
+            ? moduleReference(n,logoControl.id,logoControl.range)
+            : logoControl.range;
+          if (range) insertions.push({sheetName:s.name,range,image:logoImage,name:logo.name});
+        }
       }
       if (insertions.length) finalBuffer = await m2InsertImages(finalBuffer,insertions);
       const blob = new Blob([finalBuffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});

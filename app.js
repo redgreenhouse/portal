@@ -1,19 +1,19 @@
 
 
 const masterData = [
-  {category:'Identidad', field:'Nombre de la unidad de producción', detail:'Nombre oficial usado en encabezados, portadas y registros.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Identidad', field:'Logo corporativo', detail:'Imagen oficial usada en el portal y en las cabeceras documentales.', inputType:'image', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Identidad', field:'Folio SENASICA', detail:'Folio puntual que se mostrará en las hojas oficiales.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Identidad', field:'Razón social / propietario', detail:'Identidad legal o responsable de la unidad productiva.', source:'Por confirmar', modules:{2:'p',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Ubicación', field:'Domicilio de la unidad', detail:'Dirección utilizada en las cabeceras de los documentos.', source:'M2–M14', modules:{2:'c',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Producción', field:'Cultivo y variedad', detail:'Producto agrícola al que aplican procedimientos, riesgos y registros.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Alta Dirección', detail:'Nombre y cargo de quien autoriza procedimientos y recursos.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Responsable de inocuidad', detail:'Persona que implementa, supervisa y revisa el sistema SRRC.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos estables para los pies de aprobación.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Control documental', field:'Versión', detail:'Versión vigente del documento.', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Control documental', field:'Fecha de emisión', detail:'Fecha de emisión del documento oficial.', inputType:'date', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}},
-  {category:'Control documental', field:'Vigencia', detail:'Fecha límite de vigencia del documento oficial.', inputType:'date', source:'M2–M14', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p'}}
+  {category:'Identidad', field:'Nombre de la unidad de producción', detail:'Nombre oficial usado en encabezados, portadas y registros.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Identidad', field:'Logo corporativo', detail:'Imagen oficial usada en el portal y en las cabeceras documentales.', inputType:'image', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Identidad', field:'Folio SENASICA', detail:'Folio puntual que se mostrará en las hojas oficiales.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Identidad', field:'Razón social / propietario', detail:'Identidad legal o responsable de la unidad productiva.', source:'Por confirmar', modules:{2:'p',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Ubicación', field:'Domicilio de la unidad', detail:'Dirección utilizada en las cabeceras de los documentos.', source:'M2–M15', modules:{2:'c',3:'p',4:'p',5:'p',6:'p',7:'p',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Producción', field:'Cultivo y variedad', detail:'Producto agrícola al que aplican procedimientos, riesgos y registros.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Personas', field:'Alta Dirección', detail:'Nombre y cargo de quien autoriza procedimientos y recursos.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Personas', field:'Responsable de inocuidad', detail:'Persona que implementa, supervisa y revisa el sistema SRRC.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Personas', field:'Responsables por área', detail:'Producción, mantenimiento, higiene, capacitación, fauna y auditoría.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Personas', field:'Firmas de elaboración, revisión y autorización', detail:'Nombres y cargos estables para los pies de aprobación.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Control documental', field:'Versión', detail:'Versión vigente del documento.', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Control documental', field:'Fecha de emisión', detail:'Fecha de emisión del documento oficial.', inputType:'date', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}},
+  {category:'Control documental', field:'Vigencia', detail:'Fecha límite de vigencia del documento oficial.', inputType:'date', source:'M2–M15', modules:{2:'c',3:'c',4:'c',5:'c',6:'c',7:'c',8:'p',9:'p',10:'p',11:'p',12:'p',13:'p',14:'p',15:'p'}}
 ];
 
 
@@ -217,7 +217,7 @@ function renderTasks(){
   document.querySelectorAll('[data-task-view]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();showView(b.dataset.taskView)}));
 }
 
-const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua',11:'Pendiente de integrar',12:'Pendiente de integrar',13:'Pendiente de integrar',14:'Pendiente de integrar',15:'Pendiente de integrar'};
+const moduleNames={2:'Infraestructura',3:'Higiene',4:'Control de fauna',5:'Capacitación',6:'Programa de auditorías',7:'Validación de procedimientos',8:'Trazabilidad',9:'Historial de la unidad productiva',10:'Uso y manejo del agua',11:'Fertilización',12:'Uso y manejo de plaguicidas',13:'Cosecha',14:'Materia prima',15:'Transporte'};
 const module2CaptureSpecs={
 'PORTADA':[
  ['Nombre de la unidad de producción','text','Identidad que aparecerá en la carpeta impresa'],['Domicilio de la unidad','textarea','Dirección completa del sitio'],['Folio SENASICA','text','Identificador oficial'],['Fecha de emisión','date','Fecha de publicación'],['Vigencia','date','Fecha límite de vigencia'],['Versión','text','Clave de control documental']
