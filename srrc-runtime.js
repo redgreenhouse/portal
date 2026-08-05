@@ -8,6 +8,20 @@
   const save = () => localStorage.setItem(STORE, JSON.stringify(values));
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const EXCEL_REFERENCE_STORE_KEY = 'redGreenhouseExcelReferences';
+  const EXCEL_REFERENCE_LAYOUT_KEY = 'redGreenhouseExcelReferenceLayoutVersion';
+  const EXCEL_REFERENCE_LAYOUT_VERSION = '1.60-m8-m10-vertical';
+  // M8–M10 changed from horizontal page blocks to the new vertical templates.
+  // Remove only their old saved destinations once; references for all other modules stay untouched.
+  try {
+    if (localStorage.getItem(EXCEL_REFERENCE_LAYOUT_KEY) !== EXCEL_REFERENCE_LAYOUT_VERSION) {
+      const refs = JSON.parse(localStorage.getItem(EXCEL_REFERENCE_STORE_KEY) || '{}');
+      Object.keys(refs).forEach((id) => {
+        if (/^M(?:8|9|10)\./.test(id)) delete refs[id];
+      });
+      localStorage.setItem(EXCEL_REFERENCE_STORE_KEY, JSON.stringify(refs));
+      localStorage.setItem(EXCEL_REFERENCE_LAYOUT_KEY, EXCEL_REFERENCE_LAYOUT_VERSION);
+    }
+  } catch (_err) {}
   function excelReference(id, fallback) {
     try {
       const refs = JSON.parse(localStorage.getItem(EXCEL_REFERENCE_STORE_KEY) || '{}');

@@ -1,13 +1,14 @@
-# RED Greenhouse Portal V1.59
+# RED Greenhouse Portal V1.60
 
 | Cambio realizado | Archivos afectados |
 |---|---|
-| Integración de las plantillas limpias y coloreadas de M11 a M15 | `templates/`, `srrc-modules.js`, `config/field-map.json` |
-| Página LIVE, referencias editables y exportación para M11–M15 | `srrc-modules.js`, `srrc-runtime.js` |
-| Inserción del logo en todos los bloques de cabecera repetidos | `srrc-runtime.js` |
-| Nombres oficiales de M11–M15 y alcance de Datos Maestros | `app.js` |
+| Reproceso de M8, M9 y M10 usando las plantillas limpias adjuntas | `templates/MODULO-8-PLANTILLA.xlsx`, `MODULO-9-PLANTILLA.xlsx`, `MODULO-10-PLANTILLA.xlsx` |
+| Página LIVE basada en el área de impresión vertical de cada hoja | `srrc-modules.js`, `config/field-map.json` |
+| Conversión de los bloques horizontales de M8 y M9 a páginas una debajo de otra | `srrc-modules.js`, `config/field-map.json` |
+| Integración de PORTADA y hojas verticales de M10 | `srrc-modules.js`, `config/field-map.json` |
+| Limpieza automática, una sola vez, de referencias antiguas únicamente para M8–M10 | `srrc-runtime.js` |
 | Versión y caché actualizadas | `config.js`, `index.html` |
 
 ## Prueba recomendada
 
-Abrir M11, M12, M13, M14 y M15; revisar una hoja LIVE de cada módulo y generar su Excel. Los ajustes de celda se realizan en **Referencias Excel** y deben guardarse antes de volver a generar.
+Abrir M8 hoja 8.3, M9 hojas 9.0 y 9.1, y M10 hojas 10.0 y 10.3. Las páginas deben aparecer verticales y el Excel generado debe conservar exactamente las plantillas limpias adjuntas.
