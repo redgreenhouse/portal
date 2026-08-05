@@ -275,7 +275,7 @@
       const obj = typeof v === 'object' ? v : null;
       return `<div class="srrc-image-control">${obj?.imageUrl ? `<img src="${esc(obj.imageUrl)}"><a href="${esc(obj.url)}" target="_blank">Abrir evidencia</a>` : ''}<input class="drive-file-input" type="file" accept="image/*" data-srrc-image="${esc(c.id)}" hidden><button class="drive-upload-button" type="button" data-srrc-upload-trigger="${esc(c.id)}">${obj ? 'Cambiar imagen en Drive' : 'Subir al Drive'}</button><small>${esc(c.range)}</small></div>`;
     }
-    if (c.type === 'status') return `<button class="srrc-state" data-srrc-cycle="${esc(c.id)}" data-options="✓|✗|NL|" type="button">${esc(v)}</button>`;
+    if (c.type === 'status') { const opts=(Array.isArray(c.options)&&c.options.length?c.options:['✓','✗','NL','']); return `<button class="srrc-state${c.statusVariant==='rangeScale'?' srrc-state-range':''}" data-srrc-cycle="${esc(c.id)}" data-options="${esc(opts.join('|'))}" data-variant="${esc(c.statusVariant||'default')}" type="button">${esc(v)}</button>`; }
     if (c.type === 'checkbox') return `<label class="srrc-check"><input type="checkbox" data-srrc-check="${esc(c.id)}" ${v === false ? '' : 'checked'}><span>✓</span></label>`;
     if (c.type === 'trafficLight') return `<div class="srrc-traffic" data-srrc-traffic="${esc(c.id)}">${['verde','amarillo','rojo'].map(x => `<button type="button" data-value="${x}" class="${v === x ? 'active' : ''} ${x}"></button>`).join('')}</div>`;
     if (c.type === 'date') return `<input class="srrc-inline-input" type="date" data-srrc-input="${esc(c.id)}" value="${esc(v)}">`;
