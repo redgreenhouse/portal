@@ -103,7 +103,7 @@ function renderMap(){
   const msg=document.getElementById('excelReferenceMessage');
   if(bad){bad.focus();msg.textContent='Referencia inválida. Corrígela antes de descargar el mapa.';return;}
   localStorage.setItem(storageKey,JSON.stringify(current));
-  const payload={version:window.RED_PORTAL_CONFIG?.version||'1.74',exportedAt:new Date().toISOString(),storageKey,references:current};
+  const payload={version:window.RED_PORTAL_CONFIG?.version||'1.76',exportedAt:new Date().toISOString(),storageKey,references:current};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download=`referencias-excel-v${payload.version}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   msg.textContent='Mapa actual guardado y descargado. Este archivo contiene las coordenadas activas del navegador.';
