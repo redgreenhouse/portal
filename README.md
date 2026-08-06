@@ -1,12 +1,13 @@
-# RED Greenhouse Portal V1.61
+# RED Greenhouse Portal V1.73
 
-Corrección de páginas LIVE M7–M10.
+Respaldo completo del portal con el Módulo 3 cerrado y validado.
 
-- Se retiró la tabla de referencia de colores de todas las páginas LIVE.
-- M7 conserva su funcionamiento anterior sin la tabla.
-- M8–M10 alinean cada control con la celda o rango combinado real de las plantillas verticales.
-- Se eliminaron destinos duplicados que ocultaban campos o sobrescribían datos al exportar.
-- Referencias Excel quedó sincronizado con los nuevos destinos.
-- Se reinician una sola vez únicamente las referencias guardadas de M8–M10.
+Cambios acumulados recientes:
 
-Controles M8–M10 antes/después: {8: (877, 247), 9: (1092, 1092), 10: (801, 799)}.
+- FRENTE DOC 3.3 con cuatro estados: ✓, !, X, NL y vacío.
+- Textos editables conservando valores precargados.
+- ANALISIS DE PELIGRO FRENTE 3.0 con textos amarillos editables y checkboxes.
+- ANALISIS DE PEL ATRAS 3.0 con campos editables y columnas restauradas.
+- BIT HIIENE INST B 06 ATRAS con VERIFICÓ como texto normal.
+- Referencias Excel sincronizadas con la definición vigente del M3.
+- Versión visible y caché actualizadas a 1.73.
