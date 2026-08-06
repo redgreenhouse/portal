@@ -364,3 +364,5 @@
 .embedded-binary-check{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:28px;background:#eaf7fc;cursor:pointer}
 .embedded-binary-check input{width:18px;height:18px;margin:0;accent-color:#176f56;cursor:pointer}
 .embedded-binary-check span{display:none}
+.srrc-check-x span{font-weight:900;color:#111}.srrc-check-x input:not(:checked)+span{color:transparent;background:#fff}.srrc-check-x input:checked+span{background:#e5f6ff;color:#111;border-color:#4aa6cf}
+.srrc-yellow-editable{background:#fff9b8;border-color:#c9b833}
