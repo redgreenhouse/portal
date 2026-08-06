@@ -9,7 +9,9 @@ const M2_REFERENCE_STORE_KEY='redGreenhouseExcelReferences';
 function m2Reference(id,fallback){
  try{
   const refs=JSON.parse(localStorage.getItem(M2_REFERENCE_STORE_KEY)||'{}');
-  return Object.prototype.hasOwnProperty.call(refs,id)?String(refs[id]||'').trim():String(fallback||'').trim();
+  if(Object.prototype.hasOwnProperty.call(refs,id))return String(refs[id]||'').trim();
+  const defaults=window.RED_EXCEL_REFERENCE_DEFAULTS||{};
+  return Object.prototype.hasOwnProperty.call(defaults,id)?String(defaults[id]||'').trim():String(fallback||'').trim();
  }catch(_err){return String(fallback||'').trim();}
 }
 function m2PopulateSheet(workbook,name){
