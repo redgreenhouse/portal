@@ -283,7 +283,7 @@
     if (c.type === 'tel') return `<input class="srrc-inline-input" type="tel" pattern="[0-9+() -]{7,25}" data-srrc-input="${esc(c.id)}" value="${esc(v)}" placeholder="+52 222 000 0000">`;
     if (c.type === 'code') { const opts=(c.options||[]); return `<select class="srrc-inline-input" data-srrc-input="${esc(c.id)}"><option value="">Seleccionar código…</option>${opts.map(x=>`<option value="${esc(x)}" ${String(v)===String(x)?'selected':''}>${esc(x)}</option>`).join('')}</select>`; }
     if (c.type === 'dynamicTemplate') return `<textarea class="srrc-inline-textarea srrc-dynamic-template" data-srrc-input="${esc(c.id)}">${esc(v)}</textarea>`;
-    const long = String(c.initial || '').length > 80;
+    const long = c.multiline === true || String(c.initial || '').length > 80;
     return long ? `<textarea class="srrc-inline-textarea" data-srrc-input="${esc(c.id)}">${esc(v)}</textarea>` : `<input class="srrc-inline-input" data-srrc-input="${esc(c.id)}" value="${esc(v)}">`;
   }
   function renderSheet(s, pageIndex) {
