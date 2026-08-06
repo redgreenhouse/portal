@@ -81,7 +81,7 @@ function renderMap(){
  const modules=[...new Set(rows.map(r=>r.module))].sort((a,b)=>a-b);
  const sheets=[...new Map(rows.map(r=>[`${r.module}|||${r.exactSheet}`,{module:r.module,name:r.exactSheet}])).values()]
   .sort((a,b)=>a.module-b.module||a.name.localeCompare(b.name,'es'));
- el.innerHTML=`<div class="page-heading"><div><h1>Referencias Excel</h1><p>Mapeo agrupado por módulo. Busca un concepto o selecciona una hoja para localizar sus referencias.</p></div><div style="display:flex;gap:10px"><button class="ghost-button" id="resetExcelReferences">Restaurar originales</button><button class="primary-button" id="saveExcelReferences">Guardar referencias</button></div></div>
+ el.innerHTML=`<div class="page-heading"><div><h1>Referencias Excel</h1><p>Mapeo agrupado por módulo. Busca un concepto o selecciona una hoja para localizar sus referencias.</p></div><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="ghost-button" id="downloadExcelReferences">Descargar mapa actual</button><button class="ghost-button" id="resetExcelReferences">Restaurar originales</button><button class="primary-button" id="saveExcelReferences">Guardar referencias</button></div></div>
  <section class="card mapping-toolbar"><label>Buscar por concepto u hoja<input id="excelReferenceSearch" type="search" placeholder="Ej. Folio SENASICA, PORTADA, versión..."></label><label>Módulo<select id="excelReferenceModule"><option value="">Todos</option>${modules.map(m=>`<option value="${m}">Módulo ${m}</option>`).join('')}</select></label><label>Hoja<select id="excelReferenceSheet"><option value="">Todas</option></select></label><span id="excelReferenceCount"></span></section>
  <section class="card" style="padding:16px;margin-bottom:16px"><strong>Regla de seguridad</strong><p style="margin:6px 0 0">Solamente puede modificarse la celda o rango destino. El módulo, la hoja, el concepto y el tipo permanecen protegidos.</p></section>
  <div id="excelReferenceGroups">${modules.map(m=>{const mr=rows.filter(r=>r.module===m);return `<section class="card map-module-group" data-map-module="${m}"><div class="map-module-heading"><div><h2>Módulo ${m} · ${capEsc(mr[0]?.moduleTitle||'')}</h2><p>${mr.length} referencias</p></div></div><div class="map-table-wrap"><table class="usage-matrix"><thead><tr><th>Concepto</th><th>Hoja exacta del Excel</th><th>Origen</th><th>Tipo</th><th>Celda / rango destino</th></tr></thead><tbody>${mr.map(r=>`<tr data-map-row data-map-sheet="${capAttr(r.exactSheet)}" data-search="${capAttr(`${r.concept} ${r.label} ${r.sheet} ${r.exactSheet} ${r.type} M${r.module}`.toLowerCase())}"><td><strong>${capEsc(r.label||r.concept)}</strong><small class="map-field-id">${capEsc(r.id)}</small></td><td>${capEsc(r.sheet)}</td><td>${capEsc(r.source)}</td><td>${capEsc(r.type)}</td><td><input class="excel-reference-input" data-reference-id="${capAttr(r.id)}" value="${capAttr(r.target)}" spellcheck="false"></td></tr>`).join('')}</tbody></table></div></section>`}).join('')}</div><p class="save-message" id="excelReferenceMessage"></p>`;
@@ -96,6 +96,17 @@ function renderMap(){
   const msg=document.getElementById('excelReferenceMessage');
   if(bad){bad.focus();msg.textContent='Referencia inválida. Usa formatos como H66 o C16:Q40.';return;}
   localStorage.setItem(storageKey,JSON.stringify(next));msg.textContent='Referencias guardadas como mapa activo. Se usarán en la siguiente generación del Excel.';
+ });
+ document.getElementById('downloadExcelReferences').addEventListener('click',()=>{
+  const current={};let bad=null;
+  el.querySelectorAll('[data-reference-id]').forEach(input=>{const value=input.value.trim().toUpperCase();input.value=value;if(value&&!valid.test(value)&&!bad)bad=input;current[input.dataset.referenceId]=value;});
+  const msg=document.getElementById('excelReferenceMessage');
+  if(bad){bad.focus();msg.textContent='Referencia inválida. Corrígela antes de descargar el mapa.';return;}
+  localStorage.setItem(storageKey,JSON.stringify(current));
+  const payload={version:window.RED_PORTAL_CONFIG?.version||'1.73',exportedAt:new Date().toISOString(),storageKey,references:current};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`referencias-excel-v${payload.version}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  msg.textContent='Mapa actual guardado y descargado. Este archivo contiene las coordenadas activas del navegador.';
  });
  document.getElementById('resetExcelReferences').addEventListener('click',()=>{if(confirm('¿Restaurar todas las referencias originales del archivo de configuración?')){localStorage.removeItem(storageKey);renderMap();}});
 }
