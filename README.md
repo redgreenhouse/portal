@@ -1,6 +1,6 @@
-RED Greenhouse Portal v1.82
+RED Greenhouse Portal v1.83
 
-# RED Greenhouse Portal V1.82
+# RED Greenhouse Portal V1.83
 
 Respaldo completo del portal con el Módulo 3 cerrado y validado.
 
@@ -12,14 +12,14 @@ Cambios acumulados recientes:
 - ANALISIS DE PEL ATRAS 3.0 con campos editables y columnas restauradas.
 - BIT HIIENE INST B 06 ATRAS con VERIFICÓ como texto normal.
 - Referencias Excel sincronizadas con la definición vigente del M3.
-- Versión visible y caché actualizadas a 1.82.
+- Versión visible y caché actualizadas a 1.83.
 ## Coordenadas oficiales congeladas
 
-- Se integraron 7,316 referencias exportadas desde el navegador el 2026-08-06.
+- Se integraron 7,655 referencias exportadas desde el navegador el 2026-08-07.
 - `config/excel-reference-defaults.json` conserva el respaldo legible.
 - `config/excel-reference-defaults.js` alimenta la exportación cuando no existe un mapa local.
 - `config/field-map.json` fue sobrescrito con estas coordenadas.
-- “Restaurar originales” conserva el mapa congelado y las nuevas referencias de v1.82.
+- “Restaurar originales” conserva el mapa congelado y las nuevas referencias de v1.83.
 
 ## Ajuste v1.77
 - Eliminado el campo duplicado de nombre de la unidad en PORTADA de M8 y M9.
@@ -48,3 +48,7 @@ Cambios acumulados recientes:
 - Las 72 celdas de Probabilidad y Severidad ahora son checkbox X/vacío.
 - Se conservan los mismos IDs y coordenadas del mapa de referencias.
 - Los valores anteriores X se interpretan como marcados; vacío permanece desmarcado.
+
+## Ajuste v1.83 · respaldo de coordenadas
+- Se congelaron 7,655 referencias Excel exportadas el 2026-08-07.
+- “Restaurar originales” vuelve ahora a este mapa de coordenadas.
