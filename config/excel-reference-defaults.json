@@ -1,5 +1,5 @@
 {
-  "version": "1.76",
+  "version": "1.77",
   "exportedAt": "2026-08-06T01:11:28.852Z",
   "storageKey": "redGreenhouseExcelReferences",
   "references": {
@@ -6031,7 +6031,6 @@
     "M8.H01.HEADER1.emission": "I3",
     "M8.H01.HEADER1.folio": "H2:I2",
     "M8.H01.HEADER1.logo": "A1:C6",
-    "M8.H01.HEADER1.unit.1": "D1:G1",
     "M8.H01.HEADER1.unit.2": "D2:G2",
     "M8.H01.HEADER1.validity": "I5",
     "M8.H01.HEADER1.version": "I4",
@@ -6278,7 +6277,6 @@
     "M9.H01.HEADER1.emission": "I3",
     "M9.H01.HEADER1.folio": "H2:I2",
     "M9.H01.HEADER1.logo": "A1:C6",
-    "M9.H01.HEADER1.unit.1": "D1:G1",
     "M9.H01.HEADER1.unit.2": "D2:G2",
     "M9.H01.HEADER1.validity": "I5",
     "M9.H01.HEADER1.version": "I4",
