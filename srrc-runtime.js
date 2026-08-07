@@ -278,7 +278,7 @@
       return `<div class="srrc-image-control">${obj?.imageUrl ? `<img src="${esc(obj.imageUrl)}"><a href="${esc(obj.url)}" target="_blank">Abrir evidencia</a>` : ''}<input class="drive-file-input" type="file" accept="image/*" data-srrc-image="${esc(c.id)}" hidden><button class="drive-upload-button" type="button" data-srrc-upload-trigger="${esc(c.id)}">${obj ? 'Cambiar imagen en Drive' : 'Subir al Drive'}</button><small>${esc(c.range)}</small></div>`;
     }
     if (c.type === 'status') { const opts=(Array.isArray(c.options)&&c.options.length?c.options:['✓','✗','NL','']); return `<button class="srrc-state${c.statusVariant==='rangeScale'?' srrc-state-range':''}" data-srrc-cycle="${esc(c.id)}" data-options="${esc(opts.join('|'))}" data-variant="${esc(c.statusVariant||'default')}" type="button">${esc(v)}</button>`; }
-    if (c.type === 'checkbox') { const mark=c.checkboxMark||'✓'; return `<label class="srrc-check${mark==='X'?' srrc-check-x':''}"><input type="checkbox" data-srrc-check="${esc(c.id)}" ${v === false ? '' : 'checked'}><span>${esc(mark)}</span></label>`; }
+    if (c.type === 'checkbox') { const mark=c.checkboxMark||'✓'; const checked=c.blankAsUnchecked ? (v===true || String(v||'').toUpperCase()==='X' || String(v||'')==='✓') : (v !== false); return `<label class="srrc-check${mark==='X'?' srrc-check-x':''}"><input type="checkbox" data-srrc-check="${esc(c.id)}" ${checked ? 'checked' : ''}><span>${esc(mark)}</span></label>`; }
     if (c.type === 'trafficLight') return `<div class="srrc-traffic" data-srrc-traffic="${esc(c.id)}">${['verde','amarillo','rojo'].map(x => `<button type="button" data-value="${x}" class="${v === x ? 'active' : ''} ${x}"></button>`).join('')}</div>`;
     if (c.type === 'date') return `<input class="srrc-inline-input" type="date" data-srrc-input="${esc(c.id)}" value="${esc(v)}">`;
     if (c.type === 'email') return `<input class="srrc-inline-input" type="email" data-srrc-input="${esc(c.id)}" value="${esc(v)}" placeholder="nombre@dominio.com">`;
@@ -404,7 +404,7 @@
           } else if (c.type === 'image') {
             const o = typeof v === 'object' ? v : null;
             if (o?.url) sh.cell(target).formula(`HYPERLINK("${String(o.url).replace(/"/g,'""')}","Abrir evidencia fotográfica")`);
-          } else if (c.type === 'checkbox') sh.cell(target).value(v === false ? '' : (c.checkboxMark || '✓'));
+          } else if (c.type === 'checkbox') { const checked=c.blankAsUnchecked ? (v===true || String(v||'').toUpperCase()==='X' || String(v||'')==='✓') : (v !== false); sh.cell(target).value(checked ? (c.checkboxMark || '✓') : ''); }
           else if (c.type === 'trafficLight') {
             sh.cell(target).value(v ? String(v).toUpperCase() : '');
             if (v) sh.cell(target).style('fill', v === 'verde' ? '00B050' : v === 'amarillo' ? 'FFFF00' : 'FF0000');
