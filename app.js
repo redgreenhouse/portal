@@ -545,6 +545,20 @@ applyPortalVersion();
 ensureStructuredDefaults();
 clearDuplicateModule2Values();
 document.getElementById('backButton').addEventListener('click',()=>{if(viewHistory.length)showView(viewHistory.pop(),false)});document.getElementById('homeButton').addEventListener('click',()=>showView('inicio'));document.getElementById('saveMasterDataButton').addEventListener('click',saveMasterData);
-document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.go)));
+const sidebarToggleKey='redGreenhouseSidebarCollapsed';
+const privateAppEl=document.getElementById('privateApp'),sidebarEl=document.getElementById('sidebar'),menuButtonEl=document.getElementById('menuButton');
+function syncSidebarMode(){
+  if(window.innerWidth<=820){privateAppEl.classList.remove('sidebar-collapsed');return;}
+  sidebarEl.classList.remove('open');
+  privateAppEl.classList.toggle('sidebar-collapsed',localStorage.getItem(sidebarToggleKey)==='1');
+}
+menuButtonEl.title='Mostrar / ocultar menú lateral';
+menuButtonEl.addEventListener('click',()=>{
+  if(window.innerWidth<=820){sidebarEl.classList.toggle('open');return;}
+  const collapsed=privateAppEl.classList.toggle('sidebar-collapsed');
+  localStorage.setItem(sidebarToggleKey,collapsed?'1':'0');
+});
+window.addEventListener('resize',syncSidebarMode);syncSidebarMode();
 document.querySelectorAll('.filter').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.filter;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderTasks()}));
 const modal=document.getElementById('modalBackdrop');document.getElementById('addTaskButton').addEventListener('click',()=>modal.classList.add('open'));document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('open'));modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});document.getElementById('taskForm').addEventListener('submit',e=>{e.preventDefault();tasks.unshift({id:Date.now(),title:document.getElementById('taskTitle').value.trim(),detail:'Tarea agregada desde el portal.',owner:document.getElementById('taskOwner').value.trim(),priority:document.getElementById('taskPriority').value,status:document.getElementById('taskStatus').value,due:'Sin fecha'});saveTasks();e.target.reset();modal.classList.remove('open');renderAll()});syncMasterTask();setDate();renderAll();

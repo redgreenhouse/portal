@@ -366,3 +366,12 @@
 .embedded-binary-check span{display:none}
 .srrc-check-x span{font-weight:900;color:#111}.srrc-check-x input:not(:checked)+span{color:transparent;background:#fff}.srrc-check-x input:checked+span{background:#e5f6ff;color:#111;border-color:#4aa6cf}
 .srrc-yellow-editable{background:#fff9b8;border-color:#c9b833}
+
+/* v1.79 · menú lateral colapsable para ampliar hojas LIVE anchas */
+.sidebar,.main{transition:transform .22s ease,margin-left .22s ease}
+@media(min-width:821px){
+  .menu-button{display:inline-grid!important;place-items:center;width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--g800);font-size:20px;line-height:1}
+  .menu-button:hover{background:#f2f8f4}
+  .private-app.sidebar-collapsed .sidebar{transform:translateX(-100%)}
+  .private-app.sidebar-collapsed .main{margin-left:0}
+}
