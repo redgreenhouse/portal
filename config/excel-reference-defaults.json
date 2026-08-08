@@ -1,6 +1,6 @@
 {
-  "version": "1.86",
-  "exportedAt": "2026-08-08T00:29:00.000Z",
+  "version": "1.87",
+  "exportedAt": "2026-08-08T00:47:00.000Z",
   "storageKey": "redGreenhouseExcelReferences",
   "references": {
     "M2.HEADER.1.unidadProduccion": "H2",
@@ -7678,6 +7678,7 @@
     "M12.H03.CAT.10": "AT28:AU29",
     "M12.H03.CAT.11": "AT30:AU31",
     "M12.H03.CAT.12": "AT32:AU33",
-    "M12.H03.CAT.13": "AT34:AU35"
+    "M12.H03.CAT.13": "AT34:AU35",
+    "M12.H02.0164": "AF53:AJ76"
   }
 }
