@@ -6,6 +6,25 @@
   const STORE = 'redGreenhouseModuleCaptureV128';
   let values = JSON.parse(localStorage.getItem(STORE) || '{}');
   const save = () => localStorage.setItem(STORE, JSON.stringify(values));
+  // v1.87: sincronización única del LIVE 12.0 con el análisis de jitomate validado en el Excel base.
+  // Después de esta migración, las ediciones posteriores del usuario vuelven a persistir normalmente.
+  const M12_120_SYNC_KEY = 'redGreenhouseM12Sheet120BaselineVersion';
+  const M12_120_SYNC_VERSION = '1.87-jitomate-plaguicidas';
+  try {
+    if (localStorage.getItem(M12_120_SYNC_KEY) !== M12_120_SYNC_VERSION) {
+      const module12 = (window.SRRC_MODULES || []).find(m => Number(m.module) === 12);
+      const sheet120 = module12 && (module12.sheets || []).find(s => String(s.name || '').trim() === '12.0');
+      if (sheet120) {
+        (sheet120.controls || []).forEach(c => {
+          if (/^M12\.H02\./.test(String(c.id || '')) && (c.type === 'text' || c.type === 'checkbox')) {
+            values[c.id] = c.initial ?? '';
+          }
+        });
+        save();
+        localStorage.setItem(M12_120_SYNC_KEY, M12_120_SYNC_VERSION);
+      }
+    }
+  } catch (_err) {}
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const EXCEL_REFERENCE_STORE_KEY = 'redGreenhouseExcelReferences';
   const EXCEL_REFERENCE_LAYOUT_KEY = 'redGreenhouseExcelReferenceLayoutVersion';
@@ -392,6 +411,12 @@
       const wb = await XlsxPopulate.fromDataAsync(templateBuffer.slice(0));
       applyGenericHeaders(wb,n);
       if (Number(n) === 12) {
+        const hazardSheet = wb.sheet('12.0') || wb.sheets().find(x => String(x.name()).trim() === '12.0');
+        if (hazardSheet) {
+          const hazardTitle = 'ANÁLISIS DE PELIGRO Y PLAN TÉCNICO DE USO Y MANEJO DE PLAGUICIDAS – JITOMATE';
+          hazardSheet.cell('I4').value(hazardTitle);
+          hazardSheet.cell('I46').value(hazardTitle);
+        }
         const agroSheet = wb.sheet('12.1') || wb.sheets().find(x => String(x.name()).trim() === '12.1');
         if (agroSheet) {
           const agroTitle = 'LISTA DE AGROQUÍMICOS APROBADOS Y AUTORIZADOS PARA CULTIVO DE JITOMATE';

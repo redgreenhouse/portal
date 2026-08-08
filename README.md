@@ -1,6 +1,6 @@
-RED Greenhouse Portal v1.86
+RED Greenhouse Portal v1.87
 
-# RED Greenhouse Portal V1.86
+# RED Greenhouse Portal V1.87
 
 Respaldo completo del portal con el Módulo 3 cerrado y validado.
 
@@ -12,7 +12,7 @@ Cambios acumulados recientes:
 - ANALISIS DE PEL ATRAS 3.0 con campos editables y columnas restauradas.
 - BIT HIIENE INST B 06 ATRAS con VERIFICÓ como texto normal.
 - Referencias Excel sincronizadas con la definición vigente del M3.
-- Versión visible y caché actualizadas a 1.86.
+- Versión visible y caché actualizadas a 1.87.
 ## Coordenadas oficiales congeladas
 
 - Se integraron 7,655 referencias exportadas desde el navegador el 2026-08-07.
@@ -72,3 +72,11 @@ Cambios acumulados recientes:
 - La segunda parte se precarga con 5 formuladores/distribuidores principales, evitando duplicados por producto.
 - Se conserva intacto el respaldo de coordenadas `referencias-excel-v1.83-respaldo.json`.
 
+
+## Ajuste v1.87 · M12 hoja 12.0 · sincronización con Excel jitomate
+- El LIVE 12.0 se igualó al archivo `12.0_jitomate_plaguicidas.xlsx`.
+- Se sincronizaron las cuatro fases, descripciones, peligros, justificaciones y todos los estados de Probabilidad/Severidad.
+- El plan de tratamiento quedó precargado con las acciones, indicadores, criterios y documentación del Excel.
+- La columna REFERENCIA de la segunda parte quedó editable en LIVE.
+- Se agregó una migración única para que navegadores con valores antiguos guardados vean el nuevo estado base; después de aplicarse, las ediciones del usuario vuelven a persistir normalmente.
+- El respaldo de coordenadas `referencias-excel-v1.83-respaldo.json` permanece intacto.
