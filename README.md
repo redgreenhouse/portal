@@ -1,6 +1,6 @@
-RED Greenhouse Portal v1.87
+RED Greenhouse Portal v1.88
 
-# RED Greenhouse Portal V1.87
+# RED Greenhouse Portal V1.88
 
 Respaldo completo del portal con el Módulo 3 cerrado y validado.
 
@@ -12,7 +12,7 @@ Cambios acumulados recientes:
 - ANALISIS DE PEL ATRAS 3.0 con campos editables y columnas restauradas.
 - BIT HIIENE INST B 06 ATRAS con VERIFICÓ como texto normal.
 - Referencias Excel sincronizadas con la definición vigente del M3.
-- Versión visible y caché actualizadas a 1.87.
+- Versión visible y caché actualizadas a 1.88.
 ## Coordenadas oficiales congeladas
 
 - Se integraron 7,655 referencias exportadas desde el navegador el 2026-08-07.
@@ -80,3 +80,13 @@ Cambios acumulados recientes:
 - La columna REFERENCIA de la segunda parte quedó editable en LIVE.
 - Se agregó una migración única para que navegadores con valores antiguos guardados vean el nuevo estado base; después de aplicarse, las ediciones del usuario vuelven a persistir normalmente.
 - El respaldo de coordenadas `referencias-excel-v1.83-respaldo.json` permanece intacto.
+
+
+## Ajuste v1.88 · M12 hojas 12.6 y 12.09
+- Hoja 12.6: directorio de emergencias actualizado con 911/SUMA Puebla, CESAVEP, SINTOX, SENASICA, COFEPRIS y FDA Oficina México.
+- El contacto interno de Dirección General queda como `POR DEFINIR` para no inventar un teléfono de RED Greenhouse.
+- Todos los datos incorporados al directorio quedan editables en LIVE y exportan al Excel.
+- Hoja 12.09: referencia normativa actualizada de NOM-003-STPS-1999 a NOM-003-STPS-2023.
+- El protocolo se amplía a 30 puntos de control de almacenamiento basados en el Capítulo 8 de la NOM-003-STPS-2023.
+- Los 30 requisitos quedan editables; no se marca ninguno como cumplido hasta realizar la inspección física del almacén.
+- Se conserva intacto el respaldo de coordenadas `referencias-excel-v1.83-respaldo.json`.
