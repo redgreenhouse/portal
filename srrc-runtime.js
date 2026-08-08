@@ -391,6 +391,14 @@
       const templateBuffer = await response.arrayBuffer();
       const wb = await XlsxPopulate.fromDataAsync(templateBuffer.slice(0));
       applyGenericHeaders(wb,n);
+      if (Number(n) === 12) {
+        const agroSheet = wb.sheet('12.1') || wb.sheets().find(x => String(x.name()).trim() === '12.1');
+        if (agroSheet) {
+          const agroTitle = 'LISTA DE AGROQUÍMICOS APROBADOS Y AUTORIZADOS PARA CULTIVO DE JITOMATE';
+          agroSheet.cell('I4').value(agroTitle);
+          agroSheet.cell('I45').value(agroTitle);
+        }
+      }
       for (const s of m.sheets) {
         const sh = wb.sheet(s.name) || wb.sheets().find(x => String(x.name()).trim() === String(s.name).trim());
         if (!sh) continue;
@@ -412,6 +420,11 @@
             const [y,mo,d] = String(v).split('-');
             sh.cell(target).value(`${d}/${mo}/${y}`);
           } else sh.cell(target).value(v || '');
+          if (String(c.id || '').startsWith('M12.H03.CAT.')) {
+            const tox = String(v || '');
+            const fill = tox === '3' ? 'FFFF00' : tox === '4' ? '0070C0' : tox === '5' ? '00B050' : (tox === '1' || tox === '2') ? 'C00000' : null;
+            if (fill) sh.cell(target).style('fill', fill);
+          }
         }
       }
       const generatedBlob = await wb.outputAsync();
