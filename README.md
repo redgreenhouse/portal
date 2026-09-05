@@ -90,3 +90,7 @@ Cambios acumulados recientes:
 - El protocolo se amplía a 30 puntos de control de almacenamiento basados en el Capítulo 8 de la NOM-003-STPS-2023.
 - Los 30 requisitos quedan editables; no se marca ninguno como cumplido hasta realizar la inspección física del almacén.
 - Se conserva intacto el respaldo de coordenadas `referencias-excel-v1.83-respaldo.json`.
+
+
+## v1.89 · Operación del invernadero
+La aplicación se reorienta a captura de eventos y control operativo mobile-first. Incluye históricos reales para pruebas visuales, módulos de producción/comercial/finanzas/planeación y plantillas de Google Sheets en `templates/operacion-v189/`.

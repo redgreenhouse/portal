@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Pacifico&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.88">
+  <link rel="stylesheet" href="styles.css?v=1.89">
 </head>
 <body>
   <section class="public-site" id="publicSite">
@@ -37,18 +37,23 @@
       <div class="brand-copy"><strong>RED Greenhouse</strong><span>Portal de Gestión</span></div>
     </div>
     <section class="project-card">
-      <div class="project-title">Certificación SRRC</div>
-      <div class="project-row"><span>Estado</span><strong class="status-dot"><i></i> En implementación</strong></div>
+      <div class="project-title">Operación del invernadero</div>
+      <div class="project-row"><span>Estado</span><strong class="status-dot"><i></i> Operación activa</strong></div>
     </section>
     <nav class="nav">
       <button class="nav-item active" data-view="inicio"><span>⌂</span> Inicio</button>
-      <button class="nav-item" data-view="certificaciones"><span>◉</span> Certificaciones</button>
+      <button class="nav-item nav-primary" data-view="capturar"><span>＋</span> Capturar evento</button>
+      <button class="nav-item" data-view="eventos"><span>▤</span> Eventos</button>
+      <button class="nav-item" data-view="produccion"><span>🍅</span> Producción</button>
+      <button class="nav-item" data-view="comercial"><span>▣</span> Comercial</button>
+      <button class="nav-item" data-view="finanzas"><span>$</span> Finanzas</button>
+      <button class="nav-item" data-view="planeacion"><span>◫</span> Planeación</button>
       <button class="nav-item" data-view="datos"><span>◆</span> Datos Maestros</button>
+      <button class="nav-item nav-secondary" data-view="certificaciones"><span>◉</span> SRRC / Certificación</button>
       <button class="nav-item" data-view="bitacoras"><span>☑</span> Bitácoras</button>
-      <button class="nav-item" data-view="galeria"><span>▧</span> Galería pública</button>
       <button class="nav-item" data-view="configuracion"><span>⚙</span> Configuración</button>
     </nav>
-    <div class="sidebar-footer">RED Greenhouse · <span id="sidebarVersion">v1.53</span></div>
+    <div class="sidebar-footer">RED Greenhouse · <span id="sidebarVersion">v1.89</span></div>
   </aside>
 
   <main class="main">
@@ -59,47 +64,23 @@
         <button class="nav-control home-control" id="homeButton" title="Ir al inicio">⌂ <span>Inicio</span></button>
         <div class="breadcrumb" id="breadcrumb">Inicio</div>
       </div>
-      <div class="topbar-right"><button class="public-return-button" id="publicSiteButton">← Sitio público</button><span class="portal-status"><i></i> Versión activa <strong id="privateVersion">1.88</strong></span><span id="currentDate"></span></div>
+      <div class="topbar-right"><button class="public-return-button" id="publicSiteButton">← Sitio público</button><span class="portal-status"><i></i> Versión activa <strong id="privateVersion">1.89</strong></span><span id="currentDate"></span></div>
     </header>
 
     <section class="view active" id="view-inicio">
-      <section class="dashboard-hero">
-        <div class="dashboard-hero-content">
-          <span class="dashboard-kicker">PORTAL DE GESTIÓN</span>
-          <h1>RED Greenhouse</h1>
-          <p>Control documental, seguimiento y liberación de la certificación SRRC.</p>
-        </div>
-        <span class="dashboard-hero-version">Versión <strong id="heroVersion">1.88</strong></span>
+      <div class="ops-home-head"><div><span class="eyebrow">RED GREENHOUSE · OPERACIÓN</span><h1>¿Qué quieres registrar?</h1><p>Captura eventos desde el piso y mantén la operación lista para decidir.</p></div><span class="ops-live">● En línea</span></div>
+      <section class="event-launch-grid" id="eventLaunchGrid"></section>
+      <section class="ops-kpi-grid">
+        <article class="ops-kpi"><span>Ventas registradas</span><strong id="opsSalesTotal">$0</strong><small id="opsSalesMeta">0 kg</small></article>
+        <article class="ops-kpi"><span>Por cobrar</span><strong id="opsReceivable">$0</strong><small>Ventas no cobradas</small></article>
+        <article class="ops-kpi"><span>Gastos registrados</span><strong id="opsExpensesTotal">$0</strong><small>Histórico cargado</small></article>
+        <article class="ops-kpi"><span>Producción pronosticada</span><strong id="opsForecastKg">0 kg</strong><small>Pronóstico total de los túneles</small></article>
       </section>
-
-      <section class="dashboard-kpi-grid">
-        <article class="dashboard-kpi"><span>Módulos SRRC</span><strong id="dashboardModuleTotal">14</strong><small>Módulos 2 al 15</small></article>
-        <article class="dashboard-kpi"><span>Total de hojas</span><strong id="dashboardSheetTotal">0</strong><small>Hojas integradas al portal</small></article>
-        <article class="dashboard-kpi"><span>Hojas liberadas</span><strong id="dashboardReleasedTotal">0</strong><small>Autorizadas por Dirección</small></article>
-        <article class="dashboard-kpi"><span>Hojas pendientes</span><strong id="dashboardPendingTotal">0</strong><small>Pendientes de liberación</small></article>
+      <section class="ops-dashboard-grid">
+        <article class="card ops-panel"><div class="section-heading"><div><span class="eyebrow">ACTIVIDAD</span><h2>Últimos eventos</h2></div><button class="link-button" data-go="eventos">Ver todos</button></div><div id="opsRecentEvents"></div></article>
+        <article class="card ops-panel"><div class="section-heading"><div><span class="eyebrow">SEMANA</span><h2>Planeación vs real</h2></div><button class="link-button" data-go="planeacion">Abrir</button></div><div class="week-score"><strong id="opsWeekReal">0 kg</strong><span id="opsWeekPlan">de 0 kg planeados</span></div><div class="progress-track"><div class="progress-fill" id="opsWeekFill"></div></div><div class="mini-finance"><div><span>Resultado provisional</span><strong id="opsProfit">$0</strong></div><div><span>Flujo provisional</span><strong id="opsCashFlow">$0</strong></div></div></article>
       </section>
-
-      <section class="dashboard-analytics">
-        <article class="card release-card">
-          <div class="section-heading"><div><span class="eyebrow">AVANCE GENERAL</span><h2>Liberación documental</h2></div></div>
-          <div class="release-visual">
-            <div class="release-donut" id="releaseDonut"><div><strong id="releasePercent">0%</strong><span>Liberado</span></div></div>
-            <div class="release-copy"><strong id="releaseSummary">0 de 0 hojas</strong><p>El avance cambia únicamente cuando Dirección marca una hoja como liberada.</p></div>
-          </div>
-        </article>
-
-        <article class="card module-bars-card">
-          <div class="section-heading"><div><span class="eyebrow">POR MÓDULO</span><h2>Avance de liberación</h2></div><button class="link-button" data-go="modulos">Abrir módulos</button></div>
-          <div class="dashboard-module-bars" id="dashboardModuleBars"></div>
-        </article>
-
-        <article class="card module-state-card">
-          <div class="section-heading"><div><span class="eyebrow">ESTADO</span><h2>Módulos</h2></div></div>
-          <div class="module-state-row"><span class="state-dot released"></span><div><strong id="modulesReleasedCount">0</strong><small>Liberados</small></div></div>
-          <div class="module-state-row"><span class="state-dot progress"></span><div><strong id="modulesProgressCount">0</strong><small>En proceso</small></div></div>
-          <div class="module-state-row"><span class="state-dot locked"></span><div><strong id="modulesLockedCount">0</strong><small>Por integrar</small></div></div>
-        </article>
-      </section>
+      <section class="card finance-dashboard-strip"><div><span class="eyebrow">CONTROL FINANCIERO</span><h2>Resultados y liquidez</h2><p>Vista ejecutiva para computadora. Se alimenta de eventos, banco y efectivo.</p></div><div class="finance-strip-metrics"><div><span>Utilidad provisional</span><strong id="opsProfitLarge">$0</strong></div><div><span>Flujo provisional</span><strong id="opsCashLarge">$0</strong></div><div><span>Cuentas por cobrar</span><strong id="opsReceivableLarge">$0</strong></div></div><button class="primary-button" data-go="finanzas">Ver estados</button></section>
     </section>
 
     <section class="view" id="view-plan">
@@ -163,6 +144,13 @@
       <section class="card module-detail-card" id="moduleDetail" hidden></section>
     </section>
 
+    <section class="view" id="view-capturar"><div id="eventCaptureApp"></div></section>
+    <section class="view" id="view-eventos"><div id="eventsHistoryApp"></div></section>
+    <section class="view" id="view-produccion"><div id="productionApp"></div></section>
+    <section class="view" id="view-comercial"><div id="commercialApp"></div></section>
+    <section class="view" id="view-finanzas"><div id="financeApp"></div></section>
+    <section class="view" id="view-planeacion"><div id="planningApp"></div></section>
+
     <section class="view" id="view-captura">
       <div id="captureApp"></div>
     </section>
@@ -192,7 +180,8 @@
       <section class="admin-grid">
         <article class="card admin-card"><h2>Seguridad</h2><p>Cambia la contraseña básica de acceso al portal privado.</p><label>Nueva contraseña<input type="password" id="newPortalPassword" minlength="4" placeholder="Mínimo 4 caracteres"></label><label>Confirmar contraseña<input type="password" id="confirmPortalPassword" minlength="4"></label><button class="primary-button" id="savePasswordButton">Guardar contraseña</button><span class="admin-message" id="passwordMessage"></span></article>
         <article class="card admin-card"><h2>Google Drive</h2><p>Configuración para almacenar imágenes y recuperarlas al volver al módulo.</p><label>ID carpeta Images<input id="driveFolderId" value="1nhz_xAqRz6kcsZdg_zodmaLACmw584sL"></label><label>URL del Apps Script Web App<input id="driveWebAppUrl" value="https://script.google.com/macros/s/AKfycbwA5CB0NFyUxU6xa_mmaCkfhnz9pwqIscAxmcSp1LTOpnmasBuFv46fEP3dc3MjABjlXw/exec"></label><button class="primary-button" id="saveDriveConfigButton">Guardar configuración</button><span class="admin-message" id="driveMessage"></span></article>
-        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong id="systemVersion">v1.67</strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
+        <article class="card admin-card"><h2>Google Sheets</h2><p>Base central de eventos. En v1.89 se prepara la estructura; la conexión se activará cuando se configure Apps Script.</p><label>URL Web App Apps Script<input id="sheetsWebAppUrl" placeholder="Pegar URL /exec"></label><label>ID / nombre del libro operativo<input id="sheetsOperationId" placeholder="Pendiente"></label><label>ID / nombre del libro financiero<input id="sheetsFinanceId" placeholder="Pendiente"></label><button class="primary-button" id="saveSheetsConfigButton">Guardar conexión</button><span class="admin-message" id="sheetsMessage"></span></article>
+        <article class="card admin-card"><h2>Sistema</h2><p>Información de esta versión.</p><div class="admin-readonly"><span>Versión</span><strong id="systemVersion">v1.89</strong></div><div class="admin-readonly"><span>Modo</span><strong>Público + privado</strong></div><div class="admin-readonly"><span>Almacenamiento actual</span><strong>Navegador / Drive pendiente</strong></div></article>
       </section>
     </section>
 
@@ -213,18 +202,19 @@
   </div>
 
   <div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="taskForm"><div class="modal-heading"><h2>Nueva tarea</h2><button type="button" id="closeModal">×</button></div><label>Tarea<input id="taskTitle" required maxlength="100"></label><label>Responsable<input id="taskOwner" required maxlength="70"></label><label>Prioridad<select id="taskPriority"><option value="critical">Crítica</option><option value="high">Alta</option><option value="medium">Media</option></select></label><label>Estado<select id="taskStatus"><option value="pending">Pendiente</option><option value="doing">En proceso</option><option value="done">Completada</option></select></label><button class="primary-button" type="submit">Guardar tarea</button></form></div>
-  <script src="config.js?v=1.88"></script>
-  <script src="config/excel-reference-defaults.js?v=1.88"></script>
-  <script src="data.js?v=1.88"></script>
-  <script src="module2-replicas.js?v=1.88"></script>
-  <script src="module2-annotations.js?v=1.88"></script>
+  <script src="config.js?v=1.89"></script>
+  <script src="config/excel-reference-defaults.js?v=1.89"></script>
+  <script src="data.js?v=1.89"></script>
+  <script src="module2-replicas.js?v=1.89"></script>
+  <script src="module2-annotations.js?v=1.89"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-  <script src="module2-embedded.js?v=1.88"></script>
-  <script src="srrc-modules.js?v=1.88"></script>
-  <script src="app.js?v=1.88"></script>
-  <script src="srrc-runtime.js?v=1.88"></script>
-  <script src="capture.js?v=1.88"></script>
+  <script src="module2-embedded.js?v=1.89"></script>
+  <script src="srrc-modules.js?v=1.89"></script>
+  <script src="app.js?v=1.89"></script>
+  <script src="srrc-runtime.js?v=1.89"></script>
+  <script src="capture.js?v=1.89"></script>
+  <script src="operation-v189.js?v=1.89"></script>
 </body>
 </html>
